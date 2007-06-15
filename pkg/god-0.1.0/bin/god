@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'rubygems'
-require 'god'
-
-file = ARGV[0]
-
-load file

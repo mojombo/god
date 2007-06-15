@@ -1,6 +1,6 @@
 god
-    by FIX (your name)
-    FIX (url)
+    by Tom Preston-Werner
+    http://god.rubyforge.org
 
 == DESCRIPTION:
   
