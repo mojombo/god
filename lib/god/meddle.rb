@@ -9,7 +9,7 @@ module God
     
     # Create a new instance that is ready for use by a configuration file
     def initialize
-      @watches = []
+      self.watches = []
     end
       
     # Instantiate a new, empty Watch object and pass it to the mandatory

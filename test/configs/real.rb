@@ -12,6 +12,7 @@ God.meddle do |god|
     w.cwd = RAILS_ROOT
     w.start = "mongrel_rails start -P ./log/mongrel.pid -d"
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid"
+    w.grace = 10
   
     w.start_if do |r|
       r.condition(:process_not_running) do |c|

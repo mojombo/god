@@ -2,13 +2,16 @@ module God
   
   class Watch < Base
     # config
-    attr_accessor :name, :cwd, :start, :stop
+    attr_accessor :name, :cwd, :start, :stop, :grace
     
     # api
     attr_accessor :conditions
     
     # 
     def initialize
+      # no grace period by default
+      self.grace = 0
+      
       # keep track of which action each condition belongs to
       @action = nil
       
@@ -71,6 +74,7 @@ module God
         Dir.chdir(self.cwd) do
           system(self.start)
         end
+        sleep(self.grace)
       end
     end
   end
