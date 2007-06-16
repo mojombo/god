@@ -1,37 +1,57 @@
 module God
   
-  class Watch
+  class Watch < Base
+    # config
     attr_accessor :name, :cwd, :start, :stop
     
+    # api
+    attr_accessor :conditions
+    
+    # 
     def initialize
+      # keep track of which action each condition belongs to
       @action = nil
-      @conditions = {:start => []}
+      
+      # the list of conditions for each action
+      self.conditions = {:start => []}
     end
     
     def start_if
       @action = :start
       yield(self)
+      @action = nil
     end
     
+    # Instantiate a Condition of type +kind+ and pass it into the mandatory
+    # block. Attributes of the condition must be set in the config file
     def condition(kind)
+      # must be in a _if block
+      unless @action
+        puts "Watch#condition can only be called from inside a start_if block"
+        exit
+      end
+      
+      # create the condition
       begin
         c = Condition.generate(kind)
-      rescue
-        puts "No condition found for #{kind}"
+      rescue NoSuchConditionError => e
+        puts e.message
         exit
       end
       
       yield(c)
       
+      # exit if the Condition is invalid, the Condition will have printed
+      # out its own error messages by now
       unless c.valid?
         exit
       end
       
-      @conditions[@action] << c
+      self.conditions[@action] << c
     end
     
     def run
-      @conditions[:start].each do |c|
+      self.conditions[:start].each do |c|
         if c.test
           puts self.name + ' ' + c.class.name + ' [ok]'
         else
