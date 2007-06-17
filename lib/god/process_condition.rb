@@ -1,5 +1,7 @@
 module God
   
+  # This abstract class makes it easy for subclassed Conditions to deal
+  # with commong process related tasks, like pid file cleanup
   class ProcessCondition < Condition
     attr_accessor :pid_file, :clean
     

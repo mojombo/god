@@ -1,7 +1,7 @@
 module God
   module Conditions
     
-    class MemoryUsage < ProcessCondition
+    class CpuUsage < ProcessCondition
       attr_accessor :above, :times
     
       def initialize
@@ -28,7 +28,7 @@ module God
         return false unless super
         pid = File.open(self.pid_file).read.strip
         process = System::Process.new(pid)
-        @timeline.push(process.memory)
+        @timeline.push(process.percent_cpu)
         if @timeline.select { |x| x > self.above }.size < self.times.first
           return true
         else

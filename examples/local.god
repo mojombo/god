@@ -1,11 +1,10 @@
-if $0 == __FILE__
-  require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
-end
+# This example shows how you might keep a local development Rails server up
+# and running on your Mac.
 
 RAILS_ROOT = "/Users/tom/dev/gravatar2"
 
 God.meddle do |god|
-  god.interval = 5 # seconds
+  god.interval = 60 # seconds
   
   god.watch do |w|
     w.name = "local-3000"

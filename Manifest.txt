@@ -4,12 +4,17 @@ README.txt
 Rakefile
 bin/god
 examples/gravatar.god
+examples/local.god
 lib/god.rb
 lib/god/base.rb
 lib/god/condition.rb
+lib/god/conditions/cpu_usage.rb
+lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_not_running.rb
+lib/god/conditions/timeline.rb
 lib/god/errors.rb
 lib/god/meddle.rb
+lib/god/process_condition.rb
 lib/god/system/process.rb
 lib/god/watch.rb
 test/configs/no_watches.rb
@@ -19,4 +24,5 @@ test/helper.rb
 test/test_condition.rb
 test/test_meddle.rb
 test/test_system_process.rb
+test/test_timeline.rb
 test/test_watch.rb

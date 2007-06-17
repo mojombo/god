@@ -11,6 +11,7 @@ require 'god/process_condition'
 require 'god/conditions/timeline'
 require 'god/conditions/process_not_running'
 require 'god/conditions/memory_usage'
+require 'god/conditions/cpu_usage'
 
 require 'god/watch'
 require 'god/meddle'
