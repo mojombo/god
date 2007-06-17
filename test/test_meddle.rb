@@ -1,4 +1,4 @@
-require 'test_helper'
+require 'helper'
 
 class TestMeddle < Test::Unit::TestCase
   def setup

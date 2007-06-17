@@ -3,12 +3,14 @@ Manifest.txt
 README.txt
 Rakefile
 bin/god
+examples/gravatar.god
 lib/god.rb
 lib/god/base.rb
 lib/god/condition.rb
 lib/god/conditions/process_not_running.rb
 lib/god/errors.rb
 lib/god/meddle.rb
+lib/god/system/process.rb
 lib/god/watch.rb
 test/configs/no_watches.rb
 test/configs/real.rb
@@ -16,4 +18,5 @@ test/configs/sample.rb
 test/test_condition.rb
 test/test_helper.rb
 test/test_meddle.rb
+test/test_system_process.rb
 test/test_watch.rb

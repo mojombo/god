@@ -1,13 +1,4 @@
-require 'test_helper'
-
-class TestSystemProcessCreation < Test::Unit::TestCase
-  def test_new_should_succeed_for_existing_pid
-    pid = Process.pid
-    assert_nothing_raised do
-      @process = System::Process.new(pid)
-    end
-  end
-end
+require 'helper'
 
 class TestSystemProcess < Test::Unit::TestCase
   def setup
