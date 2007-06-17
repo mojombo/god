@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Project.Mothership</title>
+<link href="styles.css" rel="stylesheet" type="text/css" />
+<style type="text/css" media="screen">
+* {
+	margin: 0;
+	font-size: 100%;
+}
+
+body {
+	font: normal .8em/1.5em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	color: #484848;
+	background: #E6EAE9 url(images/bg_grey.gif);
+}
+
+a {
+	color: #c75f3e;
+	text-decoration: none;
+}
+
+a:hover,
+a:active {
+	text-decoration: underline;
+}
+
+#mothership {
+	width: 307px;
+	height: 117px;
+	margin: 0 auto;
+	background: url(images/god_logo1.gif);
+}
+
+#content {
+	width: 700px;
+	margin: 3px auto;
+	background: white;
+	border: 1px solid #444;
+	padding: 0 24px;
+	background: #f8f8ff;
+	overflow: hidden;
+}
+
+.banner {
+	margin-top: 24px;
+	border: 1px solid #ddd;
+	width: 698px;
+	height: 150px;
+	background: url(images/banner.jpg);
+}
+
+#menu {
+	margin-top: 5px;
+}
+
+#menu div.dots {
+	background: url(images/red_dot.gif) repeat;
+	height: 5px;
+	width: 700px;
+	font-size: 0;
+}
+
+#menu ul {
+	font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	text-transform: uppercase;
+	color: #4D4D4D;
+	font-size: 12px;
+	padding: 0;
+	margin: 0;
+	margin-top: 0 !important;
+	margin-top: -2px;
+}
+
+#menu li {
+	display: inline;
+	margin: 0 30px 0 0;
+}
+
+#menu a:link,
+#menu a:visited {
+	color: #4D4D4D;
+	text-decoration: none;
+}
+
+#menu a:hover,
+#menu a:active {
+	color: black;
+	text-decoration: none;
+}
+
+#page_home #menu li.menu_home a {
+	color: #A70000;
+}
+
+.columnleft {
+	float: left;
+	width: 325px;
+	margin-bottom: 20px;
+}
+
+.columnleft p {
+		text-align: justify;
+}
+
+.columnright {
+	float: right;
+	width: 325px;
+	margin-bottom: 20px;
+}
+
+h1 {
+	font: bold 1.5em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	color: #f36e21;
+	text-transform: uppercase;
+	margin: 1.5em 0 .5em 0;
+	clear: both;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+ul.features {
+	padding: 0;
+	margin-left: 1.5em !important;
+	margin-left: 1.3em;
+}
+
+ul.features li {
+	list-style-position: outside;
+	list-style-type: circle;
+	list-style-image: url(images/bullet.jpg);
+	line-height: 1.4em;
+}
+
+#footer {
+	text-align: center;
+	color: white;
+	margin-bottom: 50px;
+}
+
+
+
+pre {
+  font-size: 1.2em;
+  line-height: 1.5;
+  border: 1px solid #ccc;
+  padding: 1em;
+  background-color: #efefef;
+}
+
+.ruby .keywords {
+  font-weight: bold;
+  color: blue;
+}
+
+.ruby .comment {
+	color : green;
+}
+
+.ruby .string {
+	color : teal;
+}
+
+.ruby .keywords {
+	color : navy;
+}
+
+.ruby .brackets {
+	color : navy;
+}
+</style>
+
+<script type="text/javascript" src="javascripts/code_highlighter.js"></script>
+<script type="text/javascript" src="javascripts/ruby.js"></script>
+
+</head>
+
+<body id="page_home">
+
+<div id="mothership">
+
+</div>
+<div id="content">
+	<div class="banner">
+
+	</div>
+
+  <!-- <div id="menu">
+    <div class="dots"></div>
+    <ul>
+      <li class="menu_home"><a href="/">Home</a></li>
+      <li class="menu_contact"><a href="mailto:tom@projectmothership.com">Contact</a></li>
+    </ul>
+    <div class="dots"></div>
+  </div> -->
+
+	<div class="columnleft">
+		<h1>A Better Way to Monitor</h1>
+		<p>God is an easy to configure, easy to extend monitoring library written in Ruby.</p>
+		<p><p>
+	</div>
+
+	<div class="columnright">
+	<h1>Features</h1>
+	<ul class="features">
+		<li>Config file is written in Ruby</li>
+		<li>Write your own conditions in Ruby</li>
+	</ul>
+	</div>
+
+	<h1>Simple is Better</h1>
+	<p>Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.</p>
+
+	<h1>Finally, a Config File that Makes Sense</h1>
+	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
+	
+<pre><code class="ruby"># This is the actual config file used to keep the mongrels of
+# gravatar.com running.
+
+RAILS_ROOT = "/var/www/gravatar2/current"
+
+God.meddle do |god|
+  god.interval = 30 # seconds
+
+  %w{8200 8201 8202}.each do |port|
+    god.watch do |w|
+      w.name = "gravatar2-mongrel-#{port}"
+      w.cwd = RAILS_ROOT
+      w.start = "mongrel_rails cluster::start --only #{port}"
+      w.stop = "mongrel_rails cluster::stop --only #{port}"
+
+      w.start_if do |start|
+        start.condition(:process_not_running) do |c|
+          c.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+        end
+      end
+    end
+  end
+end
+</code></pre>
+
+</div>
+<div id="footer">
+	<p>Brought to you by <a href="http://rubyisawesome.com/">Ruby is Awesome</a></p>
+</div>
+
+</body>
+</html>
