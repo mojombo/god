@@ -1,4 +1,4 @@
-require 'helper'
+require File.dirname(__FILE__) + '/helper'
 
 class TestWatch < Test::Unit::TestCase
   def setup
@@ -74,7 +74,7 @@ class TestWatch < Test::Unit::TestCase
     end
     assert_equal 1, @watch.conditions[:start].size
   end
-  
+
   # behavior
   
   def test_behavior_should_record_behavior
