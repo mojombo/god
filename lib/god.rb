@@ -7,7 +7,10 @@ require 'god/errors'
 require 'god/system/process'
 
 require 'god/condition'
+require 'god/process_condition'
+require 'god/conditions/timeline'
 require 'god/conditions/process_not_running'
+require 'god/conditions/memory_usage'
 
 require 'god/watch'
 require 'god/meddle'

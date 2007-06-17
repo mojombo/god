@@ -2,7 +2,7 @@ module God
   
   class Watch < Base
     # config
-    attr_accessor :name, :cwd, :start, :stop, :grace
+    attr_accessor :name, :cwd, :start, :stop, :restart, :grace
     
     # api
     attr_accessor :conditions
@@ -16,11 +16,18 @@ module God
       @action = nil
       
       # the list of conditions for each action
-      self.conditions = {:start => []}
+      self.conditions = {:start => [],
+                         :restart => []}
     end
     
     def start_if
       @action = :start
+      yield(self)
+      @action = nil
+    end
+    
+    def restart_if
+      @action = :restart
       yield(self)
       @action = nil
     end
@@ -42,7 +49,11 @@ module God
         exit
       end
       
+      # send to block so config can set attributes
       yield(c)
+      
+      # call prepare on the condition
+      c.prepare
       
       # exit if the Condition is invalid, the Condition will have printed
       # out its own error messages by now
@@ -54,28 +65,52 @@ module God
     end
     
     def run
-      self.conditions[:start].each do |c|
-        if c.test
-          puts self.name + ' ' + c.class.name + ' [ok]'
-        else
-          puts self.name + ' ' + c.class.name + ' [fail]'
-          c.after
-          return :start
+      [:start, :restart].each do |cmd|
+        self.conditions[cmd].each do |c|
+          if c.test
+            puts self.name + ' ' + c.class.name + ' [ok]'
+          else
+            puts self.name + ' ' + c.class.name + ' [fail]'
+            c.after
+            action(cmd, c)
+            return
+          end
         end
       end
-      
-      nil
     end
     
-    def action(a)
+    def action(a, c)
       case a
       when :start
         puts self.start
         Dir.chdir(self.cwd) do
+          c.before_start
           system(self.start)
+          c.after_start
         end
         sleep(self.grace)
-      end
+      when :restart
+        if self.restart
+          puts self.restart
+          Dir.chdir(self.cwd) do
+            c.before_restart
+            system(self.restart)
+            c.after_restart
+          end
+        else
+          self.action(:stop, c)
+          self.action(:start, c)
+        end
+        sleep(self.grace)
+      when :stop
+        puts self.stop
+        Dir.chdir(self.cwd) do
+          c.before_stop
+          system(self.stop)
+          c.after_stop
+        end
+        sleep(self.grace)
+      end      
     end
   end
   

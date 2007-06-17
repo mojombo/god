@@ -3,9 +3,17 @@ module God
   class Condition < Base
     def self.generate(kind)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
-      God.const_get(sym).new
+      God::Conditions.const_get(sym).new
     rescue NameError
-      raise NoSuchConditionError.new("No Condition found with the class name God::#{sym}")
+      raise NoSuchConditionError.new("No Condition found with the class name God::Conditions::#{sym}")
+    end
+    
+    # Override this method in your Conditions (optional)
+    #
+    # Called once after the Condition has been sent to the block and attributes have been
+    # set. Do any post-processing on attributes here
+    def prepare
+      
     end
     
     # Override this method in your Conditions (optional)
@@ -30,6 +38,26 @@ module God
     
     # Override this method in your Conditions (optional)
     def after
+    end
+    
+    #######
+    
+    def before_start
+    end
+    
+    def after_start
+    end
+    
+    def before_restart
+    end
+    
+    def after_restart
+    end
+    
+    def before_stop
+    end
+    
+    def after_stop
     end
     
     protected

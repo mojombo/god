@@ -27,9 +27,7 @@ module God
       @watches.each do |w|
         threads << Thread.new do
           while true do
-            if a = w.run
-              w.action(a)
-            end
+            w.run
             sleep self.interval
           end
         end
