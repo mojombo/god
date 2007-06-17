@@ -8,6 +8,7 @@ examples/local.god
 lib/god.rb
 lib/god/base.rb
 lib/god/condition.rb
+lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
 lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_not_running.rb
