@@ -12,10 +12,26 @@ God.meddle do |god|
       w.cwd = RAILS_ROOT
       w.start = "mongrel_rails cluster::start --only #{port}"
       w.stop = "mongrel_rails cluster::stop --only #{port}"
+      
+      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
 
       w.start_if do |start|
         start.condition(:process_not_running) do |c|
-          c.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+          c.pid_file = pid_file
+        end
+      end
+      
+      w.restart_if do |restart|
+        restart.condition(:memory_usage) do |c|
+          c.pid_file = pid_file
+          c.above = (150 * 1024) # 150mb
+          c.times = [3, 5] # 3 out of 5 intervals
+        end
+      
+        restart.condition(:cpu_usage) do |c|
+          c.pid_file = pid_file
+          c.above = 50 # percent
+          c.times = 5
         end
       end
     end

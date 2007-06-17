@@ -145,15 +145,18 @@ ul.features li {
 
 
 pre {
-  font-size: 1.2em;
   line-height: 1.5;
   border: 1px solid #ccc;
   padding: 1em;
   background-color: #efefef;
+  margin: 1em 0;
+}
+
+code {
+  font-size: 1.2em;
 }
 
 .ruby .keywords {
-  font-weight: bold;
   color: blue;
 }
 
@@ -218,7 +221,9 @@ pre {
 	<h1>Finally, a Config File that Makes Sense</h1>
 	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
 	
-<pre><code class="ruby"># This is the actual config file used to keep the mongrels of
+<pre><code class="ruby"># file: gravatar.god
+# 
+# This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
 RAILS_ROOT = "/var/www/gravatar2/current"
@@ -232,16 +237,99 @@ God.meddle do |god|
       w.cwd = RAILS_ROOT
       w.start = "mongrel_rails cluster::start --only #{port}"
       w.stop = "mongrel_rails cluster::stop --only #{port}"
+      
+      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
 
       w.start_if do |start|
         start.condition(:process_not_running) do |c|
-          c.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+          c.pid_file = pid_file
+        end
+      end
+      
+      w.restart_if do |restart|
+        restart.condition(:memory_usage) do |c|
+          c.pid_file = pid_file
+          c.above = (150 * 1024) # 150mb
+          c.times = [3, 5] # 3 out of 5 intervals
+        end
+      
+        restart.condition(:cpu_usage) do |c|
+          c.pid_file = pid_file
+          c.above = 50 # percent
+          c.times = 5
         end
       end
     end
   end
-end
-</code></pre>
+end</code></pre>
+
+<p>That's a lot to take in at once, so I'll break it down by section and explain what's going on in each.</p>
+
+<pre><code class="ruby">RAILS_ROOT = "/var/www/gravatar2/current"</code></pre>
+
+<p>Here I've set a constant that is used throughout the file. Keeping the <code>RAILS_ROOT</code> value in a constant makes it easy to adapt this script to other applications. Because the config file is Ruby code, I can set whatever variables or constants I want that make the configuration more concise and easier to work with.</p>
+
+<pre><code class="ruby">God.meddle do |god|
+  god.interval = 30 # seconds
+
+  ...
+end</code></pre>
+
+<p>The meat of the config file is defined inside a <code>God.meddle</code> block. At this level, you set system wide settings like <code>interval</code>. In this case, we've specified that god should do a check every 30 seconds.</p>
+
+<pre><code class="ruby">  %w{8200 8201 8202}.each do |port|
+    ...
+  end</code></pre>
+
+<p>Because the config file is written in actual Ruby code, we can construct loops and do other intelligent things that are impossible in your every day, run of the mill config file. I need to watch three mongrels, so I simply loop over their port numbers, eliminating duplication and making my life a whole lot easier.</p>
+
+<pre><code class="ruby">    god.watch do |w|
+      w.name = "gravatar2-mongrel-#{port}"
+      w.cwd = RAILS_ROOT
+      w.start = "mongrel_rails cluster::start --only #{port}"
+      w.stop = "mongrel_rails cluster::stop --only #{port}"
+      
+      ...
+    end</code></pre>
+
+<p>A <code>watch</code> represents a single process or task that has concrete start, stop, (and possibly restart) operations. You can define as many watches as you like inside the <code>God.meddle</code> block. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The optional <code>cwd</code> attribute tells god to switch to that directory before executing any commands. The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start.</p>
+
+<pre><code class="ruby">      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")</code></pre>
+      
+<p>Another variable to hold the location of the PID file.</p>
+  
+<pre><code class="ruby">      w.start_if do |start|
+        start.condition(:process_not_running) do |c|
+          c.pid_file = pid_file
+        end
+      end</code></pre>
+      
+<p>Watches contain conditions grouped by the action to execute should they fail. I start with a <code>start_if</code> block that contains a single condition. Conditions are specified by calling <code>condition</code> with an identifier, in this case 
+<code>:process_not_running</code>. This condition checks to see if the process corresponding to the PID found in the <code>pid_file</code> is currently running. If it's not, the condition will fail causing a start command to be issued. The <code>process_not_running</code> condition will take care of cleaning up orphaned PID files by default, so we don't have to worry about it. We could turn that behavior off by adding <code>c.clean = false</code>.
+
+<pre><code class="ruby">      w.restart_if do |restart|
+        restart.condition(:memory_usage) do |c|
+          c.pid_file = pid_file
+          c.above = (150 * 1024) # 150mb
+          c.times = [3, 5] # 3 out of 5 intervals
+        end
+      
+        ...
+      end</code></pre>
+
+<p>Similar to <code>start_if</code> there is a <code>restart_if</code> command that groups conditions that should trigger a restart. The <code>memory_usage</code> condition will fail if the specified process is using too much memory. Once again, the <code>pid_file</code> must be set. The maximum allowable amount of memory is specified with the <code>above</code> attribute in units of kilobytes. The number of times the test needs to fail in order to trigger a restart is set with <code>times</code>. This can be either an integer or an array. An integer means it must fail that many times in a row while an array [x, y] means it must fail x times out of the last y tests.</p>
+
+<pre><code class="ruby">      w.restart_if do |restart|
+        ...
+      
+        restart.condition(:cpu_usage) do |c|
+          c.pid_file = pid_file
+          c.above = 50 # percent
+          c.times = 5
+        end
+      end</code></pre>
+      
+<p></p>
 
 </div>
 <div id="footer">

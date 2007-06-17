@@ -20,6 +20,7 @@ class TestWatch < Test::Unit::TestCase
       @watch.start = 'start'
       @watch.stop = 'stop'
       @watch.restart = 'restart'
+      @watch.grace = 5
     end
   end
   
