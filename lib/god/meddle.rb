@@ -23,8 +23,9 @@ module God
     
     def monitor
       threads = []
+      
       @watches.each do |w|
-        t = Thread.new do
+        threads << Thread.new do
           while true do
             if a = w.run
               w.action(a)
@@ -32,9 +33,9 @@ module God
             sleep self.interval
           end
         end
-        t.join
-        threads << t
       end
+      
+      threads.each { |t| t.join }
     end
   end
   
