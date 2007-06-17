@@ -67,4 +67,11 @@ class TestWatch < Test::Unit::TestCase
       @watch.condition(:fake_condition) { |c| cond = c }
     end
   end
+  
+  def test_condition_should_be_block_optional
+    @watch.start_if do |w|
+      w.condition(:always)
+    end
+    assert_equal 1, @watch.conditions[:start].size
+  end
 end

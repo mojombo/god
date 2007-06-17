@@ -32,7 +32,7 @@ module God
       @action = nil
     end
     
-    # Instantiate a Condition of type +kind+ and pass it into the mandatory
+    # Instantiate a Condition of type +kind+ and pass it into the optional
     # block. Attributes of the condition must be set in the config file
     def condition(kind)
       # must be in a _if block
@@ -50,7 +50,7 @@ module God
       end
       
       # send to block so config can set attributes
-      yield(c)
+      yield(c) if block_given?
       
       # call prepare on the condition
       c.prepare
@@ -79,13 +79,15 @@ module God
       end
     end
     
+    private
+    
     def action(a, c)
       case a
       when :start
         puts self.start
         Dir.chdir(self.cwd) do
           c.before_start
-          system(self.start)
+          call_action(self.start)
           c.after_start
         end
         sleep(self.grace)
@@ -94,7 +96,7 @@ module God
           puts self.restart
           Dir.chdir(self.cwd) do
             c.before_restart
-            system(self.restart)
+            call_action(self.restart)
             c.after_restart
           end
         else
@@ -106,11 +108,19 @@ module God
         puts self.stop
         Dir.chdir(self.cwd) do
           c.before_stop
-          system(self.stop)
+          call_action(self.stop)
           c.after_stop
         end
         sleep(self.grace)
       end      
+    end
+    
+    def call_action(action)
+      if action.kind_of?(String)
+        system(action)
+      else
+        action.call
+      end
     end
   end
   

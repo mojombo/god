@@ -36,4 +36,16 @@ God.meddle do |god|
       end
     end
   end
+  
+  god.watch do |w|    
+    w.name = "local-session-cleanup"
+    w.cwd = File.join(RAILS_ROOT, 'tmp/sessions')
+    w.start = lambda do
+      p Dir['ruby_sess.*'].select { |f| File.mtime(f) < Time.now - (7 * 24 * 60 * 60) }.each { |f| File.delete(f) }
+    end
+    
+    w.start_if do |start|
+      start.condition(:always)
+    end
+  end
 end

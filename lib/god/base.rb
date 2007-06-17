@@ -2,7 +2,7 @@ module God
   
   class Base
     def exit
-      exit
+      Kernel.exit
     end
   end
   
