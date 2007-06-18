@@ -1,7 +1,19 @@
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
 
 require 'test/unit'
-# require 'mocha'
+
+begin
+  require 'mocha'
+rescue LoadError
+  unless gems ||= false
+    require 'rubygems'
+    gems = true
+    retry
+  else
+    puts "=> You need the Mocha gem to run these tests."
+    exit
+  end
+end
 
 include God
 

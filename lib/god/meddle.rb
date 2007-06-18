@@ -3,13 +3,17 @@ module God
   class Meddle < Base
     # config
     attr_accessor :interval
+
+    # drb
+    attr_accessor :server
     
     # api
     attr_accessor :watches
     
     # Create a new instance that is ready for use by a configuration file
-    def initialize
+    def initialize(options = {})
       self.watches = []
+      self.server  = Server.new(self, options[:host], options[:port])
     end
       
     # Instantiate a new, empty Watch object and pass it to the mandatory

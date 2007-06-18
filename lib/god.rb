@@ -16,14 +16,17 @@ require 'god/conditions/memory_usage'
 require 'god/conditions/cpu_usage'
 require 'god/conditions/always'
 
+require 'god/reporter'
+require 'god/server'
+
 require 'god/watch'
 require 'god/meddle'
 
 module God
   VERSION = '0.1.0'
   
-  def self.meddle
-    m = Meddle.new
+  def self.meddle(options = {})
+    m = Meddle.new(options)
     yield m
     m.monitor
   end  
