@@ -329,7 +329,11 @@ end</code></pre>
         end
       end</code></pre>
       
-<p></p>
+<p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted by god.</p>
+
+<h1>Extend God with your own Conditions</h1>
+
+<p>God was designed from the start to allow you to easily write your own custom conditions, making it simple to add tests that are application specific.</p>
 
 </div>
 <div id="footer">
