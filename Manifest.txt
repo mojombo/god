@@ -7,6 +7,8 @@ examples/gravatar.god
 examples/local.god
 lib/god.rb
 lib/god/base.rb
+lib/god/behavior.rb
+lib/god/behaviors/clean_pid_file.rb
 lib/god/condition.rb
 lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
@@ -15,13 +17,13 @@ lib/god/conditions/process_not_running.rb
 lib/god/conditions/timeline.rb
 lib/god/errors.rb
 lib/god/meddle.rb
-lib/god/process_condition.rb
 lib/god/system/process.rb
 lib/god/watch.rb
 test/configs/no_watches.rb
 test/configs/real.rb
 test/configs/sample.rb
 test/helper.rb
+test/test_behavior.rb
 test/test_condition.rb
 test/test_meddle.rb
 test/test_system_process.rb
