@@ -110,7 +110,7 @@ module God
         puts self.start
         Dir.chdir(self.cwd) do
           c.before_start
-          call_action(self.start)
+          call_action(c, :start, self.start)
           c.after_start
         end
         sleep(self.grace)
@@ -119,7 +119,7 @@ module God
           puts self.restart
           Dir.chdir(self.cwd) do
             c.before_restart
-            call_action(self.restart)
+            call_action(c, :restart, self.restart)
             c.after_restart
           end
         else
@@ -131,19 +131,26 @@ module God
         puts self.stop
         Dir.chdir(self.cwd) do
           c.before_stop
-          call_action(self.stop)
+          call_action(c, :stop, self.stop)
           c.after_stop
         end
         sleep(self.grace)
       end      
     end
     
-    def call_action(action)
-      if action.kind_of?(String)
-        system(action)
+    def call_action(condition, action, command)
+      # before
+      self.behaviors.each { |b| b.send("before_#{action}") }
+      
+      # action
+      if command.kind_of?(String)
+        system(command)
       else
-        action.call
+        command.call
       end
+      
+      # after
+      self.behaviors.each { |b| b.send("after_#{action}") }
     end
   end
   
