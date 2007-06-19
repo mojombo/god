@@ -74,4 +74,13 @@ class TestWatch < Test::Unit::TestCase
     end
     assert_equal 1, @watch.conditions[:start].size
   end
+  
+  # behavior
+  
+  def test_behavior_should_record_behavior
+    beh = nil
+    @watch.behavior(:fake_behavior) { |b| beh = b }
+    assert_equal 1, @watch.behaviors.size
+    assert_equal beh, @watch.behaviors.first
+  end
 end

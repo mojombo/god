@@ -6,8 +6,10 @@ require 'god/errors'
 
 require 'god/system/process'
 
+require 'god/behavior'
+require 'god/behaviors/clean_pid_file'
+
 require 'god/condition'
-require 'god/process_condition'
 require 'god/conditions/timeline'
 require 'god/conditions/process_not_running'
 require 'god/conditions/memory_usage'

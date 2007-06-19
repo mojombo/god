@@ -5,7 +5,7 @@ module God
     attr_accessor :name, :cwd, :start, :stop, :restart, :grace
     
     # api
-    attr_accessor :conditions
+    attr_accessor :behaviors, :conditions
     
     # 
     def initialize
@@ -15,9 +15,32 @@ module God
       # keep track of which action each condition belongs to
       @action = nil
       
+      self.behaviors = []
+      
       # the list of conditions for each action
       self.conditions = {:start => [],
                          :restart => []}
+    end
+    
+    def behavior(kind)
+      # create the behavior
+      begin
+        b = Behavior.generate(kind)
+      rescue NoSuchBehaviorError => e
+        puts e.message
+        exit
+      end
+      
+      # send to block so config can set attributes
+      yield(b) if block_given?
+      
+      # exit if the Behavior is invalid, the Behavior will have printed
+      # out its own error messages by now
+      unless b.valid?
+        exit
+      end
+      
+      self.behaviors << b
     end
     
     def start_if

@@ -6,4 +6,7 @@ module God
   class NoSuchConditionError < StandardError
   end
   
+  class NoSuchBehaviorError < StandardError
+  end
+  
 end

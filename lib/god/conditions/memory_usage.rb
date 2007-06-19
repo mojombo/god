@@ -1,8 +1,8 @@
 module God
   module Conditions
     
-    class MemoryUsage < ProcessCondition
-      attr_accessor :above, :times
+    class MemoryUsage < Condition
+      attr_accessor :pid_file, :above, :times
     
       def initialize
         super
@@ -19,13 +19,15 @@ module God
       end
     
       def valid?
-        valid = super
-        valid = complain("You must specify the 'above' attribute for :memory_usage") if self.above.nil?
+        valid = true
+        valid &= complain("You must specify the 'pid_file' attribute for :memory_usage") if self.pid_file.nil?
+        valid &= complain("You must specify the 'above' attribute for :memory_usage") if self.above.nil?
         valid
       end
     
       def test
-        return false unless super
+        return false unless File.exist?(self.pid_file)
+        
         pid = File.open(self.pid_file).read.strip
         process = System::Process.new(pid)
         @timeline.push(process.memory)

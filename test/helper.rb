@@ -16,11 +16,14 @@ module God
   end
 
   class FakeCondition < Condition
-      
     def test
       true
     end
+  end
   
+  module Behaviors
+    class FakeBehavior < Behavior
+    end
   end
 end
 

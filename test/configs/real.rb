@@ -15,6 +15,10 @@ God.meddle do |god|
     w.grace = 5
     
     pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
+    
+    w.behavior(:clean_pid_file) do |b|
+      b.pid_file = pid_file
+    end
   
     w.start_if do |start|
       start.condition(:process_not_running) do |c|
@@ -41,7 +45,7 @@ God.meddle do |god|
     w.name = "local-session-cleanup"
     w.cwd = File.join(RAILS_ROOT, 'tmp/sessions')
     w.start = lambda do
-      p Dir['ruby_sess.*'].select { |f| File.mtime(f) < Time.now - (7 * 24 * 60 * 60) }.each { |f| File.delete(f) }
+      Dir['ruby_sess.*'].select { |f| File.mtime(f) < Time.now - (7 * 24 * 60 * 60) }.each { |f| File.delete(f) }
     end
     
     w.start_if do |start|
