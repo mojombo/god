@@ -39,6 +39,13 @@ module God
   end
 end
 
+def silence_warnings
+  old_verbose, $VERBOSE = $VERBOSE, nil
+  yield
+ensure
+  $VERBOSE = old_verbose
+end
+
 # This allows you to be a good OOP citizen and honor encapsulation, but
 # still make calls to private methods (for testing) by doing
 #

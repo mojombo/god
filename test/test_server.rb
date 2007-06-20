@@ -1,6 +1,12 @@
 require File.dirname(__FILE__) + '/helper'
 
 class TestServer < Test::Unit::TestCase
+  def setup
+    silence_warnings do 
+      Object.const_set(:DRb, stub_everything)
+    end
+  end
+
   def test_should_start_a_drb_server
     DRb.expects(:start_service)
     Server.new
