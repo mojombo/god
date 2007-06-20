@@ -109,18 +109,14 @@ module God
       when :start
         puts self.start
         Dir.chdir(self.cwd) do
-          c.before_start
           call_action(c, :start, self.start)
-          c.after_start
         end
         sleep(self.grace)
       when :restart
         if self.restart
           puts self.restart
           Dir.chdir(self.cwd) do
-            c.before_restart
             call_action(c, :restart, self.restart)
-            c.after_restart
           end
         else
           self.action(:stop, c)
@@ -130,9 +126,7 @@ module God
       when :stop
         puts self.stop
         Dir.chdir(self.cwd) do
-          c.before_stop
           call_action(c, :stop, self.stop)
-          c.after_stop
         end
         sleep(self.grace)
       end      
@@ -140,17 +134,19 @@ module God
     
     def call_action(condition, action, command)
       # before
-      self.behaviors.each { |b| b.send("before_#{action}") }
+      (self.behaviors + [condition]).each { |b| b.send("before_#{action}") }
       
       # action
       if command.kind_of?(String)
+        # string command
         system(command)
       else
+        # lambda command
         command.call
       end
       
       # after
-      self.behaviors.each { |b| b.send("after_#{action}") }
+      (self.behaviors + [condition]).each { |b| b.send("after_#{action}") }
     end
   end
   
