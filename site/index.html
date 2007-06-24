@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>Project.Mothership</title>
+<title>god - process and task monitoring done right</title>
 <link href="styles.css" rel="stylesheet" type="text/css" />
 <style type="text/css" media="screen">
 * {
@@ -203,8 +203,8 @@ code {
 
 	<div class="columnleft">
 		<h1>A Better Way to Monitor</h1>
-		<p>God is an easy to configure, easy to extend monitoring library written in Ruby.</p>
-		<p><p>
+		<p>God is an easy to configure, easy to extend monitoring framework written in Ruby.</p>
+		<p>Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.</p>
 	</div>
 
 	<div class="columnright">
@@ -214,9 +214,9 @@ code {
 		<li>Write your own conditions in Ruby</li>
 	</ul>
 	</div>
-
-	<h1>Simple is Better</h1>
-	<p>Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.</p>
+	
+	<h1>Installation</h1>
+	<p>God does not yet have a public release. You can read through these docs (which are likely to change), or if you're really antsy, peruse or clone the code from <a href="http://repo.or.cz/w/god.git">http://repo.or.cz/w/god.git</a></p>
 
 	<h1>Finally, a Config File that Makes Sense</h1>
 	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
@@ -237,8 +237,13 @@ God.meddle do |god|
       w.cwd = RAILS_ROOT
       w.start = "mongrel_rails cluster::start --only #{port}"
       w.stop = "mongrel_rails cluster::stop --only #{port}"
+      w.grace = 10 # seconds
       
       pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+      
+      w.behavior(:clean_pid_file) do |b|
+        b.pid_file = pid_file
+      end
 
       w.start_if do |start|
         start.condition(:process_not_running) do |c|
@@ -288,16 +293,23 @@ end</code></pre>
       w.cwd = RAILS_ROOT
       w.start = "mongrel_rails cluster::start --only #{port}"
       w.stop = "mongrel_rails cluster::stop --only #{port}"
+      w.grace = 5 # seconds
       
       ...
     end</code></pre>
 
-<p>A <code>watch</code> represents a single process or task that has concrete start, stop, (and possibly restart) operations. You can define as many watches as you like inside the <code>God.meddle</code> block. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The optional <code>cwd</code> attribute tells god to switch to that directory before executing any commands. The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start.</p>
+<p>A <code>watch</code> represents a single process or task that has concrete start, stop, and/or restart operations. You can define as many watches as you like inside the <code>God.meddle</code> block. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The optional <code>cwd</code> attribute tells god to switch to that directory before executing any commands. The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations.</p>
 
 <pre><code class="ruby">      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")</code></pre>
       
 <p>Another variable to hold the location of the PID file.</p>
-  
+
+<pre><code class="ruby">      w.behavior(:clean_pid_file) do |b|
+        b.pid_file = pid_file
+      end</code></pre>
+      
+<p>Behaviors allow you to execute additional commands around start/stop/restart commands. In our case, if the process dies it will leave a PID file behind. The next time a start command is issued, it will fail, complaining about the leftover PID file. We'd like that file cleaned up before a start command is issued. The built-in behavior <code>clean_pid_file</code> will do just that. All we have to do it specify the location of the PID file.</p>
+
 <pre><code class="ruby">      w.start_if do |start|
         start.condition(:process_not_running) do |c|
           c.pid_file = pid_file
@@ -305,7 +317,7 @@ end</code></pre>
       end</code></pre>
       
 <p>Watches contain conditions grouped by the action to execute should they fail. I start with a <code>start_if</code> block that contains a single condition. Conditions are specified by calling <code>condition</code> with an identifier, in this case 
-<code>:process_not_running</code>. This condition checks to see if the process corresponding to the PID found in the <code>pid_file</code> is currently running. If it's not, the condition will fail causing a start command to be issued. The <code>process_not_running</code> condition will take care of cleaning up orphaned PID files by default, so we don't have to worry about it. We could turn that behavior off by adding <code>c.clean = false</code>.
+<code>:process_not_running</code>.
 
 <pre><code class="ruby">      w.restart_if do |restart|
         restart.condition(:memory_usage) do |c|
@@ -329,8 +341,14 @@ end</code></pre>
         end
       end</code></pre>
       
-<p></p>
+<p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted by god.</p>
 
+<h1>Extend God with your own Conditions</h1>
+
+<p>God was designed from the start to allow you to easily write your own custom conditions, making it simple to add tests that are application specific.</p>
+
+<pre><code class="ruby"></code></pre>
+      
 </div>
 <div id="footer">
 	<p>Brought to you by <a href="http://rubyisawesome.com/">Ruby is Awesome</a></p>

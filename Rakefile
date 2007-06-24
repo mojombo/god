@@ -19,4 +19,9 @@ task :console do
   sh "irb -rubygems -r ./lib/god.rb"
 end
 
+desc "Upload site to Rubyforge"
+task :site do
+  sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god"
+end
+
 # vim: syntax=Ruby
