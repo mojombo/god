@@ -1,8 +1,8 @@
 module God
   
   class Base
-    def exit
-      Kernel.exit
+    def abort(msg)
+      Kernel.abort(msg)
     end
   end
   

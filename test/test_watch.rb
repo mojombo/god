@@ -63,7 +63,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_condition_called_from_outside_if_block_should_raise
-    assert_raise ExitCalledError do
+    assert_raise AbortCalledError do
       @watch.condition(:fake_condition) { |c| cond = c }
     end
   end

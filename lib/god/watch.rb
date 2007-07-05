@@ -27,17 +27,16 @@ module God
       begin
         b = Behavior.generate(kind)
       rescue NoSuchBehaviorError => e
-        puts e.message
-        exit
+        abort e.message
       end
       
       # send to block so config can set attributes
       yield(b) if block_given?
       
-      # exit if the Behavior is invalid, the Behavior will have printed
+      # abort if the Behavior is invalid, the Behavior will have printed
       # out its own error messages by now
       unless b.valid?
-        exit
+        abort
       end
       
       self.behaviors << b
@@ -60,16 +59,14 @@ module God
     def condition(kind)
       # must be in a _if block
       unless @action
-        puts "Watch#condition can only be called from inside a start_if block"
-        exit
+        abort "Watch#condition can only be called from inside a start_if block"
       end
       
       # create the condition
       begin
         c = Condition.generate(kind)
       rescue NoSuchConditionError => e
-        puts e.message
-        exit
+        abort e.message
       end
       
       # send to block so config can set attributes
@@ -78,10 +75,10 @@ module God
       # call prepare on the condition
       c.prepare
       
-      # exit if the Condition is invalid, the Condition will have printed
+      # abort if the Condition is invalid, the Condition will have printed
       # out its own error messages by now
       unless c.valid?
-        exit
+        abort
       end
       
       self.conditions[@action] << c

@@ -10,20 +10,19 @@ rescue LoadError
     gems = true
     retry
   else
-    puts "=> You need the Mocha gem to run these tests."
-    exit
+    abort "=> You need the Mocha gem to run these tests."
   end
 end
 
 include God
 
 module God
-  class ExitCalledError < StandardError
+  class AbortCalledError < StandardError
   end
 
   class Base
-    def exit
-      raise ExitCalledError.new("exit called")
+    def abort(msg)
+      raise AbortCalledError.new("abort called")
     end
   end
 
