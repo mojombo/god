@@ -8,7 +8,9 @@ module God
     attr_accessor :behaviors, :conditions
     
     # 
-    def initialize
+    def initialize(meddle)
+      @meddle = meddle
+      
       # no grace period by default
       self.grace = 0
       

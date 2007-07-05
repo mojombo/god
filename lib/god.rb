@@ -18,6 +18,7 @@ require 'god/conditions/always'
 
 require 'god/reporter'
 require 'god/server'
+require 'god/timer'
 
 require 'god/watch'
 require 'god/meddle'

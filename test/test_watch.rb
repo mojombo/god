@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestWatch < Test::Unit::TestCase
   def setup
-    @watch = Watch.new
+    @watch = Watch.new(nil)
   end
   
   def test_should_have_empty_start_conditions

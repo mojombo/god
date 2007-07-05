@@ -13,6 +13,10 @@ God.meddle do |god|
       w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
       
       pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+      
+      w.behavior(:clean_pid_file) do |b|
+        b.pid_file = pid_file
+      end
 
       w.start_if do |start|
         start.condition(:process_not_running) do |c|
