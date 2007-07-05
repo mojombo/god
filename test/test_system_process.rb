@@ -19,8 +19,8 @@ class TestSystemProcess < Test::Unit::TestCase
     assert @process.memory > 0
   end
   
-  def test_percent_cpu
-    assert_kind_of Float, @process.percent_mem
+  def test_percent_memory
+    assert_kind_of Float, @process.percent_memory
   end
   
   def test_percent_cpu

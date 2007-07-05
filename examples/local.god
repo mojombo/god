@@ -4,16 +4,15 @@
 # Run with:
 # god local.god
 
-RAILS_ROOT = "/Users/tom/dev/gravatar2"
+RAILS_ROOT = "/Users/tom/dev/powerset/querytopia"
 
 God.meddle do |god|
   god.interval = 5 # seconds
   
   god.watch do |w|
     w.name = "local-3000"
-    w.cwd = RAILS_ROOT
-    w.start = "mongrel_rails start -P ./log/mongrel.pid -d"
-    w.stop = "mongrel_rails stop -P ./log/mongrel.pid"
+    w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
+    w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
     w.grace = 5
     
     pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")

@@ -9,9 +9,8 @@ God.meddle do |god|
   %w{8200 8201 8202}.each do |port|
     god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
-      w.cwd = RAILS_ROOT
-      w.start = "mongrel_rails cluster::start --only #{port}"
-      w.stop = "mongrel_rails cluster::stop --only #{port}"
+      w.start = "mongrel_rails cluster::start --only #{port} -c #{RAILS_ROOT}"
+      w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
       
       pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
 

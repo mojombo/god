@@ -1,4 +1,4 @@
-require 'helper'
+require File.dirname(__FILE__) + '/helper'
 
 class TestBehavior < Test::Unit::TestCase
   def test_generate_should_return_an_object_corresponding_to_the_given_type

@@ -16,7 +16,6 @@ class TestWatch < Test::Unit::TestCase
   def test_should_have_standard_attributes
     assert_nothing_raised do
       @watch.name = 'foo'
-      @watch.cwd = '/foo'
       @watch.start = 'start'
       @watch.stop = 'stop'
       @watch.restart = 'restart'
@@ -44,7 +43,7 @@ class TestWatch < Test::Unit::TestCase
   
   # condition
   
-  def test_condition_should_record_condition_in_correct_list
+  def test_start_condition_should_record_condition_in_correct_list
     cond = nil
     @watch.start_if do |w|
       w.condition(:fake_condition) { |c| cond = c }
@@ -53,7 +52,7 @@ class TestWatch < Test::Unit::TestCase
     assert_equal cond, @watch.conditions[:start].first
   end
   
-  def test_condition_should_record_condition_in_correct_list
+  def test_restart_condition_should_record_condition_in_correct_list
     cond = nil
     @watch.restart_if do |w|
       w.condition(:fake_condition) { |c| cond = c }

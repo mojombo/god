@@ -2,7 +2,7 @@ module God
   
   class Watch < Base
     # config
-    attr_accessor :name, :cwd, :start, :stop, :restart, :grace
+    attr_accessor :name, :start, :stop, :restart, :grace
     
     # api
     attr_accessor :behaviors, :conditions
@@ -105,26 +105,20 @@ module God
       case a
       when :start
         puts self.start
-        Dir.chdir(self.cwd) do
-          call_action(c, :start, self.start)
-        end
+        call_action(c, :start, self.start)
         sleep(self.grace)
       when :restart
         if self.restart
           puts self.restart
-          Dir.chdir(self.cwd) do
-            call_action(c, :restart, self.restart)
-          end
+          call_action(c, :restart, self.restart)
         else
-          self.action(:stop, c)
-          self.action(:start, c)
+          action(:stop, c)
+          action(:start, c)
         end
         sleep(self.grace)
       when :stop
         puts self.stop
-        Dir.chdir(self.cwd) do
-          call_action(c, :stop, self.stop)
-        end
+        call_action(c, :stop, self.stop)
         sleep(self.grace)
       end      
     end

@@ -6,6 +6,7 @@ module God
     def initialize(host = nil, port = nil)
       @host = host
       @port = port || 7777
+      @service = nil
     end
 
     def method_missing(*args, &block)
