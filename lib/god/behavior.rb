@@ -8,7 +8,7 @@ module God
       raise NoSuchBehaviorError.new("No Behavior found with the class name God::Behaviors::#{sym}")
     end
     
-    # Override this method in your Conditions (optional)
+    # Override this method in your Behaviors (optional)
     #
     # Called once after the Condition has been sent to the block and attributes have been
     # set. Do any post-processing on attributes here
@@ -16,10 +16,19 @@ module God
       
     end
     
-    # Override this method in your Conditions (optional)
+    # Override this method in your Behaviors (optional)
     #
-    # Called once during evaluation of the config file.
-    # If invalid attributes are found, use #complain('text') to print out the error message
+    # Called once during evaluation of the config file. Return true if valid, false otherwise
+    #
+    # A convenience method 'complain' is available that will print out a message and return false,
+    # making it easy to report multiple validation errors:
+    #
+    #   def valid?
+    #     valid = true
+    #     valid &= complain("You must specify the 'pid_file' attribute for :memory_usage") if self.pid_file.nil?
+    #     valid &= complain("You must specify the 'above' attribute for :memory_usage") if self.above.nil?
+    #     valid
+    #   end
     def valid?
       true
     end

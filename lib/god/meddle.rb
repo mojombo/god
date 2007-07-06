@@ -1,9 +1,6 @@
 module God
   
   class Meddle < Base
-    # config
-    attr_accessor :interval
-
     # drb
     attr_accessor :server
     
@@ -23,11 +20,19 @@ module God
     def watch
       w = Watch.new(self)
       yield(w)
+      
+      # ensure the new watch has a unique name
+      unless @watches.select { |x| x.name == w.name }.empty?
+        abort "Duplicate Watch with name '#{w.name}'"
+      end
+      
+      # add to list of watches
       @watches << w
     end
     
+    # Schedule all poll conditions and register all condition events
     def monitor
-      
+      @watches.each { |w| w.monitor }
     end
     
     # def monitor

@@ -1,7 +1,7 @@
 module God
   module Conditions
 
-    class Always < Condition
+    class Always < PollCondition
       def test
         false
       end

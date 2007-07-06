@@ -1,7 +1,7 @@
 module God
   module Conditions
     
-    class CpuUsage < Condition
+    class CpuUsage < PollCondition
       attr_accessor :pid_file, :above, :times
     
       def initialize

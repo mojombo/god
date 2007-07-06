@@ -27,4 +27,20 @@ class TestMeddle < Test::Unit::TestCase
     Server.expects(:new)
     Meddle.new(:port => 5555)
   end
+  
+  def test_should_allow_multiple_watches
+    @meddle.watch { |w| w.name = 'foo' }
+    
+    assert_nothing_raised do
+      @meddle.watch { |w| w.name = 'bar' }
+    end
+  end
+  
+  def test_should_disallow_duplicate_watch_names
+    @meddle.watch { |w| w.name = 'foo' }
+    
+    assert_raise AbortCalledError do
+      @meddle.watch { |w| w.name = 'foo' }
+    end
+  end
 end

@@ -2,10 +2,13 @@ module God
   
   class Watch < Base
     # config
-    attr_accessor :name, :start, :stop, :restart, :grace
+    attr_accessor :name, :start, :stop, :restart, :interval, :grace
     
     # api
     attr_accessor :behaviors, :conditions
+    
+    # internal
+    attr_accessor :mutex
     
     # 
     def initialize(meddle)
@@ -22,6 +25,9 @@ module God
       # the list of conditions for each action
       self.conditions = {:start => [],
                          :restart => []}
+                         
+      # mutex
+      self.mutex = Mutex.new
     end
     
     def behavior(kind)
@@ -83,25 +89,26 @@ module God
         abort
       end
       
+      # inherit interval from meddle if no poll condition specific interval was set
+      if c.kind_of?(PollCondition) && !c.interval
+        if self.interval
+          c.interval = self.interval
+        else
+          abort "No interval set for Condition '#{c.class.name}' in Watch '#{self.name}', and no default Watch interval from which to inherit"
+        end
+      end
+      
       self.conditions[@action] << c
     end
-    
-    def run
+        
+    # Schedule all poll conditions and register all condition events
+    def monitor
       [:start, :restart].each do |cmd|
         self.conditions[cmd].each do |c|
-          if c.test
-            puts self.name + ' ' + c.class.name + ' [ok]'
-          else
-            puts self.name + ' ' + c.class.name + ' [fail]'
-            c.after
-            action(cmd, c)
-            return
-          end
+          @meddle.timer.register(self, c, cmd) if c.kind_of?(PollCondition)
         end
       end
     end
-    
-    private
     
     def action(a, c)
       case a

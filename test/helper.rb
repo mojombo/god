@@ -24,11 +24,29 @@ module God
     def abort(msg)
       raise AbortCalledError.new("abort called")
     end
+    
+    def self.abort(msg)
+      raise AbortCalledError.new("abort called")
+    end
   end
 
-  class FakeCondition < Condition
-    def test
-      true
+  module Conditions
+    class FakeCondition < Condition
+      def test
+        true
+      end
+    end
+  
+    class FakePollCondition < PollCondition
+      def test
+        true
+      end
+    end
+  
+    class FakeEventCondition < EventCondition
+      def test
+        true
+      end
     end
   end
   

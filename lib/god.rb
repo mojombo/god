@@ -30,5 +30,6 @@ module God
     m = Meddle.new(options)
     yield m
     m.monitor
+    m.timer.join
   end  
 end

@@ -1,7 +1,7 @@
 module God
   module Conditions
     
-    class ProcessNotRunning < Condition
+    class ProcessNotRunning < PollCondition
       attr_accessor :pid_file
       
       def valid?

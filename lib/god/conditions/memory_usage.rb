@@ -1,7 +1,7 @@
 module God
   module Conditions
     
-    class MemoryUsage < Condition
+    class MemoryUsage < PollCondition
       attr_accessor :pid_file, :above, :times
     
       def initialize
