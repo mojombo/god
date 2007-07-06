@@ -211,7 +211,9 @@ code {
 	<h1>Features</h1>
 	<ul class="features">
 		<li>Config file is written in Ruby</li>
-		<li>Write your own conditions in Ruby</li>
+		<li>Easily write your own custom conditions in Ruby</li>
+		<li>Supports both poll and event based conditions</li>
+		<li>Different poll conditions can have different intervals</li>
 	</ul>
 	</div>
 	
@@ -229,14 +231,12 @@ code {
 RAILS_ROOT = "/var/www/gravatar2/current"
 
 God.meddle do |god|
-  god.interval = 30 # seconds
-
   %w{8200 8201 8202}.each do |port|
     god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
-      w.cwd = RAILS_ROOT
-      w.start = "mongrel_rails cluster::start --only #{port}"
-      w.stop = "mongrel_rails cluster::stop --only #{port}"
+      w.interval = 30 # seconds
+      w.start = "mongrel_rails cluster::start --only #{port} -c #{RAILS_ROOT}"
+      w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
       w.grace = 10 # seconds
       
       pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
@@ -247,6 +247,7 @@ God.meddle do |god|
 
       w.start_if do |start|
         start.condition(:process_not_running) do |c|
+          c.interval = 5 # seconds
           c.pid_file = pid_file
         end
       end
@@ -275,12 +276,10 @@ end</code></pre>
 <p>Here I've set a constant that is used throughout the file. Keeping the <code>RAILS_ROOT</code> value in a constant makes it easy to adapt this script to other applications. Because the config file is Ruby code, I can set whatever variables or constants I want that make the configuration more concise and easier to work with.</p>
 
 <pre><code class="ruby">God.meddle do |god|
-  god.interval = 30 # seconds
-
   ...
 end</code></pre>
 
-<p>The meat of the config file is defined inside a <code>God.meddle</code> block. At this level, you set system wide settings like <code>interval</code>. In this case, we've specified that god should do a check every 30 seconds.</p>
+<p>The meat of the config file is defined inside a <code>God.meddle</code> block.</p>
 
 <pre><code class="ruby">  %w{8200 8201 8202}.each do |port|
     ...
@@ -290,34 +289,35 @@ end</code></pre>
 
 <pre><code class="ruby">    god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
-      w.cwd = RAILS_ROOT
-      w.start = "mongrel_rails cluster::start --only #{port}"
-      w.stop = "mongrel_rails cluster::stop --only #{port}"
-      w.grace = 5 # seconds
+      w.interval = 30 # seconds
+      w.start = "mongrel_rails cluster::start --only #{port} -c #{RAILS_ROOT}"
+      w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
+      w.grace = 10 # seconds
       
       ...
     end</code></pre>
 
-<p>A <code>watch</code> represents a single process or task that has concrete start, stop, and/or restart operations. You can define as many watches as you like inside the <code>God.meddle</code> block. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The optional <code>cwd</code> attribute tells god to switch to that directory before executing any commands. The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations.</p>
+<p>A <code>watch</code> represents a single process or task that has concrete start, stop, and/or restart operations. You can define as many watches as you like inside the <code>God.meddle</code> block. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The <code>interval</code> option sets the default poll interval (this can be overridden in each condition). The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations.</p>
 
 <pre><code class="ruby">      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")</code></pre>
       
-<p>Another variable to hold the location of the PID file.</p>
+<p>A variable to hold the location of the PID file.</p>
 
 <pre><code class="ruby">      w.behavior(:clean_pid_file) do |b|
         b.pid_file = pid_file
       end</code></pre>
       
-<p>Behaviors allow you to execute additional commands around start/stop/restart commands. In our case, if the process dies it will leave a PID file behind. The next time a start command is issued, it will fail, complaining about the leftover PID file. We'd like that file cleaned up before a start command is issued. The built-in behavior <code>clean_pid_file</code> will do just that. All we have to do it specify the location of the PID file.</p>
+<p>Behaviors allow you to execute additional commands around start/stop/restart commands. In our case, if the process dies it will leave a PID file behind. The next time a start command is issued, it will fail, complaining about the leftover PID file. We'd like the PID file cleaned up before a start command is issued. The built-in behavior <code>clean_pid_file</code> will do just that. All we have to do is specify the location of the PID file.</p>
 
 <pre><code class="ruby">      w.start_if do |start|
         start.condition(:process_not_running) do |c|
+          c.interval = 5 # seconds
           c.pid_file = pid_file
         end
       end</code></pre>
       
 <p>Watches contain conditions grouped by the action to execute should they fail. I start with a <code>start_if</code> block that contains a single condition. Conditions are specified by calling <code>condition</code> with an identifier, in this case 
-<code>:process_not_running</code>.
+<code>:process_not_running</code>. Each condition can specify a poll interval that will override the default watch interval. In this case, I want to check that the process is still running every 5 seconds instead of the 30 second interval that other conditions will inherit. The ability to set condition specific poll intervals makes it possible to run costly tests less often then cheap tests.</p>
 
 <pre><code class="ruby">      w.restart_if do |restart|
         restart.condition(:memory_usage) do |c|
@@ -341,7 +341,7 @@ end</code></pre>
         end
       end</code></pre>
       
-<p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted by god.</p>
+<p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted.</p>
 
 <h1>Extend God with your own Conditions</h1>
 
@@ -350,12 +350,12 @@ end</code></pre>
 <pre><code class="ruby">module God
   module Conditions
     
-    class ProcessNotRunning < Condition
+    class ProcessNotRunning < PollCondition
       attr_accessor :pid_file
       
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute 
+        valid &= complain("You must specify the 'pid_file' attribute
           for :process_not_running") if self.pid_file.nil?
         valid
       end

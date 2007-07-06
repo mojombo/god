@@ -43,9 +43,7 @@ module God
       
       # abort if the Behavior is invalid, the Behavior will have printed
       # out its own error messages by now
-      unless b.valid?
-        abort
-      end
+      abort unless b.valid?
       
       self.behaviors << b
     end

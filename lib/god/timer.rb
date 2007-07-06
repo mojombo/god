@@ -16,13 +16,16 @@ module God
     
     attr_reader :events
     
+    # Start the scheduler loop to handle events
     def initialize
       @events = []
       
       @timer = Thread.new do
         loop do
+          # get the current time
           t = Time.now.to_i
           
+          # iterate over each event and trigger any that are due
           @events.each do |event|
             if t >= event.at
               self.trigger(event)
@@ -66,7 +69,7 @@ module God
       end
     end
     
-    # 
+    # Join the timer thread
     def join
       @timer.join
     end

@@ -1,6 +1,9 @@
 module God
   
   class Condition < Behavior
+    # Generate a Condition of the given kind. The proper class if found by camel casing the
+    # kind (which is given as an underscored symbol).
+    #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Conditions::FooBar)
     def self.generate(kind)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
       cond = God::Conditions.const_get(sym).new

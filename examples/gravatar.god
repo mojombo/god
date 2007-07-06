@@ -4,11 +4,10 @@
 RAILS_ROOT = "/var/www/gravatar2/current"
 
 God.meddle do |god|
-  god.interval = 30 # seconds
-
   %w{8200 8201 8202}.each do |port|
     god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
+      w.interval = 30 # seconds
       w.start = "mongrel_rails cluster::start --only #{port} -c #{RAILS_ROOT}"
       w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
       

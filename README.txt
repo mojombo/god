@@ -6,21 +6,13 @@ god
   
 FIX (describe your package)
 
-== FEATURES/PROBLEMS:
-  
-* FIX (list of features or problems)
-
-== SYNOPSIS:
-
-  FIX (code sample of usage)
-
 == REQUIREMENTS:
 
 * FIX (list of requirements)
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+  $ sudo gem install god
 
 == LICENSE:
 

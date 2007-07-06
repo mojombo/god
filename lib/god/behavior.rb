@@ -1,6 +1,9 @@
 module God
   
   class Behavior < Base
+    # Generate a Behavior of the given kind. The proper class if found by camel casing the
+    # kind (which is given as an underscored symbol).
+    #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Behaviors::FooBar)
     def self.generate(kind)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
       God::Behaviors.const_get(sym).new
