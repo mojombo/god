@@ -4,11 +4,13 @@ god
 
 == DESCRIPTION:
   
-FIX (describe your package)
+God is an easy to configure, easy to extend monitoring framework written in Ruby.
 
-== REQUIREMENTS:
+Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.
 
-* FIX (list of requirements)
+== DOCUMENTATION:
+
+See online documentation at http://god.rubyforge.org
 
 == INSTALL:
 
