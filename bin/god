@@ -1,8 +1,26 @@
 #!/usr/bin/env ruby
 
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
 require 'rubygems'
+require 'daemons'
+require 'optparse'
 require 'god'
 
-file = ARGV[0]
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: god command [options]"
 
-load file
+  opts.on("-cCONFIG", "--config-file CONFIG", "Configuration file") do |x|
+    options[:config] = x
+  end
+end.parse!
+  
+options[:config] = File.expand_path(options[:config]) if options[:config]
+
+# p options
+# p ARGV
+
+Daemons.run_proc('god') do
+  load options[:config]
+end

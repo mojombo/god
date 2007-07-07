@@ -2,7 +2,7 @@ if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
 
-RAILS_ROOT = "/Users/tom/dev/powerset/querytopia"
+RAILS_ROOT = "/Users/tom/dev/git/helloworld"
 
 God.meddle do |god|
   god.watch do |w|
@@ -10,7 +10,7 @@ God.meddle do |god|
     w.interval = 5 # seconds
     w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-    w.grace = 30
+    w.grace = 5
     
     pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
     
