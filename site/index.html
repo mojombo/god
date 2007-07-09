@@ -238,8 +238,10 @@ God.meddle do |god|
     god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
       w.interval = 30 # seconds
-      w.start = "mongrel_rails cluster::start --only #{port} -c #{RAILS_ROOT}"
-      w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
+      w.start = "mongrel_rails cluster::start --only #{port} \
+        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+      w.stop = "mongrel_rails cluster::stop --only #{port} \
+        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
       w.grace = 10 # seconds
       
       pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
@@ -293,8 +295,10 @@ end</code></pre>
 <pre><code class="ruby">    god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
       w.interval = 30 # seconds
-      w.start = "mongrel_rails cluster::start --only #{port} -c #{RAILS_ROOT}"
-      w.stop = "mongrel_rails cluster::stop --only #{port} -c #{RAILS_ROOT}"
+      w.start = "mongrel_rails cluster::start --only #{port} \
+        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+      w.stop = "mongrel_rails cluster::stop --only #{port} \
+        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
       w.grace = 10 # seconds
       
       ...

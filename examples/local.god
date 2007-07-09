@@ -2,15 +2,14 @@
 # and running on your Mac.
 
 # Run with:
-# god local.god
+# god start -c /path/to/local.god
 
 RAILS_ROOT = "/Users/tom/dev/powerset/querytopia"
 
 God.meddle do |god|
-  god.interval = 5 # seconds
-  
   god.watch do |w|
     w.name = "local-3000"
+    w.interval = 5 # seconds
     w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
     w.grace = 5
@@ -48,6 +47,7 @@ God.meddle do |god|
   # clear old session files
   god.watch do |w|    
     w.name = "local-session-cleanup"
+    w.interval = 60 # seconds
     w.cwd = File.join(RAILS_ROOT, 'tmp/sessions')
     w.start = lambda do
       Dir['ruby_sess.*'].select { |f| File.mtime(f) < Time.now - (7 * 24 * 60 * 60) }.each { |f| File.delete(f) }
