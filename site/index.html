@@ -218,7 +218,9 @@ code {
 	</div>
 	
 	<h1>Installation</h1>
-	<p>God does not yet have a public release. You can read through these docs (which are likely to change), or if you're really antsy, peruse or clone the code from <a href="http://repo.or.cz/w/god.git">http://repo.or.cz/w/god.git</a></p>
+	<p>The best way to get god is via rubygems:</p>
+	<pre>$ sudo gem install god</pre>
+	<p>You can also peruse or clone the code from <a href="http://repo.or.cz/w/god.git">http://repo.or.cz/w/god.git</a></p>
 
 	<h1>Finally, a Config File that Makes Sense</h1>
 	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
@@ -344,6 +346,16 @@ end</code></pre>
       
 <p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted.</p>
 
+<h1>Starting God</h1>
+
+<p>To start the god monitoring process simply run the <code>god</code> executable passing in the path to the config file:</p>
+
+<pre>$ god start -c /path/to/config.god</pre>
+
+<p>While you're writing your config file, it can be helpful to run god in the foreground so you can see the log messages. You can do that with:</p>
+
+<pre>$ god run -c /path/to/config.god</pre>
+
 <h1>Extend God with your own Conditions</h1>
 
 <p>God was designed from the start to allow you to easily write your own custom conditions, making it simple to add tests that are application specific.</p>
@@ -376,6 +388,13 @@ end</code></pre>
 <div id="footer">
 	<p>Brought to you by <a href="http://rubyisawesome.com/">Ruby is Awesome</a></p>
 </div>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2196727-1";
+urchinTracker();
+</script>
 
 </body>
 </html>
