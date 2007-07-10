@@ -1,13 +1,10 @@
 module God
   class EventHandler
     @@actions = {}
+    @@handler = nil
     
-    case RUBY_PLATFORM
-    when /darwin/i, /bsd/i
-      require 'kqueue_handler'
-      @@handler = KQueueHandler
-    else
-      raise NotImplementedError, "Platform not supported for EventHandler"
+    def self.handler=(value)
+      @@handler = value
     end
     
     def self.register(pid, event, &block)
@@ -22,7 +19,6 @@ module God
     def self.run_event_thread
       Thread.new do
         loop do
-          puts "Running the event thread"
           @@handler.handle_events
         end
       end

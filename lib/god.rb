@@ -28,6 +28,14 @@ require 'god/event_handler'
 module God
   VERSION = '0.1.0'
   
+  case RUBY_PLATFORM
+  when /darwin/i, /bsd/i
+    require 'kqueue_handler'
+    EventHandler.handler = KQueueHandler
+  else
+    raise NotImplementedError, "Platform not supported for EventHandler"
+  end
+  
   def self.meddle(options = {})
     m = Meddle.new(options)
     yield m

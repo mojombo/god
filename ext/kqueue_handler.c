@@ -4,29 +4,33 @@
 #include <errno.h>
 
 VALUE cKQueueHandler;
-VALUE cEventHandler = Qnil;
+VALUE cEventHandler;
 VALUE mGod;
 
+static ID proc_exit;
+static ID call;
 static int kq;
 static int num_events;
 
 VALUE
-kqh_register_event(klass, pid, event)
-  VALUE klass;
-  VALUE pid;
-  VALUE event;
+kqh_register_event(VALUE klass, VALUE pid, VALUE event)
 {
   struct kevent new_event;
   VALUE rb_event;
+  u_int fflags;
   
-  // if (rb_intern("proc_exit") != event)
-  //   rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(event));
+  if (proc_exit == SYM2ID(event)) {
+    fflags = NOTE_EXIT;
+  } else {
+    rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(event));
+  }
   
   EV_SET(&new_event, FIX2UINT(pid), EVFILT_PROC,
-         EV_ADD | EV_ENABLE, NOTE_EXIT, 0, 0);
+         EV_ADD | EV_ENABLE, fflags, 0, 0);
   
-  if (-1 == kevent(kq, &new_event, 1, NULL, 0, NULL))
+  if (-1 == kevent(kq, &new_event, 1, NULL, 0, NULL)) {
     rb_raise(rb_eStandardError, strerror(errno));
+  }
   
   num_events++;
   return Qnil;
@@ -35,27 +39,27 @@ kqh_register_event(klass, pid, event)
 VALUE
 kqh_handle_events()
 {
-  // TODO: Allocate the full list of events based on num_events
-  struct kevent ev;
-  int events_left = 0;
+  int nevents, i;
+  struct kevent *events = (struct kevent*)malloc(num_events * sizeof(struct kevent));
   
-  // Push off const lookup till we run so we can require early
-  if (Qnil == cEventHandler)
-    cEventHandler = rb_const_get(mGod, rb_intern("EventHandler"));
+  if (NULL == events)
+    rb_raise(rb_eStandardError, strerror(errno));
   
-  do {
-    // TODO: Grab all events at once rather than one at a time
-    events_left = kevent(kq, NULL, 0, &ev, 1, NULL);
-    if (-1 == events_left)
-      rb_raise(rb_eStandardError, strerror(errno));
-    else if (0 < events_left) {
-      if (ev.fflags & NOTE_EXIT)
-        rb_funcall(cEventHandler, rb_intern("call"), 1, INT2NUM(ev.ident));
+  nevents = kevent(kq, NULL, 0, events, num_events, NULL);
+  
+  if (-1 == nevents) {
+    rb_raise(rb_eStandardError, strerror(errno));
+  } else {
+    for (i = 0; i < nevents; i++) {
+      if (events[i].fflags & NOTE_EXIT) {
+        rb_funcall(cEventHandler, call, 1, INT2NUM(events[i].ident));
+      }
     }
-  } while(0 < events_left);
+  }
   
+  free(events);
 
-  return Qnil;
+  return INT2FIX(nevents);
 }
 
 void Init_kqueue_handler() {
@@ -64,7 +68,11 @@ void Init_kqueue_handler() {
   if (kq == -1)
     rb_raise(rb_eStandardError, "kqueue initilization failed");
   
+  proc_exit = rb_intern("proc_exit");
+  call = rb_intern("call");
+  
   mGod = rb_const_get(rb_cObject, rb_intern("God"));
+  cEventHandler = rb_const_get(mGod, rb_intern("EventHandler"));
   cKQueueHandler = rb_define_class_under(mGod, "KQueueHandler", rb_cObject);
   rb_define_singleton_method(cKQueueHandler, "register_event", kqh_register_event, 2);
   rb_define_singleton_method(cKQueueHandler, "handle_events", kqh_handle_events, 0);
