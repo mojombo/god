@@ -23,6 +23,8 @@ require 'god/timer'
 require 'god/watch'
 require 'god/meddle'
 
+require 'god/event_handler'
+
 module God
   VERSION = '0.1.0'
   
