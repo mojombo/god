@@ -1,4 +1,5 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. ext kqueue_handler])
 
 # internal requires
 require 'god/base'
@@ -12,6 +13,7 @@ require 'god/behaviors/clean_pid_file'
 require 'god/condition'
 require 'god/conditions/timeline'
 require 'god/conditions/process_not_running'
+require 'god/conditions/process_exits'
 require 'god/conditions/memory_usage'
 require 'god/conditions/cpu_usage'
 require 'god/conditions/always'

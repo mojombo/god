@@ -23,7 +23,7 @@ God.meddle do |god|
   
     # start if process is not running
     w.start_if do |start|
-      start.condition(:process_not_running) do |c|
+      start.condition(:process_exits) do |c|
         c.pid_file = pid_file
       end
     end

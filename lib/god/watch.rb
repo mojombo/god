@@ -104,6 +104,7 @@ module God
       [:start, :restart].each do |cmd|
         self.conditions[cmd].each do |c|
           @meddle.timer.register(self, c, cmd) if c.kind_of?(PollCondition)
+          c.register(self) if c.kind_of?(EventCondition)
         end
       end
     end
