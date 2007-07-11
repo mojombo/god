@@ -8,12 +8,13 @@ module God
     end
     
     def self.register(pid, event, &block)
-      @@handler.register_event(pid, event)
+      @@actions[pid] ||= {}
       @@actions[pid][event] = block
+      @@handler.register_process(pid, events_mask(pid))
     end
     
-    def self.call(id, proc)
-      @@actions[id][proc].call
+    def self.call(pid, event)
+      @@actions[pid][event].call
     end
     
     def self.run_event_thread
@@ -24,5 +25,13 @@ module God
       end
     end
     
+    # I'm not entirely happy with this. I'm not sure if this will
+    # be netlink friendly when we write the linux connector
+    #  -- Kev
+    def self.events_mask(pid)
+      @@actions[pid].keys.inject(0) do |mask, event|
+        mask |= @@handler.event_mask(event)
+      end
+    end
   end
 end

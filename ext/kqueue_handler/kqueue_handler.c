@@ -9,26 +9,35 @@ static VALUE mGod;
 
 static ID proc_exit;
 static ID proc_fork;
-static ID call;
+static ID m_call;
+static ID m_size;
+
 
 static int kq;
 static int num_events;
 
 VALUE
-kqh_register_event(VALUE klass, VALUE pid, VALUE ev)
+kqh_event_mask(VALUE klass, VALUE sym)
+{
+  ID id = SYM2ID(sym);
+  if (proc_exit == id) {
+    return UINT2NUM(NOTE_EXIT);
+  } else if (proc_fork == id) {
+    return UINT2NUM(NOTE_FORK);
+  } else {
+    rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(id));
+  }
+  return Qnil;
+}
+
+  
+VALUE
+kqh_register_process(VALUE klass, VALUE pid, VALUE mask)
 {
   struct kevent new_event;
-  VALUE rb_event;
-  ID event = SYM2ID(ev);
-  u_int fflags;
+  ID event;
   
-  if (proc_exit == event) {
-    fflags = NOTE_EXIT;
-  } else if (proc_fork == event) {
-    fflags = NOTE_FORK;
-  } else {
-    rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(event));
-  }
+  u_int fflags = NUM2UINT(mask);
   
   EV_SET(&new_event, FIX2UINT(pid), EVFILT_PROC,
          EV_ADD | EV_ENABLE, fflags, 0, 0);
@@ -37,7 +46,8 @@ kqh_register_event(VALUE klass, VALUE pid, VALUE ev)
     rb_raise(rb_eStandardError, strerror(errno));
   }
   
-  num_events++;
+  num_events = FIX2INT(rb_funcall(rb_cv_get(cEventHandler, "@@actions"), m_size, 0));
+    
   return Qnil;
 }
 
@@ -58,9 +68,9 @@ kqh_handle_events()
   } else {
     for (i = 0; i < nevents; i++) {
       if (events[i].fflags & NOTE_EXIT) {
-        rb_funcall(cEventHandler, call, 2, INT2NUM(events[i].ident), proc_exit);
+        rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_exit));
       } else if (events[i].fflags & NOTE_FORK) {
-        rb_funcall(cEventHandler, call, 2, INT2NUM(events[i].ident), proc_fork);
+        rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_fork));
       }
     }
   }
@@ -81,11 +91,13 @@ Init_kqueue_handler()
   
   proc_exit = rb_intern("proc_exit");
   proc_fork = rb_intern("proc_fork");
-  call = rb_intern("call");
+  m_call = rb_intern("call");
+  m_size = rb_intern("size");
   
   mGod = rb_const_get(rb_cObject, rb_intern("God"));
   cEventHandler = rb_const_get(mGod, rb_intern("EventHandler"));
   cKQueueHandler = rb_define_class_under(mGod, "KQueueHandler", rb_cObject);
-  rb_define_singleton_method(cKQueueHandler, "register_event", kqh_register_event, 2);
+  rb_define_singleton_method(cKQueueHandler, "register_process", kqh_register_process, 2);
   rb_define_singleton_method(cKQueueHandler, "handle_events", kqh_handle_events, 0);
+  rb_define_singleton_method(cKQueueHandler, "event_mask", kqh_event_mask, 1);
 }
