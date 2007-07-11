@@ -19,7 +19,15 @@ God.meddle do |god|
       b.pid_file = pid_file
     end
     
-    # determine when process has started for real
+    # determine the state on startup
+    w.lifecycle(:init, [:up, :start]) do |start|
+      start.condition(:process_running) do |c|
+        c.running = true
+        c.pid_file = pid_file
+      end
+    end
+    
+    # determine when process has finished starting
     w.lifecycle([:start, :restart], :up) do |up|
       up.condition(:http) do |c|
         
@@ -28,11 +36,6 @@ God.meddle do |god|
   
     # start if process is not running
     w.lifecycle(:up, :start) do |start|
-      start.condition(:process_running) do |c|
-        c.running = false
-        c.pid_file = pid_file
-      end
-      
       start.condition(:process_exits) do |c|
         c.pid_file = pid_file
       end
@@ -70,3 +73,7 @@ God.meddle do |god|
   #   end
   # end
 end
+
+__END__
+
+init -> start -> up -> 
