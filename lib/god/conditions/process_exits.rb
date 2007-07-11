@@ -6,11 +6,11 @@ module God
       
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute for :process_not_running") if self.pid_file.nil?
+        valid &= complain("You must specify the 'pid_file' attribute for :process_exits") if self.pid_file.nil?
         valid
       end
     
-      def register
+      def register(watch)
         pid = File.open(self.pid_file).read.strip.to_i
         EventHandler.register(pid, :proc_exit) {
           puts 'Process exited'

@@ -98,6 +98,11 @@ module God
       
       self.conditions[@action] << c
     end
+    
+    # Define a transition handler which consists of a set of conditions
+    def transition(from, to)
+      
+    end
         
     # Schedule all poll conditions and register all condition events
     def monitor

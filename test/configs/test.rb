@@ -20,37 +20,37 @@ God.meddle do |god|
     end
     
     # determine the state on startup
-    w.lifecycle(:init, [:up, :start]) do |start|
-      start.condition(:process_running) do |c|
+    w.transition(:init, { true => :up, false => :start }) do |on|
+      on.condition(:process_running) do |c|
         c.running = true
         c.pid_file = pid_file
       end
     end
     
     # determine when process has finished starting
-    w.lifecycle([:start, :restart], :up) do |up|
-      up.condition(:http) do |c|
+    w.transition([:start, :restart], :up) do |on|
+      on.condition(:http) do |c|
         
       end
     end
   
     # start if process is not running
-    w.lifecycle(:up, :start) do |start|
-      start.condition(:process_exits) do |c|
+    w.transition(:up, :start) do |on|
+      on.condition(:process_exits) do |c|
         c.pid_file = pid_file
       end
     end
     
     # restart if memory or cpu is too high
-    w.lifecycle(:up, :restart) do |restart|
-      restart.condition(:memory_usage) do |c|
+    w.transition(:up, :restart) do |on|
+      on.condition(:memory_usage) do |c|
         c.interval = 20
         c.pid_file = pid_file
         c.above = (50 * 1024) # 50mb
         c.times = [3, 5]
       end
       
-      restart.condition(:cpu_usage) do |c|
+      on.condition(:cpu_usage) do |c|
         c.interval = 10
         c.pid_file = pid_file
         c.above = 10 # percent
