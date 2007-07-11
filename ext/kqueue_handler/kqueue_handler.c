@@ -3,24 +3,29 @@
 #include <sys/time.h>
 #include <errno.h>
 
-VALUE cKQueueHandler;
-VALUE cEventHandler;
-VALUE mGod;
+static VALUE cKQueueHandler;
+static VALUE cEventHandler;
+static VALUE mGod;
 
 static ID proc_exit;
+static ID proc_fork;
 static ID call;
+
 static int kq;
 static int num_events;
 
 VALUE
-kqh_register_event(VALUE klass, VALUE pid, VALUE event)
+kqh_register_event(VALUE klass, VALUE pid, VALUE ev)
 {
   struct kevent new_event;
   VALUE rb_event;
+  ID event = SYM2ID(ev);
   u_int fflags;
   
-  if (proc_exit == SYM2ID(event)) {
+  if (proc_exit == event) {
     fflags = NOTE_EXIT;
+  } else if (proc_fork == event) {
+    fflags = NOTE_FORK;
   } else {
     rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(event));
   }
@@ -42,8 +47,9 @@ kqh_handle_events()
   int nevents, i;
   struct kevent *events = (struct kevent*)malloc(num_events * sizeof(struct kevent));
   
-  if (NULL == events)
+  if (NULL == events) {
     rb_raise(rb_eStandardError, strerror(errno));
+  }
   
   nevents = kevent(kq, NULL, 0, events, num_events, NULL);
   
@@ -52,7 +58,9 @@ kqh_handle_events()
   } else {
     for (i = 0; i < nevents; i++) {
       if (events[i].fflags & NOTE_EXIT) {
-        rb_funcall(cEventHandler, call, 1, INT2NUM(events[i].ident));
+        rb_funcall(cEventHandler, call, 2, INT2NUM(events[i].ident), proc_exit);
+      } else if (events[i].fflags & NOTE_FORK) {
+        rb_funcall(cEventHandler, call, 2, INT2NUM(events[i].ident), proc_fork);
       }
     }
   }
@@ -62,13 +70,17 @@ kqh_handle_events()
   return INT2FIX(nevents);
 }
 
-void Init_kqueue_handler() {
+void
+Init_kqueue_handler()
+{
   kq = kqueue();
   
-  if (kq == -1)
+  if (kq == -1) {
     rb_raise(rb_eStandardError, "kqueue initilization failed");
+  }
   
   proc_exit = rb_intern("proc_exit");
+  proc_fork = rb_intern("proc_fork");
   call = rb_intern("call");
   
   mGod = rb_const_get(rb_cObject, rb_intern("God"));
