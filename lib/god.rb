@@ -1,5 +1,4 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
-$:.unshift File.join(File.dirname(__FILE__), *%w[.. ext kqueue_handler])
 
 # internal requires
 require 'god/base'
@@ -32,8 +31,13 @@ module God
   
   case RUBY_PLATFORM
   when /darwin/i, /bsd/i
-    require 'kqueue_handler'
+    $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext kqueue_handler])
+    require 'god/event_handlers/kqueue_handler'
     EventHandler.handler = KQueueHandler
+  when /linux/i
+    $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext netlink_handler])
+    require 'god/event_handlers/netlink_handler'
+    EventHandler.handler = NetlinkHandler
   else
     raise NotImplementedError, "Platform not supported for EventHandler"
   end

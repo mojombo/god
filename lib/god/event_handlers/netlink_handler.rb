@@ -1,0 +1,9 @@
+require 'netlink_handler_ext'
+
+class NetlinkHandler
+  def self.register_process(pid, events)
+    # netlink doesn't need to do this
+    # it just reads from the eventhandler actions to see if the pid
+    # matches the list we're looking for -- Kev
+  end
+end
