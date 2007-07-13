@@ -1,3 +1,5 @@
+#if defined(__FreeBSD__) || defined(__APPLE__)
+
 #include <ruby.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -81,7 +83,7 @@ kqh_handle_events()
 }
 
 void
-Init_kqueue_handler()
+Init_kqueue_handler_ext()
 {
   kq = kqueue();
   
@@ -101,3 +103,5 @@ Init_kqueue_handler()
   rb_define_singleton_method(cKQueueHandler, "handle_events", kqh_handle_events, 0);
   rb_define_singleton_method(cKQueueHandler, "event_mask", kqh_event_mask, 1);
 }
+
+#endif

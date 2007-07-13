@@ -1,3 +1,5 @@
+#ifdef __linux__ /* only build on linux */
+
 #include <ruby.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -120,7 +122,7 @@ connect_to_netlink()
 }
 
 void
-Init_netlink_handler()
+Init_netlink_handler_ext()
 { 
   proc_exit = rb_intern("proc_exit");
   proc_fork = rb_intern("proc_fork");
@@ -134,3 +136,5 @@ Init_netlink_handler()
   
   connect_to_netlink();
 }
+
+#endif

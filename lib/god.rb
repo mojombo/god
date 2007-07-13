@@ -31,11 +31,11 @@ module God
   
   case RUBY_PLATFORM
   when /darwin/i, /bsd/i
-    $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext kqueue_handler])
+    $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
     require 'god/event_handlers/kqueue_handler'
     EventHandler.handler = KQueueHandler
   when /linux/i
-    $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext netlink_handler])
+    $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
     require 'god/event_handlers/netlink_handler'
     EventHandler.handler = NetlinkHandler
   else
