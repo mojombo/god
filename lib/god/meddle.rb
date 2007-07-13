@@ -5,13 +5,12 @@ module God
     attr_accessor :server
     
     # api
-    attr_accessor :watches, :timer
+    attr_accessor :watches
     
     # Create a new instance that is ready for use by a configuration file
     def initialize(options = {})
       self.watches = []
       self.server  = Server.new(self, options[:host], options[:port])
-      self.timer = Timer.new
     end
       
     # Instantiate a new, empty Watch object and pass it to the mandatory
@@ -34,21 +33,6 @@ module God
     def monitor
       @watches.each { |w| w.monitor }
     end
-    
-    # def monitor
-    #   threads = []
-    #   
-    #   @watches.each do |w|
-    #     threads << Thread.new do
-    #       while true do
-    #         w.run
-    #         sleep self.interval
-    #       end
-    #     end
-    #   end
-    #   
-    #   threads.each { |t| t.join }
-    # end
   end
   
 end

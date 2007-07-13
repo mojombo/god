@@ -12,7 +12,7 @@ require 'god/behaviors/clean_pid_file'
 
 require 'god/condition'
 require 'god/conditions/timeline'
-require 'god/conditions/process_not_running'
+require 'god/conditions/process_running'
 require 'god/conditions/process_exits'
 require 'god/conditions/memory_usage'
 require 'god/conditions/cpu_usage'
@@ -21,6 +21,9 @@ require 'god/conditions/always'
 require 'god/reporter'
 require 'god/server'
 require 'god/timer'
+require 'god/hub'
+
+require 'god/metric'
 
 require 'god/watch'
 require 'god/meddle'
@@ -42,6 +45,6 @@ module God
     m = Meddle.new(options)
     yield m
     m.monitor
-    m.timer.join
+    Timer.get.join
   end  
 end

@@ -2,13 +2,13 @@ if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
 
-RAILS_ROOT = "/Users/tom/dev/git/helloworld"
+RAILS_ROOT = "/Users/tom/dev/powerset/speechverb"
 
 God.meddle do |god|
   god.watch do |w|
     w.name = "local-3000"
     w.interval = 5 # seconds
-    w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
+    w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -p 3001 -d"
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
     w.grace = 5
     
@@ -29,14 +29,19 @@ God.meddle do |god|
     
     # determine when process has finished starting
     w.transition([:start, :restart], :up) do |on|
-      on.condition(:http) do |c|
-        
+      on.condition(:always) do |c|
+        c.what = true
       end
     end
   
     # start if process is not running
     w.transition(:up, :start) do |on|
-      on.condition(:process_exits) do |c|
+      # on.condition(:process_exits) do |c|
+      #   c.pid_file = pid_file
+      # end
+      
+      on.condition(:process_running) do |c|
+        c.running = false
         c.pid_file = pid_file
       end
     end
@@ -73,7 +78,3 @@ God.meddle do |god|
   #   end
   # end
 end
-
-__END__
-
-init -> start -> up -> 

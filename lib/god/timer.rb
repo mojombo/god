@@ -1,13 +1,11 @@
 module God
   
   class TimerEvent
-    attr_accessor :watch, :condition, :command, :at
+    attr_accessor :condition, :at
     
-    def initialize(watch, condition, command)
-      self.watch = watch
+    def initialize(condition, interval)
       self.condition = condition
-      self.command = command
-      self.at = Time.now.to_i + condition.interval
+      self.at = Time.now.to_i + interval
     end
   end
   
@@ -15,6 +13,12 @@ module God
     INTERVAL = 0.25
     
     attr_reader :events
+    
+    @@timer = nil
+    
+    def self.get
+      @@timer ||= Timer.new
+    end
     
     # Start the scheduler loop to handle events
     def initialize
@@ -42,31 +46,13 @@ module God
     end
     
     # Create and register a new TimerEvent with the given parameters
-    def register(watch, condition, command)
-      @events << TimerEvent.new(watch, condition, command)
+    def schedule(condition, interval = condition.interval)
+      @events << TimerEvent.new(condition, interval)
       @events.sort! { |x, y| x.at <=> y.at }
     end
     
     def trigger(event)
-      timer = self
-      
-      Thread.new do
-        w = event.watch
-        c = event.condition
-        
-        w.mutex.synchronize do
-          if c.test
-            puts w.name + ' ' + c.class.name + ' [ok]'
-          else
-            puts w.name + ' ' + c.class.name + ' [fail]'
-            c.after
-            w.action(event.command, c)
-          end
-        end
-        
-        # reschedule
-        timer.register(w, c, event.command)
-      end
+      Hub.trigger(event.condition)
     end
     
     # Join the timer thread

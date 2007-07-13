@@ -120,4 +120,14 @@ class TestWatch < Test::Unit::TestCase
     assert_equal 1, @watch.behaviors.size
     assert_equal beh, @watch.behaviors.first
   end
+  
+  # canonical hash form
+  
+  def test_canonical_hash_form_should_convert_symbol_to_hash
+    assert_equal({true => :foo}, @watch.canonical_hash_form(:foo))
+  end
+  
+  def test_canonical_hash_form_should_convert_hash_to_hash
+    assert_equal({true => :foo}, @watch.canonical_hash_form(true => :foo))
+  end
 end

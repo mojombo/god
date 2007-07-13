@@ -31,7 +31,7 @@ module God
         pid = File.open(self.pid_file).read.strip
         process = System::Process.new(pid)
         @timeline.push(process.memory)
-        if @timeline.select { |x| x > self.above }.size < self.times.first
+        if @timeline.select { |x| x > self.above }.size >= self.times.first
           return true
         else
           @timeline.clear

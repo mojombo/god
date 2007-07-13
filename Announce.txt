@@ -1,0 +1,104 @@
+Subject: [ANN] god X.X.X released
+
+I'm proud to announce the initial public release of god!
+
+  http://god.rubyforge.org/
+
+
+WHAT IS GOD?
+
+God is an easy to configure, easy to extend monitoring framework written in Ruby.
+
+Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.
+
+
+DISCLAIMER
+
+God is still very young, I'd love to get feedback and bug reports, but I do not yet recommend you use it for mission critical tasks. I personally use it in production but then I'm a daring fellow.
+
+
+INSTALL
+
+sudo gem install god
+
+* note: currently tested only on Redhat Linux and Darwin (won't work on Windows)
+
+
+FEATURES
+
+* Config file is written in Ruby
+* Easily write your own custom conditions in Ruby
+* Supports both poll and event based conditions
+* Different poll conditions can have different intervals
+
+
+EXAMPLE
+
+The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at gravatar.com to keep the mongrels running:
+
+# file:      gravatar.god
+# run with:  god start -c /path/to/gravatar.god
+#
+# This is the actual config file used to keep the mongrels of
+# gravatar.com running.
+
+RAILS_ROOT = "/var/www/gravatar2/current"
+
+God.meddle do |god|
+  %w{8200 8201 8202}.each do |port|
+    god.watch do |w|
+      w.name = "gravatar2-mongrel-#{port}"
+      w.interval = 30 # seconds
+      w.start = "mongrel_rails cluster::start --only #{port} \
+        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+      w.stop = "mongrel_rails cluster::stop --only #{port} \
+        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+      w.grace = 10 # seconds
+      
+      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+      
+      w.behavior(:clean_pid_file) do |b|
+        b.pid_file = pid_file
+      end
+
+      w.start_if do |start|
+        start.condition(:process_not_running) do |c|
+          c.interval = 5 # seconds
+          c.pid_file = pid_file
+        end
+      end
+      
+      w.restart_if do |restart|
+        restart.condition(:memory_usage) do |c|
+          c.pid_file = pid_file
+          c.above = (150 * 1024) # 150mb
+          c.times = [3, 5] # 3 out of 5 intervals
+        end
+      
+        restart.condition(:cpu_usage) do |c|
+          c.pid_file = pid_file
+          c.above = 50 # percent
+          c.times = 5
+        end
+      end
+    end
+  end
+end
+
+
+DOCS
+
+Detailed documentation is available at http://god.rubyforge.org/
+
+
+CHANGES
+
+== 0.1.0 / 2007-07-07
+
+* 1 major enhancement
+  * Birthday!
+
+
+AUTHOR
+
+Tom Preston-Werner

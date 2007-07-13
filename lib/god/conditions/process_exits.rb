@@ -10,11 +10,14 @@ module God
         valid
       end
     
-      def register(watch)
+      def register
+        puts 'process-exits-register'
         pid = File.open(self.pid_file).read.strip.to_i
+        
         EventHandler.register(pid, :proc_exit) {
-          puts 'Process exited'
+          Hub.trigger(self)
         }
+        puts '/process-exits-register'
       end
     end
     
