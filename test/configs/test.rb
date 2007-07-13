@@ -10,7 +10,6 @@ God.meddle do |god|
     w.interval = 5 # seconds
     w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -p 3001 -d"
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-    w.grace = 5
     
     pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
     
@@ -29,21 +28,22 @@ God.meddle do |god|
     
     # determine when process has finished starting
     w.transition([:start, :restart], :up) do |on|
-      on.condition(:always) do |c|
-        c.what = true
+      on.condition(:process_running) do |c|
+        c.running = true
+        c.pid_file = pid_file
       end
     end
   
     # start if process is not running
     w.transition(:up, :start) do |on|
-      # on.condition(:process_exits) do |c|
-      #   c.pid_file = pid_file
-      # end
-      
-      on.condition(:process_running) do |c|
-        c.running = false
+      on.condition(:process_exits) do |c|
         c.pid_file = pid_file
       end
+      
+      # on.condition(:process_running) do |c|
+      #   c.running = false
+      #   c.pid_file = pid_file
+      # end
     end
     
     # restart if memory or cpu is too high

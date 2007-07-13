@@ -11,13 +11,18 @@ module God
       end
     
       def register
-        puts 'process-exits-register'
         pid = File.open(self.pid_file).read.strip.to_i
         
+        puts "registered proc_exit for #{pid}"
+        
         EventHandler.register(pid, :proc_exit) {
+          puts 'proc-exit-callback'
           Hub.trigger(self)
         }
-        puts '/process-exits-register'
+      end
+      
+      def deregister
+        puts 'deregistration of events not yet supported!'
       end
     end
     

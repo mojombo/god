@@ -1,11 +1,17 @@
 module God
   
   class Hub
+    # directory to hold conditions and their corresponding metric
+    #   key: condition
+    #   val: metric
     @@directory = {}
     
     def self.attach(condition, metric)
+      # add the condition to the directory
       @@directory[condition] = metric
       
+      # schedule poll condition
+      # register event condition
       if condition.kind_of?(PollCondition)
         Timer.get.schedule(condition, 0)
       else
@@ -14,7 +20,13 @@ module God
     end
     
     def self.detach(condition)
+      # remove the condition from the directory
       @@directory.delete(condition)
+      
+      # deregister event condition
+      if condition.kind_of?(EventCondition)
+        condition.deregister
+      end
     end
     
     def self.trigger(condition)
@@ -43,8 +55,7 @@ module God
             watch.move(dest)
           else
             # reschedule
-            puts 'reschedule'
-            Timer.get.schedule(c)
+            Timer.get.schedule(condition)
           end
         end
       end

@@ -1,3 +1,8 @@
+== 0.2.0
+
+* Rewrote innards to use a state and event based lifecycle
+* Basic support for events via kqueue (bsd/darwin) and netlink/pec (linux) [kevinclark]
+
 == 0.1.0 / 2007-07-07
 
 * 1 major enhancement
