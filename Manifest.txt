@@ -5,6 +5,9 @@ Rakefile
 bin/god
 examples/gravatar.god
 examples/local.god
+ext/god/extconf.rb
+ext/god/kqueue_handler.c
+ext/god/netlink_handler.c
 lib/god.rb
 lib/god/base.rb
 lib/god/behavior.rb
@@ -13,9 +16,13 @@ lib/god/condition.rb
 lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
 lib/god/conditions/memory_usage.rb
+lib/god/conditions/process_exits.rb
 lib/god/conditions/process_not_running.rb
 lib/god/conditions/timeline.rb
 lib/god/errors.rb
+lib/god/event_handler.rb
+lib/god/event_handlers/kqueue_handler.rb
+lib/god/event_handlers/netlink_handler.rb
 lib/god/meddle.rb
 lib/god/reporter.rb
 lib/god/server.rb

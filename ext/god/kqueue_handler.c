@@ -1,3 +1,5 @@
+#if defined(__FreeBSD__) || defined(__APPLE__)
+
 #include <ruby.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -32,7 +34,7 @@ kqh_event_mask(VALUE klass, VALUE sym)
 
   
 VALUE
-kqh_register_process(VALUE klass, VALUE pid, VALUE mask)
+kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
 {
   struct kevent new_event;
   ID event;
@@ -81,7 +83,7 @@ kqh_handle_events()
 }
 
 void
-Init_kqueue_handler()
+Init_kqueue_handler_ext()
 {
   kq = kqueue();
   
@@ -97,7 +99,9 @@ Init_kqueue_handler()
   mGod = rb_const_get(rb_cObject, rb_intern("God"));
   cEventHandler = rb_const_get(mGod, rb_intern("EventHandler"));
   cKQueueHandler = rb_define_class_under(mGod, "KQueueHandler", rb_cObject);
-  rb_define_singleton_method(cKQueueHandler, "register_process", kqh_register_process, 2);
+  rb_define_singleton_method(cKQueueHandler, "monitor_process", kqh_monitor_process, 2);
   rb_define_singleton_method(cKQueueHandler, "handle_events", kqh_handle_events, 0);
   rb_define_singleton_method(cKQueueHandler, "event_mask", kqh_event_mask, 1);
 }
+
+#endif
