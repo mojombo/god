@@ -20,6 +20,10 @@ module God
       @@timer ||= Timer.new
     end
     
+    def self.reset
+      @@timer = nil
+    end
+    
     # Start the scheduler loop to handle events
     def initialize
       @events = []

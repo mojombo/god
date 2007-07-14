@@ -25,10 +25,6 @@ God.meddle do |god|
         c.running = false
         c.pid_file = pid_file
       end
-      
-      # start.condition(:process_exits) do |c|
-      #   c.pid_file = pid_file
-      # end
     end
     
     # restart if memory or cpu is too high
