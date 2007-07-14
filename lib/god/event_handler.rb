@@ -15,6 +15,15 @@ module God
       puts 'b'
     end
     
+    def self.deregister(pid, event=nil)
+      # If no event is given, clear everything
+      if event.nil?
+        @@actions[pid] = {}
+      else
+        @@actions[pid].delete(event)
+      end
+    end
+    
     def self.call(pid, event)
       @@actions[pid][event].call
     end

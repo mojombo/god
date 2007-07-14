@@ -24,7 +24,7 @@ module God
       end
       
       def deregister
-        puts 'deregistration of events not yet supported!'
+        EventHandler.register(pid, :proc_exit)
       end
     end
     
