@@ -24,7 +24,7 @@ module God
       end
       
       def deregister
-        EventHandler.register(pid, :proc_exit)
+        EventHandler.deregister(pid, :proc_exit)
       end
     end
     
