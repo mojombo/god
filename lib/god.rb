@@ -29,6 +29,8 @@ require 'god/meddle'
 
 require 'god/event_handler'
 
+Thread.abort_on_exception = true
+
 module God
   VERSION = '0.1.0'
   
@@ -45,10 +47,22 @@ module God
     raise NotImplementedError, "Platform not supported for EventHandler"
   end
   
-  def self.meddle(options = {})
+  def self.meddle(options = {})  
     m = Meddle.new(options)
+    
+    # yeild to the config file
     yield m
+    
+    # start event handler system
+    EventHandler.start
+    
+    # start the timer system
+    Timer.get
+
+    # start monitoring each watch
     m.monitor
+    
+    # join the timer thread to we don't exit
     Timer.get.join
   end  
 end

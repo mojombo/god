@@ -10,7 +10,9 @@ module God
     def self.register(pid, event, &block)
       @@actions[pid] ||= {}
       @@actions[pid][event] = block
+      puts 'a'
       @@handler.register_process(pid, @@actions[pid].keys)
+      puts 'b'
     end
     
     def self.call(pid, event)
@@ -21,7 +23,7 @@ module God
       @@actions[pid]
     end
     
-    def self.run_event_thread
+    def self.start
       Thread.new do
         loop do
           @@handler.handle_events

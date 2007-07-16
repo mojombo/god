@@ -2,7 +2,7 @@ if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
 
-RAILS_ROOT = "/Users/tom/dev/powerset/speechverb"
+RAILS_ROOT = "/Users/tom/dev/git/helloworld"
 
 God.meddle do |god|
   god.watch do |w|
