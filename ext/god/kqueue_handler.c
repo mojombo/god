@@ -16,6 +16,7 @@ static ID m_size;
 static ID m_deregister;
 
 static int kq;
+int num_events;
 
 #define NUM_EVENTS FIX2INT(rb_funcall(rb_cv_get(cEventHandler, "@@actions"), m_size, 0))
 
@@ -30,6 +31,7 @@ kqh_event_mask(VALUE klass, VALUE sym)
   } else {
     rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(id));
   }
+  
   return Qnil;
 }
 
@@ -48,24 +50,34 @@ kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
   if (-1 == kevent(kq, &new_event, 1, NULL, 0, NULL)) {
     rb_raise(rb_eStandardError, strerror(errno));
   }
-    
+  
+  num_events = NUM_EVENTS;
+  
   return Qnil;
 }
 
 VALUE
 kqh_handle_events()
 {
-  int nevents, i, num_to_fetch = NUM_EVENTS;
-  struct kevent *events = (struct kevent*)malloc(num_to_fetch * sizeof(struct kevent));
-  struct timespec ts;
-  ts.tv_sec = 0;
-  ts.tv_nsec = 10000;
+  int nevents, i, num_to_fetch;
+  struct kevent *events;
+  fd_set read_set;
+  
+  FD_ZERO(&read_set);
+  FD_SET(kq, &read_set);
+  
+  // Don't actually run this method until we've got an event
+  rb_thread_select(kq + 1, &read_set, NULL, NULL, NULL);  
+  
+  // Grabbing num_events once for thread safety
+  num_to_fetch = num_events;
+  events = (struct kevent*)malloc(num_to_fetch * sizeof(struct kevent));
   
   if (NULL == events) {
     rb_raise(rb_eStandardError, strerror(errno));
   }
   
-  nevents = kevent(kq, NULL, 0, events, num_to_fetch, &ts);
+  nevents = kevent(kq, NULL, 0, events, num_to_fetch, NULL);
   
   if (-1 == nevents) {
     rb_raise(rb_eStandardError, strerror(errno));
@@ -74,6 +86,7 @@ kqh_handle_events()
       if (events[i].fflags & NOTE_EXIT) {
         rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_exit));
         rb_funcall(cEventHandler, m_deregister, 1, INT2NUM(events[i].ident));
+        num_events = NUM_EVENTS;
       } else if (events[i].fflags & NOTE_FORK) {
         rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_fork));
       }
