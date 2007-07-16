@@ -19,8 +19,6 @@ module God
           puts 'proc-exit-callback'
           Hub.trigger(self)
         }
-        
-        puts "registered proc_exit for #{pid}"
       end
       
       def deregister

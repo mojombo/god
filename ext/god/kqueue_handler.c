@@ -13,10 +13,11 @@ static ID proc_exit;
 static ID proc_fork;
 static ID m_call;
 static ID m_size;
-
+static ID m_deregister;
 
 static int kq;
-static int num_events;
+
+#define NUM_EVENTS FIX2INT(rb_funcall(rb_cv_get(cEventHandler, "@@actions"), m_size, 0))
 
 VALUE
 kqh_event_mask(VALUE klass, VALUE sym)
@@ -47,8 +48,6 @@ kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
   if (-1 == kevent(kq, &new_event, 1, NULL, 0, NULL)) {
     rb_raise(rb_eStandardError, strerror(errno));
   }
-  
-  num_events = FIX2INT(rb_funcall(rb_cv_get(cEventHandler, "@@actions"), m_size, 0));
     
   return Qnil;
 }
@@ -56,14 +55,17 @@ kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
 VALUE
 kqh_handle_events()
 {
-  int nevents, i;
-  struct kevent *events = (struct kevent*)malloc(num_events * sizeof(struct kevent));
+  int nevents, i, num_to_fetch = NUM_EVENTS;
+  struct kevent *events = (struct kevent*)malloc(num_to_fetch * sizeof(struct kevent));
+  struct timespec ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 10000;
   
   if (NULL == events) {
     rb_raise(rb_eStandardError, strerror(errno));
   }
   
-  nevents = kevent(kq, NULL, 0, events, num_events, NULL);
+  nevents = kevent(kq, NULL, 0, events, num_to_fetch, &ts);
   
   if (-1 == nevents) {
     rb_raise(rb_eStandardError, strerror(errno));
@@ -71,6 +73,7 @@ kqh_handle_events()
     for (i = 0; i < nevents; i++) {
       if (events[i].fflags & NOTE_EXIT) {
         rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_exit));
+        rb_funcall(cEventHandler, m_deregister, 1, INT2NUM(events[i].ident));
       } else if (events[i].fflags & NOTE_FORK) {
         rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_fork));
       }
@@ -95,6 +98,7 @@ Init_kqueue_handler_ext()
   proc_fork = rb_intern("proc_fork");
   m_call = rb_intern("call");
   m_size = rb_intern("size");
+  m_deregister = rb_intern("deregister");
   
   mGod = rb_const_get(rb_cObject, rb_intern("God"));
   cEventHandler = rb_const_get(mGod, rb_intern("EventHandler"));

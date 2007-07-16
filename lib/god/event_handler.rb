@@ -18,7 +18,7 @@ module God
     def self.deregister(pid, event=nil)
       # If no event is given, clear everything
       if event.nil?
-        @@actions[pid] = {}
+        @@actions.delete(pid)
       else
         @@actions[pid].delete(event)
       end
