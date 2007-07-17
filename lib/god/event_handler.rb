@@ -10,9 +10,7 @@ module God
     def self.register(pid, event, &block)
       @@actions[pid] ||= {}
       @@actions[pid][event] = block
-      puts 'a'
       @@handler.register_process(pid, @@actions[pid].keys)
-      puts 'b'
     end
     
     def self.deregister(pid, event=nil)

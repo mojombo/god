@@ -3,14 +3,7 @@ require 'kqueue_handler_ext'
 module God
   class KQueueHandler
     def self.register_process(pid, events)
-      begin
-        puts 'aa'
-        # raise StandardError.new('faaaaaaaaaail')
-        monitor_process(pid, events_mask(events))
-        puts 'bb'
-      rescue StandardError => e
-        puts e.inspect
-      end
+      monitor_process(pid, events_mask(events))
     end
   
     def self.events_mask(events)
