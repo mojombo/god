@@ -106,7 +106,6 @@ module God
     # Schedule all poll conditions and register all condition events
     def monitor
       # start monitoring at the first available of the init or up states
-      p metrics
       if !self.metrics[:init].empty?
         self.move(:init)
       else

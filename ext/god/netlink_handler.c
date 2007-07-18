@@ -32,7 +32,7 @@ nlh_handle_events()
   FD_ZERO(&fds);
   FD_SET(nl_sock, &fds);
     
-  if (0 > select(nl_sock + 1, &fds, NULL, NULL, NULL)) {
+  if (0 > rb_thread_select(nl_sock + 1, &fds, NULL, NULL, NULL)) {
     rb_raise(rb_eStandardError, strerror(errno));
   }
   

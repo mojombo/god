@@ -2,7 +2,7 @@ if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
 
-RAILS_ROOT = "/Users/tom/dev/git/helloworld"
+RAILS_ROOT = "/Users/tom/dev/powerset/speechverb"
 
 God.meddle do |god|
   god.watch do |w|
@@ -39,11 +39,6 @@ God.meddle do |god|
       on.condition(:process_exits) do |c|
         c.pid_file = pid_file
       end
-      
-      # on.condition(:process_running) do |c|
-      #   c.running = false
-      #   c.pid_file = pid_file
-      # end
     end
     
     # restart if memory or cpu is too high

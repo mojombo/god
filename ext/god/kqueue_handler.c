@@ -85,8 +85,6 @@ kqh_handle_events()
     for (i = 0; i < nevents; i++) {
       if (events[i].fflags & NOTE_EXIT) {
         rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_exit));
-        rb_funcall(cEventHandler, m_deregister, 1, INT2NUM(events[i].ident));
-        num_events = NUM_EVENTS;
       } else if (events[i].fflags & NOTE_FORK) {
         rb_funcall(cEventHandler, m_call, 2, INT2NUM(events[i].ident), ID2SYM(proc_fork));
       }

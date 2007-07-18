@@ -32,9 +32,9 @@ module God
         process = System::Process.new(pid)
         @timeline.push(process.memory)
         if @timeline.select { |x| x > self.above }.size >= self.times.first
+          @timeline.clear
           return true
         else
-          @timeline.clear
           return false
         end
       end

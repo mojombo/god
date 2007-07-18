@@ -13,15 +13,13 @@ module God
       def register
         pid = File.open(self.pid_file).read.strip.to_i
         
-        puts "registering proc_exit for #{pid}"
-        
         EventHandler.register(pid, :proc_exit) {
-          puts 'proc-exit-callback'
           Hub.trigger(self)
         }
       end
       
       def deregister
+        pid = File.open(self.pid_file).read.strip.to_i
         EventHandler.deregister(pid, :proc_exit)
       end
     end

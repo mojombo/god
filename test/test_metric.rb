@@ -34,7 +34,7 @@ class TestMetric < Test::Unit::TestCase
   end
   
   def test_poll_condition_should_abort_if_no_interval_and_no_watch_interval
-    metric = Metric.new(stub(:interval => nil), nil)
+    metric = Metric.new(stub(:name => 'foo', :interval => nil), nil)
     
     assert_raise AbortCalledError do
       metric.condition(:fake_poll_condition)
@@ -42,20 +42,19 @@ class TestMetric < Test::Unit::TestCase
   end
   
   def test_condition_should_allow_generation_of_subclasses_of_poll_or_event
-    @watch.interval = 27
+    metric = Metric.new(stub(:name => 'foo', :interval => 10), nil)
+    
     assert_nothing_raised do
-      @watch.start_if do |w|
-        w.condition(:fake_poll_condition)
-        w.condition(:fake_event_condition)
-      end
+      metric.condition(:fake_poll_condition)
+      metric.condition(:fake_event_condition)
     end
   end
   
   def test_condition_should_abort_if_not_subclass_of_poll_or_event
+    metric = Metric.new(stub(:name => 'foo', :interval => 10), nil)
+    
     assert_raise AbortCalledError do
-      @watch.start_if do |w|
-        w.condition(:fake_condition) { |c| }
-      end
+      metric.condition(:fake_condition) { |c| }
     end
   end
 end

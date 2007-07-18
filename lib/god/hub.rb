@@ -23,6 +23,9 @@ module God
       # remove the condition from the directory
       @@directory.delete(condition)
       
+      # unschedule any pending polls
+      Timer.get.unschedule(condition)
+      
       # deregister event condition
       if condition.kind_of?(EventCondition)
         condition.deregister
@@ -32,8 +35,8 @@ module God
     def self.trigger(condition)
       if condition.kind_of?(PollCondition)
         self.handle_poll(condition)
-      else
-        puts 'event!'
+      elsif condition.kind_of?(EventCondition)
+        self.handle_event(condition)
       end
     end
     
@@ -57,6 +60,22 @@ module God
             # reschedule
             Timer.get.schedule(condition)
           end
+        end
+      end
+    end
+    
+    def self.handle_event(condition)
+      Thread.new do
+        metric = @@directory[condition]
+        watch = metric.watch
+        
+        watch.mutex.synchronize do
+          puts watch.name + ' ' + condition.class.name + " [true]"
+          
+          p metric.destination
+          
+          dest = metric.destination[true]
+          watch.move(dest)
         end
       end
     end

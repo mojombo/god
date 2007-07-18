@@ -55,6 +55,11 @@ module God
       @events.sort! { |x, y| x.at <=> y.at }
     end
     
+    # Remove any TimerEvents for the given condition
+    def unschedule(condition)
+      @events.reject! { |x| x.condition == condition }
+    end
+    
     def trigger(event)
       Hub.trigger(event.condition)
     end

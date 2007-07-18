@@ -40,4 +40,14 @@ class TestTimer < Test::Unit::TestCase
     sleep(0.3)
     assert_equal [100, 800, 900, 1000], @t.events.map { |x| x.condition.interval }
   end
+  
+  def test_unschedule_should_remove_conditions
+    a = stub()
+    b = stub()
+    @t.schedule(a, 100)
+    @t.schedule(b, 200)
+    assert_equal 2, @t.events.size
+    @t.unschedule(a)
+    assert_equal 1, @t.events.size
+  end
 end

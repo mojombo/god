@@ -14,11 +14,14 @@ module God
     end
     
     def self.deregister(pid, event=nil)
-      # If no event is given, clear everything
-      if event.nil?
-        @@actions.delete(pid)
-      else
-        @@actions[pid].delete(event)
+      if watching_pid? pid
+        if event.nil?
+          @@actions.delete(pid)
+          @@handler.register_process(pid, []) if system("kill -0 #{pid} 2>&1")
+        else
+          @@actions[pid].delete(event)
+          @@handler.register_process(pid, @@actions[pid].keys) if system("kill -0 #{pid} 2>&1")
+        end
       end
     end
     
