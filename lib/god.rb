@@ -32,7 +32,7 @@ require 'god/event_handler'
 Thread.abort_on_exception = true
 
 module God
-  VERSION = '0.1.0'
+  VERSION = '0.2.0'
   
   case RUBY_PLATFORM
   when /darwin/i, /bsd/i
