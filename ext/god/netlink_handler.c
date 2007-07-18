@@ -92,7 +92,7 @@ connect_to_netlink()
   /* connect to netlink socket */
   nl_sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
   
-  bzero(sa_nl, sizeof(sa_nl));
+  bzero(&sa_nl, sizeof(sa_nl));
   sa_nl.nl_family = AF_NETLINK;
   sa_nl.nl_groups = CN_IDX_PROC;
   sa_nl.nl_pid    = getpid();
