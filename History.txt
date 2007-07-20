@@ -1,3 +1,7 @@
+== 0.2.1 / 
+
+* Fix netlink header problem on Ubuntu Edgy [Dan Sully]
+
 == 0.2.0 / 2007-07-18
 
 * Rewrote innards to use a state and event based lifecycle

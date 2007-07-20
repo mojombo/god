@@ -23,8 +23,9 @@ God.meddle do |god|
       end
 
       w.start_if do |start|
-        start.condition(:process_not_running) do |c|
+        start.condition(:process_running) do |c|
           c.interval = 5 # seconds
+          c.running = false
           c.pid_file = pid_file
         end
       end
