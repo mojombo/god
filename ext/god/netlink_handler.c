@@ -2,6 +2,7 @@
 
 #include <ruby.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <linux/netlink.h>
 #include <linux/connector.h>
@@ -71,6 +72,12 @@ nlh_handle_events()
       
         rb_funcall(cEventHandler, m_call, 2, INT2FIX(event->event_data.fork.parent_pid), ID2SYM(proc_fork));
         return INT2FIX(1);
+
+      case PROC_EVENT_NONE:
+      case PROC_EVENT_EXEC:
+      case PROC_EVENT_UID:
+      case PROC_EVENT_GID:
+	break;
     }
   }
   
@@ -87,7 +94,7 @@ connect_to_netlink()
   struct sockaddr_nl sa_nl; /* netlink interface info */
   char buff[NL_MESSAGE_SIZE];
   struct nlmsghdr *hdr; /* for telling netlink what we want */
-  struct cn_msg *msg;   /* the actual connector message
+  struct cn_msg *msg;   /* the actual connector message */
   
   /* connect to netlink socket */
   nl_sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
