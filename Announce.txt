@@ -1,6 +1,6 @@
-Subject: [ANN] god X.X.X released
+Subject: [ANN] god 0.2.0 released
 
-I'm proud to announce the initial public release of god!
+A lot of work has gone into god since the last release. Say goodbye to polling for process status--support for event based conditions via kqueue/netlink has been added (thanks Kevin Clark)! Only a few events are currently supported (most prominently process exit), but the way is now open for the addition of other events. A new, advanced syntax is available (in addition to the familiar simple syntax) that gives you full power over the new state based lifecycle of your Watches. Updated documentation is available on the website:
 
   http://god.rubyforge.org/
 
@@ -38,7 +38,7 @@ The easiest way to understand how god will make your life better is by looking a
 
 # file:      gravatar.god
 # run with:  god start -c /path/to/gravatar.god
-#
+# 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
@@ -48,7 +48,7 @@ God.meddle do |god|
   %w{8200 8201 8202}.each do |port|
     god.watch do |w|
       w.name = "gravatar2-mongrel-#{port}"
-      w.interval = 30 # seconds
+      w.interval = 30 # seconds default
       w.start = "mongrel_rails cluster::start --only #{port} \
         -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
       w.stop = "mongrel_rails cluster::stop --only #{port} \
@@ -62,8 +62,9 @@ God.meddle do |god|
       end
 
       w.start_if do |start|
-        start.condition(:process_not_running) do |c|
+        start.condition(:process_running) do |c|
           c.interval = 5 # seconds
+          c.running = false
           c.pid_file = pid_file
         end
       end
@@ -93,12 +94,16 @@ Detailed documentation is available at http://god.rubyforge.org/
 
 CHANGES
 
-== 0.1.0 / 2007-07-07
+== 0.2.0 / 2007-07-18
 
-* 1 major enhancement
-  * Birthday!
+* Rewrote innards to use a state and event based lifecycle
+* Basic support for events via kqueue (bsd/darwin) and netlink/pec (linux) [kevinclark]
+* Added advanced syntax (simple syntax calls advanced api underneath)
+* Condition returns have changed meaning. With simple syntax, a true return activates block
+* Updated http://god.rubyforge.org with updated simple config and new advanced config
 
 
-AUTHOR
+AUTHORS
 
 Tom Preston-Werner
+Kevin Clark

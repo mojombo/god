@@ -1,10 +1,10 @@
-== 0.2.0
+== 0.2.0 / 2007-07-18
 
 * Rewrote innards to use a state and event based lifecycle
 * Basic support for events via kqueue (bsd/darwin) and netlink/pec (linux) [kevinclark]
 * Added advanced syntax (simple syntax calls advanced api underneath)
 * Condition returns have changed meaning. With simple syntax, a true return activates block
-* Updated http://god.rubygorge.org with updated simple config and new advanced config
+* Updated http://god.rubyforge.org with updated simple config and new advanced config
 
 == 0.1.0 / 2007-07-07
 
