@@ -77,7 +77,7 @@ nlh_handle_events()
       case PROC_EVENT_EXEC:
       case PROC_EVENT_UID:
       case PROC_EVENT_GID:
-	break;
+        break;
     }
   }
   
@@ -99,12 +99,18 @@ connect_to_netlink()
   /* connect to netlink socket */
   nl_sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
   
+  if (-1 == nl_sock) {
+    rb_raise(rb_eStandardError, strerror(errno));
+  }
+  
   bzero(&sa_nl, sizeof(sa_nl));
   sa_nl.nl_family = AF_NETLINK;
   sa_nl.nl_groups = CN_IDX_PROC;
   sa_nl.nl_pid    = getpid();
   
-  bind(nl_sock, (struct sockaddr *)&sa_nl, sizeof(sa_nl));
+  if (-1 == bind(nl_sock, (struct sockaddr *)&sa_nl, sizeof(sa_nl))) {
+    rb_raise(rb_eStandardError, strerror(errno));
+  }
   
   /* Fill header */
   hdr = (struct nlmsghdr *)buff;
