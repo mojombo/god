@@ -170,6 +170,7 @@ module God
         fork {
           Process::Sys.setgid(Etc.getgrnam(self.group).gid) if self.group
           Process::Sys.setuid(Etc.getpwnam(self.user).uid) if self.user
+          $0 = command
           exec command
         }
       else
