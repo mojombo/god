@@ -9,6 +9,9 @@ module God
     attr_accessor :name, :state, :start, :stop, :restart, :interval, :grace,
                   :user, :group
     
+    attr_writer   :autostart
+    def autostart?; @autostart; end
+    
     # api
     attr_accessor :behaviors, :metrics
     
@@ -17,6 +20,7 @@ module God
     
     # 
     def initialize(meddle)
+      @autostart ||= true
       @meddle = meddle
             
       # no grace period by default
