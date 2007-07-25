@@ -1,10 +1,13 @@
+require 'etc'
+
 module God
   
   class Watch < Base
     VALID_STATES = [:init, :up, :start, :restart]
     
     # config
-    attr_accessor :name, :state, :start, :stop, :restart, :interval, :grace
+    attr_accessor :name, :state, :start, :stop, :restart, :interval, :grace,
+                  :user, :group
     
     # api
     attr_accessor :behaviors, :metrics
@@ -163,7 +166,12 @@ module God
       # action
       if command.kind_of?(String)
         # string command
-        system(command)
+        # fork/exec to setuid/gid
+        fork {
+          Process::Sys.setgid(Etc.getgrnam(self.group).gid) if self.group
+          Process::Sys.setuid(Etc.getpwnam(self.user).uid) if self.user
+          exec command
+        }
       else
         # lambda command
         command.call
