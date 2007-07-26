@@ -122,7 +122,9 @@ module God
     
     # Move from one state to another
     def move(to_state)
-      puts "move '#{self.state}' to '#{to_state}'"
+      msg = "move '#{self.state}' to '#{to_state}'"
+      Syslog.debug(msg)
+      puts msg
        
       # cleanup from current state
       if from_state = self.state
@@ -142,11 +144,13 @@ module God
     def action(a, c = nil)
       case a
       when :start
+        Syslog.debug(self.start)
         puts self.start
         call_action(c, :start, self.start)
         sleep(self.grace)
       when :restart
         if self.restart
+          Syslog.debug(self.restart)
           puts self.restart
           call_action(c, :restart, self.restart)
         else
@@ -155,6 +159,7 @@ module God
         end
         sleep(self.grace)
       when :stop
+        Syslog.debug(self.stop)
         puts self.stop
         call_action(c, :stop, self.stop)
         sleep(self.grace)
