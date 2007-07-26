@@ -1,4 +1,3 @@
-$:.unshift File.join(File.dirname(__FILE__), *%w[.. ext kqueue_handler])
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
 
 require 'test/unit'

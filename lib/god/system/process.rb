@@ -8,8 +8,7 @@ module God
       
       # Return true if this process is running, false otherwise
       def exists?
-        cmd_name = RUBY_PLATFORM =~ /solaris/i ? "args" : "command"
-        !ps_string(cmd_name).empty?
+        system("kill -0 #{@pid} &> /dev/null")
       end
       
       # Memory usage in kilobytes (resident set size)
