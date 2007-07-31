@@ -59,6 +59,7 @@ module God
     protected
     
     def complain(text)
+      Syslog.err(text)
       puts text
       false
     end

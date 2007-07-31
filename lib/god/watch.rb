@@ -1,10 +1,16 @@
+require 'etc'
+
 module God
   
   class Watch < Base
     VALID_STATES = [:init, :up, :start, :restart]
     
     # config
-    attr_accessor :name, :state, :start, :stop, :restart, :interval, :grace
+    attr_accessor :name, :state, :start, :stop, :restart, :interval, :grace,
+                  :user, :group
+    
+    attr_writer   :autostart
+    def autostart?; @autostart; end
     
     # api
     attr_accessor :behaviors, :metrics
@@ -14,6 +20,7 @@ module God
     
     # 
     def initialize(meddle)
+      @autostart ||= true
       @meddle = meddle
             
       # no grace period by default
@@ -115,7 +122,9 @@ module God
     
     # Move from one state to another
     def move(to_state)
-      puts "move '#{self.state}' to '#{to_state}'"
+      msg = "move '#{self.state}' to '#{to_state}'"
+      Syslog.debug(msg)
+      puts msg
        
       # cleanup from current state
       if from_state = self.state
@@ -135,11 +144,13 @@ module God
     def action(a, c = nil)
       case a
       when :start
+        Syslog.debug(self.start)
         puts self.start
         call_action(c, :start, self.start)
         sleep(self.grace)
       when :restart
         if self.restart
+          Syslog.debug(self.restart)
           puts self.restart
           call_action(c, :restart, self.restart)
         else
@@ -148,6 +159,7 @@ module God
         end
         sleep(self.grace)
       when :stop
+        Syslog.debug(self.stop)
         puts self.stop
         call_action(c, :stop, self.stop)
         sleep(self.grace)
@@ -163,7 +175,13 @@ module God
       # action
       if command.kind_of?(String)
         # string command
-        system(command)
+        # fork/exec to setuid/gid
+        fork {
+          Process::Sys.setgid(Etc.getgrnam(self.group).gid) if self.group
+          Process::Sys.setuid(Etc.getpwnam(self.user).uid) if self.user
+          $0 = command
+          exec command
+        }
       else
         # lambda command
         command.call

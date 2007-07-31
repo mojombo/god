@@ -31,7 +31,7 @@ module God
     
     # Schedule all poll conditions and register all condition events
     def monitor
-      @watches.each { |w| w.monitor }
+      @watches.each { |w| w.monitor if w.autostart? }
     end
   end
   
