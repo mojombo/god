@@ -11,7 +11,7 @@ class TestSystemProcess < Test::Unit::TestCase
   end
   
   def test_exists_should_return_false_for_non_existant_process
-    assert_equal false, System::Process.new(0).exists?
+    assert_equal false, System::Process.new(5555555555).exists?
   end
   
   def test_memory
