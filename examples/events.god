@@ -2,7 +2,7 @@
 # and running on your Mac.
 
 # Run with:
-# god start -c /path/to/events.god
+# god -c /path/to/events.god
 
 RAILS_ROOT = "/Users/tom/dev/helloworld"
 

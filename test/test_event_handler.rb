@@ -43,7 +43,10 @@ class TestEventHandler < Test::Unit::TestCase
     @h.actions = {pid => {:proc_exit => exit_block}}
     
     mock_handler = mock()
-    mock_handler.expects(:register_process).with(pid, [:proc_exit, :proc_fork])
+    mock_handler.expects(:register_process).with do |a, b|
+      a == pid &&
+      b.to_set == [:proc_exit, :proc_fork].to_set
+    end
     @h.handler = mock_handler
     
     fork_block = lambda { puts "Forking" }

@@ -9,7 +9,7 @@ module God
     
     # Create a new instance that is ready for use by a configuration file
     def initialize(options = {})
-      self.watches = []
+      self.watches = {}
       self.server  = Server.new(self, options[:host], options[:port])
     end
       
@@ -21,17 +21,17 @@ module God
       yield(w)
       
       # ensure the new watch has a unique name
-      unless @watches.select { |x| x.name == w.name }.empty?
+      if @watches[w.name]
         abort "Duplicate Watch with name '#{w.name}'"
       end
       
       # add to list of watches
-      @watches << w
+      @watches[w.name] = w
     end
     
-    # Schedule all poll conditions and register all condition events
+    # Start monitoring any watches set to autostart
     def monitor
-      @watches.each { |w| w.monitor if w.autostart? }
+      @watches.values.each { |w| w.monitor if w.autostart? }
     end
   end
   

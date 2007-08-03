@@ -48,13 +48,11 @@ module God
         watch.mutex.synchronize do
           result = condition.test
           
-          msg = watch.name + ' ' + condition.class.name + " [#{result}]"
+          msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
           Syslog.debug(msg)
           puts msg
           
           condition.after
-          
-          p metric.destination
           
           if dest = metric.destination[result]
             watch.move(dest)

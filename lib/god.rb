@@ -40,7 +40,7 @@ Syslog.open('god')
 God::EventHandler.load
 
 module God
-  VERSION = '0.2.1'
+  VERSION = '0.3.0'
     
   def self.meddle(options = {})  
     m = Meddle.new(options)
@@ -54,10 +54,10 @@ module God
     # start the timer system
     Timer.get
 
-    # start monitoring each watch
+    # start monitoring
     m.monitor
     
-    # join the timer thread to we don't exit
+    # join the timer thread so we don't exit
     Timer.get.join
   end  
 end

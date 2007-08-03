@@ -11,6 +11,6 @@ class TestGod < Test::Unit::TestCase
   def test_should_start_monitoring
     Meddle.any_instance.expects(:monitor)
     Timer.expects(:get).returns(stub(:join => nil)).times(2)
-    God.meddle {}
+    God.meddle(:port => 9999) {}
   end
 end

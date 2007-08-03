@@ -3,24 +3,63 @@
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'rubygems'
-require 'daemons'
 require 'optparse'
+require 'drb'
+
+require 'daemons'
 require 'god'
 
-options = {}
+
+options = {:daemonize => true, :port => 17165}
+
 OptionParser.new do |opts|
-  opts.banner = "Usage: god command [options]"
+  opts.banner = <<-EOF
+Usage: god [command] [options]
+
+  Commands:
+    start <watch or group name>
+    stop <watch or group name>
+    monitor <watch or group name>
+    unmonitor <watch or group name>
+
+  Options:
+EOF
 
   opts.on("-cCONFIG", "--config-file CONFIG", "Configuration file") do |x|
     options[:config] = x
   end
-end.parse!
   
-options[:config] = File.expand_path(options[:config]) if options[:config]
+  opts.on("-pPORT", "--port PORT", "Communications port") do |x|
+    options[:port] = x
+  end
+  
+  opts.on("-D", "--no-daemonize", "Don't daemonize") do
+    options[:daemonize] = false
+  end
+end.parse!
 
-# p options
-# p ARGV
+if command = ARGV[0]
+  name = ARGV[1]
+  
+  DRb.start_service
+  server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
+      
+  case command
+    when "start", "monitor"
+      server.meddle.watches[name].monitor
+    when "restart"
+      server.meddle.watches[name].move(:restart)
+    when "stop"
+      server.meddle.watches[name].unmonitor.action(:stop)
+    when "unmonitor"
+      server.meddle.watches[name].unmonitor
+    else
+      abort "Command '#{command}' is not valid. Run 'god --help' for usage"
+  end
+else
+  options[:config] = File.expand_path(options[:config]) if options[:config]
 
-Daemons.run_proc('god') do
+  Daemons.daemonize if options[:daemonize]
+
   load options[:config]
 end

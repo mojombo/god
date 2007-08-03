@@ -6,7 +6,8 @@ module God
     VALID_STATES = [:init, :up, :start, :restart]
     
     # config
-    attr_accessor :name, :state, :start, :stop, :restart, :interval, :grace,
+    attr_accessor :name, :state, :start, :stop, :restart, :interval,
+                  :grace, :start_grace, :stop_grace, :restart_grace,
                   :user, :group
     
     attr_writer   :autostart
@@ -24,7 +25,7 @@ module God
       @meddle = meddle
             
       # no grace period by default
-      self.grace = 0
+      self.grace = self.start_grace = self.stop_grace = self.restart_grace = 0
       
       # the list of behaviors
       self.behaviors = []
@@ -110,7 +111,7 @@ module God
     #
     ###########################################################################
         
-    # Schedule all poll conditions and register all condition events
+    # Enable monitoring
     def monitor
       # start monitoring at the first available of the init or up states
       if !self.metrics[:init].empty?
@@ -118,6 +119,11 @@ module God
       else
         self.move(:up)
       end
+    end
+    
+    # Disable monitoring
+    def unmonitor
+      self.move(nil)
     end
     
     # Move from one state to another
@@ -135,10 +141,15 @@ module God
       self.action(to_state)
       
       # move to new state
-      self.metrics[to_state].each { |m| m.enable }
+      if to_state
+        self.metrics[to_state].each { |m| m.enable }
+      end
       
       # set state
       self.state = to_state
+      
+      # return self
+      self
     end
     
     def action(a, c = nil)
@@ -147,7 +158,7 @@ module God
         Syslog.debug(self.start)
         puts self.start
         call_action(c, :start, self.start)
-        sleep(self.grace)
+        sleep(self.start_grace + self.grace)
       when :restart
         if self.restart
           Syslog.debug(self.restart)
@@ -157,12 +168,12 @@ module God
           action(:stop, c)
           action(:start, c)
         end
-        sleep(self.grace)
+        sleep(self.restart_grace + self.grace)
       when :stop
         Syslog.debug(self.stop)
         puts self.stop
         call_action(c, :stop, self.stop)
-        sleep(self.grace)
+        sleep(self.stop_grace + self.grace)
       end      
     end
     

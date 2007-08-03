@@ -5,12 +5,12 @@ require 'drb'
 module God
 
   class Server
-    attr_reader :host, :port
+    attr_reader :meddle, :host, :port
 
     def initialize(meddle = nil, host = nil, port = nil)
       @meddle = meddle
       @host = host
-      @port = port || 7777
+      @port = port || 17165
       start
     end
 

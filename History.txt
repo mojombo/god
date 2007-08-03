@@ -1,3 +1,12 @@
+== 0.3.0 /
+
+* Add uid/gid setting for processes [kevinclark]
+* Add autostart flag for watches so they don't necessarily startup with god [kevinclark]
+* Change command line call options for god binary to accommodate watch start/stop functionality
+* Add individual start/stop/restart grace periods for finer grained control
+* Change default DRb port to 17165 (god in base 32)
+* Implement command line control to start/restart/stop/monitor/unmonitor watches by name
+
 == 0.2.1 / 
 
 * Fix netlink header problem on Ubuntu Edgy [Dan Sully]
