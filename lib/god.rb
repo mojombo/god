@@ -30,6 +30,8 @@ require 'god/watch'
 require 'god/meddle'
 
 require 'god/event_handler'
+require 'god/registry'
+require 'god/process'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
