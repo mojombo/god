@@ -33,7 +33,11 @@ require 'god/event_handler'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
-Syslog.open('god')
+begin
+  Syslog.open('god')
+rescue RuntimeError
+  Syslog.reopen('god')
+end
 
 God::EventHandler.load
 
