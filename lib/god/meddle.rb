@@ -39,6 +39,9 @@ module God
         @groups[w.group] ||= []
         @groups[w.group] << w.name
       end
+
+      # register watch
+      w.register!
     end
     
     # Start monitoring any watches set to autostart

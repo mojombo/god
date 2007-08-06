@@ -1,4 +1,5 @@
 require 'etc'
+require 'forwardable'
 
 module God
   
@@ -6,12 +7,16 @@ module God
     VALID_STATES = [:init, :up, :start, :restart]
     
     # config
-    attr_accessor :name, :state, :start, :stop, :restart, :interval,
-                  :grace, :start_grace, :stop_grace, :restart_grace,
-                  :uid, :gid, :group
+    attr_accessor :state, :interval, :group,
+                  :grace, :start_grace, :stop_grace, :restart_grace
+                  
     
     attr_writer   :autostart
     def autostart?; @autostart; end
+    
+    extend Forwardable
+    def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart,
+                              :name=, :uid=, :gid=, :start=, :stop=, :restart=
     
     # api
     attr_accessor :behaviors, :metrics
@@ -22,6 +27,8 @@ module God
     # 
     def initialize(meddle)
       @autostart ||= true
+      @process = God::Process.new
+      
       @meddle = meddle
             
       # no grace period by default
@@ -157,13 +164,13 @@ module God
       when :start
         Syslog.debug(self.start)
         puts self.start
-        call_action(c, :start, self.start)
+        call_action(c, :start)
         sleep(self.start_grace + self.grace)
       when :restart
         if self.restart
           Syslog.debug(self.restart)
           puts self.restart
-          call_action(c, :restart, self.restart)
+          call_action(c, :restart)
         else
           action(:stop, c)
           action(:start, c)
@@ -172,31 +179,18 @@ module God
       when :stop
         Syslog.debug(self.stop)
         puts self.stop
-        call_action(c, :stop, self.stop)
+        call_action(c, :stop)
         sleep(self.stop_grace + self.grace)
       end      
     end
     
-    def call_action(condition, action, command)
+    def call_action(condition, action)
       # before
       before_items = self.behaviors
       before_items += [condition] if condition
       before_items.each { |b| b.send("before_#{action}") }
       
-      # action
-      if command.kind_of?(String)
-        # string command
-        # fork/exec to setuid/gid
-        fork {
-          Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-          Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
-          $0 = command
-          exec command
-        }
-      else
-        # lambda command
-        command.call
-      end
+      @process.call_action(action)
       
       # after
       after_items = self.behaviors
@@ -206,6 +200,10 @@ module God
     
     def canonical_hash_form(to)
       to.instance_of?(Symbol) ? {true => to} : to
+    end
+    
+    def register!
+      God.registry.add @process
     end
   end
   

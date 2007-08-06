@@ -4,6 +4,7 @@ class TestMeddle < Test::Unit::TestCase
   def setup
     Server.stubs(:new).returns(true)
     @meddle = Meddle.new
+    God.registry.reset
   end
   
   def test_should_initialize_watches_to_empty_array
@@ -18,6 +19,12 @@ class TestMeddle < Test::Unit::TestCase
     assert_equal watch, @meddle.watches.values.first
     
     assert_equal 0, @meddle.groups.size
+  end
+  
+  def test_watches_should_register_processes
+    assert_nil God.registry['foo']
+    @meddle.watch { |w| w.name = 'foo' }
+    assert_kind_of God::Process, God.registry['foo']
   end
   
   def test_watches_should_get_stored_by_group
