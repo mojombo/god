@@ -218,7 +218,7 @@ code {
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.2.0)</h1>
+	<h1>Installation (v 0.3.0)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	<p>You can also peruse or clone the code from <a href="http://repo.or.cz/w/god.git">http://repo.or.cz/w/god.git</a></p>
@@ -331,7 +331,7 @@ end</code></pre>
 <p>Behaviors allow you to execute additional commands around start/stop/restart commands. In our case, if the process dies it will leave a PID file behind. The next time a start command is issued, it will fail, complaining about the leftover PID file. We'd like the PID file cleaned up before a start command is issued. The built-in behavior <code>clean_pid_file</code> will do just that. All we have to do is specify the location of the PID file.</p>
 
 <pre><code class="ruby">      w.start_if do |start|
-        start.condition(:process_not_running) do |c|
+        start.condition(:process_running) do |c|
           c.interval = 5 # seconds
           c.running = false
           c.pid_file = pid_file
@@ -365,15 +365,19 @@ end</code></pre>
       
 <p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted.</p>
 
-<h1>Starting God</h1>
+<h1>Starting and Controlling God</h1>
 
-<p>To start the god monitoring process simply run the <code>god</code> executable passing in the path to the config file:</p>
+<p>To start the god monitoring process as a daemon simply run the <code>god</code> executable passing in the path to the config file (you need to sudo if you're using events on Linux or want to use the setuid/setgid functionality):</p>
 
-<pre>$ god start -c /path/to/config.god</pre>
+<pre>$ sudo god -c /path/to/config.god</pre>
 
 <p>While you're writing your config file, it can be helpful to run god in the foreground so you can see the log messages. You can do that with:</p>
 
-<pre>$ god run -c /path/to/config.god</pre>
+<pre>$ sudo god -c /path/to/config.god -D</pre>
+
+<p>You can start/restart/stop/monitor/unmonitor your Watches with the same utility like so:</p>
+
+<pre>$ sudo god stop 'gravatar2-mongrel-8200'</pre>
 
 <h1>Advanced Configuration with Transitions and Events</h1>
 

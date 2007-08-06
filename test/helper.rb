@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
 
 require 'test/unit'
+require 'set'
 
 begin
   require 'mocha'

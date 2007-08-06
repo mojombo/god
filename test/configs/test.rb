@@ -2,15 +2,20 @@ if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
 
-RAILS_ROOT = "/Users/kev/code/tak"
+ENV['GOD_TEST_RAILS_ROOT'] || abort("Set a rails root for testing in an environment variable called GOD_TEST_RAILS_ROOT")
+
+RAILS_ROOT = ENV['GOD_TEST_RAILS_ROOT']
 
 God.meddle do |god|
   god.watch do |w|
     w.name = "local-3000"
     w.interval = 5 # seconds
     w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -p 3001 -d"
+    w.restart = "mongrel_rails restart -P ./log/mongrel.pid -c #{RAILS_ROOT}"
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-    # w.autostart = false
+    w.restart_grace = 5 # seconds
+    w.stop_grace = 5 # seconds
+    w.autostart = false
     # w.user = "kev"
     # w.group = "kev"
     

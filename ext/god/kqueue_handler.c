@@ -5,9 +5,9 @@
 #include <sys/time.h>
 #include <errno.h>
 
+static VALUE mGod;
 static VALUE cKQueueHandler;
 static VALUE cEventHandler;
-static VALUE mGod;
 
 static ID proc_exit;
 static ID proc_fork;

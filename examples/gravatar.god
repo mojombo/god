@@ -1,4 +1,4 @@
-# run with:  god start -c /path/to/gravatar.god
+# run with:  god -c /path/to/gravatar.god
 # 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.

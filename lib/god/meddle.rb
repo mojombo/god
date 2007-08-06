@@ -5,11 +5,12 @@ module God
     attr_accessor :server
     
     # api
-    attr_accessor :watches
+    attr_accessor :watches, :groups
     
     # Create a new instance that is ready for use by a configuration file
     def initialize(options = {})
-      self.watches = []
+      self.watches = {}
+      self.groups = {}
       self.server  = Server.new(self, options[:host], options[:port])
     end
       
@@ -21,17 +22,28 @@ module God
       yield(w)
       
       # ensure the new watch has a unique name
-      unless @watches.select { |x| x.name == w.name }.empty?
-        abort "Duplicate Watch with name '#{w.name}'"
+      if @watches[w.name] || @groups[w.name]
+        abort "Watch name '#{w.name}' already used for a Watch or Group"
       end
       
       # add to list of watches
-      @watches << w
+      @watches[w.name] = w
+      
+      # add to group if specified
+      if w.group
+        # ensure group name hasn't been used for a watch already
+        if @watches[w.group]
+          abort "Group name '#{w.group}' already used for a Watch"
+        end
+      
+        @groups[w.group] ||= []
+        @groups[w.group] << w.name
+      end
     end
     
-    # Schedule all poll conditions and register all condition events
+    # Start monitoring any watches set to autostart
     def monitor
-      @watches.each { |w| w.monitor if w.autostart? }
+      @watches.values.each { |w| w.monitor if w.autostart? }
     end
   end
   

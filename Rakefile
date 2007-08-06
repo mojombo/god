@@ -3,7 +3,7 @@
 require 'rubygems'
 require 'hoe'
 
-Hoe.new('god', '0.2.1') do |p|
+Hoe.new('god', '0.3.0') do |p|
   p.rubyforge_name = 'god'
   p.author = 'Tom Preston-Werner'
   p.email = 'tom@rubyisawesome.com'

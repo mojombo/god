@@ -3,9 +3,8 @@ Manifest.txt
 README.txt
 Rakefile
 bin/god
+examples/events.god
 examples/gravatar.god
-examples/local.god
-ext/god/Makefile
 ext/god/extconf.rb
 ext/god/kqueue_handler.c
 ext/god/netlink_handler.c
@@ -22,6 +21,7 @@ lib/god/conditions/process_running.rb
 lib/god/conditions/timeline.rb
 lib/god/errors.rb
 lib/god/event_handler.rb
+lib/god/event_handlers/dummy_handler.rb
 lib/god/event_handlers/kqueue_handler.rb
 lib/god/event_handlers/netlink_handler.rb
 lib/god/hub.rb
@@ -38,6 +38,7 @@ test/helper.rb
 test/suite.rb
 test/test_behavior.rb
 test/test_condition.rb
+test/test_event_handler.rb
 test/test_god.rb
 test/test_meddle.rb
 test/test_metric.rb

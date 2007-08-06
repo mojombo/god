@@ -9,9 +9,9 @@
 #include <linux/cn_proc.h>
 #include <errno.h>
 
+static VALUE mGod;
 static VALUE cNetlinkHandler;
 static VALUE cEventHandler;
-static VALUE mGod;
 
 static ID proc_exit;
 static ID proc_fork;

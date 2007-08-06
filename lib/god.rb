@@ -31,16 +31,18 @@ require 'god/meddle'
 
 require 'god/event_handler'
 
-Thread.abort_on_exception = true
-
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
-Syslog.open('god')
+begin
+  Syslog.open('god')
+rescue RuntimeError
+  Syslog.reopen('god')
+end
 
 God::EventHandler.load
 
 module God
-  VERSION = '0.2.1'
+  VERSION = '0.3.0'
     
   def self.meddle(options = {})  
     m = Meddle.new(options)
@@ -54,10 +56,10 @@ module God
     # start the timer system
     Timer.get
 
-    # start monitoring each watch
+    # start monitoring
     m.monitor
     
-    # join the timer thread to we don't exit
+    # join the timer thread so we don't exit
     Timer.get.join
   end  
 end
