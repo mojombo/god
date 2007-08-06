@@ -21,7 +21,7 @@ module God
           raise NotImplementedError, "Platform not supported for EventHandler"
         end
         @@loaded = true
-      rescue LoadError
+      rescue
         require 'god/event_handlers/dummy_handler'
         @@handler = DummyHandler
         @@loaded = false

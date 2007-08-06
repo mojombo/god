@@ -31,8 +31,6 @@ require 'god/meddle'
 
 require 'god/event_handler'
 
-Thread.abort_on_exception = true
-
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
 Syslog.open('god')

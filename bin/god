@@ -9,6 +9,16 @@ require 'drb'
 require 'daemons'
 require 'god'
 
+unless God::EventHandler.loaded?
+  puts
+  puts "***********************************************************************"
+  puts "*"
+  puts "* Event conditions are not available for your installation of god."
+  puts "* You may still use and write custom conditions using the poll system"
+  puts "*"
+  puts "***********************************************************************"
+  puts
+end
 
 options = {:daemonize => true, :port => 17165}
 
