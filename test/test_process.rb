@@ -6,16 +6,16 @@ class TestProcess < Test::Unit::TestCase
   end
   
   # These actually excercise call_action in the back at this point - Kev
-  def test_start_bang_with_string_should_fork_exec 
+  def test_call_action_with_string_should_fork_exec 
     @p.start = "do something"
     @p.expects(:fork)
-    @p.start!
+    @p.call_action(:start)
   end
   
-  def test_start_bang_with_lambda_should_call
+  def test_call_action_with_lambda_should_call
     cmd = lambda { puts "Hi" }
     cmd.expects(:call)
     @p.start = cmd
-    @p.start!
+    @p.call_action(:start)
   end
 end
