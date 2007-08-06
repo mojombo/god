@@ -16,6 +16,31 @@ class TestMeddle < Test::Unit::TestCase
     
     assert_equal 1, @meddle.watches.size
     assert_equal watch, @meddle.watches.values.first
+    
+    assert_equal 0, @meddle.groups.size
+  end
+  
+  def test_watches_should_get_stored_by_group
+    @meddle.watch do |w|
+      w.name = 'foo'
+      w.group = 'test'
+    end
+    
+    assert_equal({'test' => ['foo']}, @meddle.groups)
+  end
+  
+  def test_multiple_watches_should_get_stored_by_group
+    @meddle.watch do |w|
+      w.name = 'foo'
+      w.group = 'test'
+    end
+    
+    @meddle.watch do |w|
+      w.name = 'bar'
+      w.group = 'test'
+    end
+    
+    assert_equal({'test' => ['foo', 'bar']}, @meddle.groups)
   end
 
   def test_should_kick_off_a_server_instance

@@ -36,27 +36,44 @@ EOF
   opts.on("-D", "--no-daemonize", "Don't daemonize") do
     options[:daemonize] = false
   end
+  
+  opts.on("-v", "--version", "Print the version number and exit") do
+    options[:version] = true
+  end
 end.parse!
 
-if command = ARGV[0]
+if options[:version]
+  puts "Version #{God::VERSION}"
+  exit
+elsif command = ARGV[0]
+  # a command was specified
+  
+  # get the name of the watch/group
   name = ARGV[1]
   
+  # connect to remote drb
   DRb.start_service
   server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
-      
+  
+  # get the list of watches
+  watches = Array(server.meddle.watches[name] || server.meddle.groups[name])
+  
+  # do the command
   case command
     when "start", "monitor"
-      server.meddle.watches[name].monitor
+      watches.each { |w| w.monitor }
     when "restart"
-      server.meddle.watches[name].move(:restart)
+      watches.each { |w| w.move(:restart) }
     when "stop"
-      server.meddle.watches[name].unmonitor.action(:stop)
+      watches.each { |w| w.unmonitor.action(:stop) }
     when "unmonitor"
-      server.meddle.watches[name].unmonitor
+      watches.each { |w| w.unmonitor }
     else
       abort "Command '#{command}' is not valid. Run 'god --help' for usage"
   end
 else
+  # start god
+  
   options[:config] = File.expand_path(options[:config]) if options[:config]
 
   Daemons.daemonize if options[:daemonize]

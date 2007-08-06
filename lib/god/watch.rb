@@ -8,7 +8,7 @@ module God
     # config
     attr_accessor :name, :state, :start, :stop, :restart, :interval,
                   :grace, :start_grace, :stop_grace, :restart_grace,
-                  :user, :group
+                  :uid, :gid, :group
     
     attr_writer   :autostart
     def autostart?; @autostart; end
@@ -188,8 +188,8 @@ module God
         # string command
         # fork/exec to setuid/gid
         fork {
-          Process::Sys.setgid(Etc.getgrnam(self.group).gid) if self.group
-          Process::Sys.setuid(Etc.getpwnam(self.user).uid) if self.user
+          Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
+          Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
           $0 = command
           exec command
         }
