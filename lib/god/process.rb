@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module God
   class Process
     WRITES_PID = [:start, :restart]
@@ -37,6 +39,9 @@ module God
         }
         
         if @tracking_pid or (self.pid_file.nil? and WRITES_PID.include?(action))
+          unless test(?d, God.pid_file_directory)
+            FileUtils.mkdir_p(God.pid_file_directory)
+          end
           File.open(default_pid_file, 'w') do |f|
             f.write pid
           end
