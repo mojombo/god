@@ -16,7 +16,8 @@ module God
     
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart,
-                              :name=, :uid=, :gid=, :start=, :stop=, :restart=
+                              :name=, :uid=, :gid=, :start=, :stop=, :restart=,
+                              :pid_file, :pid_file=
     
     # api
     attr_accessor :behaviors, :metrics

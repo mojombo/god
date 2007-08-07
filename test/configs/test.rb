@@ -19,18 +19,18 @@ God.meddle do |god|
     # w.user = "kev"
     # w.group = "kev"
     
-    pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
     
     # clean pid files before start if necessary
     w.behavior(:clean_pid_file) do |b|
-      b.pid_file = pid_file
+      b.pid_file = w.pid_file
     end
     
     # determine the state on startup
     w.transition(:init, { true => :up, false => :start }) do |on|
       on.condition(:process_running) do |c|
         c.running = true
-        c.pid_file = pid_file
+        c.pid_file = w.pid_file
       end
     end
     
@@ -38,14 +38,14 @@ God.meddle do |god|
     w.transition([:start, :restart], :up) do |on|
       on.condition(:process_running) do |c|
         c.running = true
-        c.pid_file = pid_file
+        c.pid_file = w.pid_file
       end
     end
   
     # start if process is not running
     w.transition(:up, :start) do |on|
       on.condition(:process_exits) do |c|
-        c.pid_file = pid_file
+        c.pid_file = w.pid_file
       end
     end
     
@@ -53,14 +53,14 @@ God.meddle do |god|
     w.transition(:up, :restart) do |on|
       on.condition(:memory_usage) do |c|
         c.interval = 20
-        c.pid_file = pid_file
+        c.pid_file = w.pid_file
         c.above = (50 * 1024) # 50mb
         c.times = [3, 5]
       end
       
       on.condition(:cpu_usage) do |c|
         c.interval = 10
-        c.pid_file = pid_file
+        c.pid_file = w.pid_file
         c.above = 10 # percent
         c.times = [3, 5]
       end

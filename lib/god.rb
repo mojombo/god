@@ -45,7 +45,16 @@ God::EventHandler.load
 
 module God
   VERSION = '0.3.0'
-    
+  
+  # Where pid files created by god will go by default
+  def self.pid_file_directory
+    @pid_file_directory ||= '/var/run/god'
+  end
+  
+  def self.pid_file_directory=(value)
+    @pid_file_directory = value
+  end
+  
   def self.meddle(options = {})  
     m = Meddle.new(options)
     
