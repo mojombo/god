@@ -5,8 +5,9 @@
 * Change command line call options for god binary to accommodate watch start/stop functionality
 * Add individual start/stop/restart grace periods for finer grained control
 * Change default DRb port to 17165 ('god'.to_i(32))
-* Implement command line control to start/restart/stop/monitor/unmonitor watches by name
+* Implement command line control to start/restart/stop/monitor/unmonitor watches/groups by name
 * Watches can now belong to a group that can be controlled as a whole
+* Allow god to be installed (sans events) on systems that don't support events
 
 == 0.2.1 / 
 

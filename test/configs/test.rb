@@ -15,7 +15,8 @@ God.meddle do |god|
     w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
     w.restart_grace = 5 # seconds
     w.stop_grace = 5 # seconds
-    w.autostart = false
+    w.autostart = true
+    w.group = 'mongrels'
     # w.user = "kev"
     # w.group = "kev"
     

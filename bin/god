@@ -66,7 +66,7 @@ elsif command = ARGV[0]
   server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
   
   # get the list of watches
-  watches = Array(server.meddle.watches[name] || server.meddle.groups[name])
+  watches = Array(server.watches[name] || server.groups[name])
   
   # do the command
   case command

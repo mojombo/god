@@ -231,8 +231,10 @@ code {
 	
 	<ul>
 	  <li>Darwin 10.4.10</li>
-	  <li>RedHat Fedora Core</li>
+	  <li>RedHat Fedora Core 6</li>
+	  <li>Ubuntu Dapper (no events)</li>
 	  <li>Ubuntu Feisty</li>
+	  <li>CentOS 4.5 (no events)</li>
 	</ul>
 
 	<h1>Finally, a Config File that Makes Sense</h1>
@@ -365,6 +367,40 @@ end</code></pre>
       
 <p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted.</p>
 
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Changing UID/GID for processes</h1>
+
+<p>It is possible to have god run your start/stop/restart commands as a specific user/group. This can be done by setting the <code>uid</code> and/or <code>gid</code> attributes of a watch.</p>
+
+<pre><code class="ruby">    god.watch do |w|
+      ...
+      
+      w.uid = 'tom'
+      w.gid = 'devs'
+      
+      ...
+    end</code></pre>
+    
+</p>This only works for commands specified as a string. Lambda commands are unaffected.</p>
+
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Lambda commands</h1>
+
+<p>In addition to specifying start/stop/restart commands as strings (to be executed via the shell), you can specify a lambda that will be called.</p>
+
+<pre><code class="ruby">    god.watch do |w|
+      ...
+      
+      w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
+      
+      ...
+    end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
 <h1>Starting and Controlling God</h1>
 
 <p>To start the god monitoring process as a daemon simply run the <code>god</code> executable passing in the path to the config file (you need to sudo if you're using events on Linux or want to use the setuid/setgid functionality):</p>
@@ -378,6 +414,26 @@ end</code></pre>
 <p>You can start/restart/stop/monitor/unmonitor your Watches with the same utility like so:</p>
 
 <pre>$ sudo god stop 'gravatar2-mongrel-8200'</pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Grouping Watches</h1>
+
+<p>Watches can be assigned to groups. These groups can then be controlled together from the command line.</p>
+
+<pre><code class="ruby">    god.watch do |w|
+      ...
+      
+      w.group = 'mongrels'
+      
+      ...
+    end</code></pre>
+    
+<p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
+
+<pre>$ sudo god stop 'mongrels'</pre>
+
+<!-- ------------------------------------------------------------------------- -->
 
 <h1>Advanced Configuration with Transitions and Events</h1>
 
@@ -500,7 +556,7 @@ end
 
 <p>Notice that I can have multiple transitions with the same start state. In this case, I want to have the <code>memory_usage</code> and <code>cpu_usage</code> poll conditions going at the same time that I listen for the process exit event. In the case of runaway CPU or memory usage, however, I want to transition to the <code>restart</code> state. When a Watch enters the <code>restart</code> state it will either call the <code>restart</code> command that you specified, or if none has been set, call the <code>stop</code> and then <code>start</code> commands.</p>
 
-
+<!-- ------------------------------------------------------------------------- -->
 
 <h1>Extend God with your own Conditions</h1>
 
@@ -524,7 +580,7 @@ end
       def test
         return !self.running unless File.exist?(self.pid_file)
         
-        pid = File.open(self.pid_file).read.strip
+        pid = File.open(self.pid_file) { |f| f.read }.strip
         active = System::Process.new(pid).exists?
         
         (self.running && active) || (!self.running && !active)
