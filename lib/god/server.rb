@@ -5,17 +5,16 @@ require 'drb'
 module God
 
   class Server
-    attr_reader :meddle, :host, :port
+    attr_reader :host, :port
 
-    def initialize(meddle = nil, host = nil, port = nil)
-      @meddle = meddle
+    def initialize(host = nil, port = nil)
       @host = host
       @port = port || 17165
       start
     end
 
     def method_missing(*args, &block)
-      @meddle.send(*args, &block)
+      God.send(*args, &block)
     end
     
     def ping

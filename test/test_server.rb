@@ -14,11 +14,12 @@ class TestServer < Test::Unit::TestCase
 
   def test_should_use_supplied_port_and_host
     DRb.expects(:start_service).with { |uri, object| uri == "druby://host:port" && object.is_a?(Server) }
-    server = Server.new(nil, 'host', 'port')
+    server = Server.new('host', 'port')
   end
 
   def test_should_forward_foreign_method_calls_to_meddle
-    server = Server.new(mock(:something_random => true))
+    server = Server.new
+    God.expects(:send).with(:something_random)
     server.something_random
   end
 end

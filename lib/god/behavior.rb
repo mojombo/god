@@ -1,6 +1,6 @@
 module God
   
-  class Behavior < Base
+  class Behavior
     attr_accessor :watch
     
     # Generate a Behavior of the given kind. The proper class if found by camel casing the

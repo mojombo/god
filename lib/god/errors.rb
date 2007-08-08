@@ -9,4 +9,7 @@ module God
   class NoSuchBehaviorError < StandardError
   end
   
+  class InvalidCommandError < StandardError
+  end
+  
 end

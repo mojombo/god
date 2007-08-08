@@ -9,10 +9,10 @@ module God
     end
   end
   
-  class Timer < Base
+  class Timer
     INTERVAL = 0.25
     
-    attr_reader :events
+    attr_reader :events, :timer
     
     @@timer = nil
     

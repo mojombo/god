@@ -21,16 +21,6 @@ module God
   class AbortCalledError < StandardError
   end
 
-  class Base
-    def abort(msg)
-      raise AbortCalledError.new("abort called")
-    end
-    
-    def self.abort(msg)
-      raise AbortCalledError.new("abort called")
-    end
-  end
-
   module Conditions
     class FakeCondition < Condition
       def test
@@ -54,6 +44,26 @@ module God
   module Behaviors
     class FakeBehavior < Behavior
     end
+  end
+  
+  def self.at_exit
+    # disable at_exit
+  end
+  
+  def self.reset
+    self.watches = nil
+    self.groups = nil
+    self.server = nil
+    self.inited = nil
+    self.host = nil
+    self.port = nil
+    self.registry.reset
+  end
+end
+
+module Kernel
+  def abort(msg)
+    raise God::AbortCalledError.new(msg)
   end
 end
 

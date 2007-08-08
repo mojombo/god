@@ -16,6 +16,7 @@ class TestProcess < Test::Unit::TestCase
   def setup
     @p = God::Process.new(:name => 'foo', :pid_file => 'blah.pid')
     @p.stubs(:test).returns true # so we don't try to mkdir_p
+    Process.stubs(:detach) # because we stub fork
   end
   
   # These actually excercise call_action in the back at this point - Kev
@@ -56,10 +57,10 @@ class TestProcess < Test::Unit::TestCase
     @p.call_action(:stop)
   end
   
-  def test_call_action_should_mkdir_p_if_test_fails
+  def test_call_action_should_mkdir_p_if_pid_file_dir_existence_test_fails
     @p.pid_file = nil
     @p.expects(:fork)
-    @p.stubs(:test).returns false
+    @p.expects(:test).returns(false, true)
     FileUtils.expects(:mkdir_p).with(God.pid_file_directory)
     File.expects(:open)
     @p.start = "starting"

@@ -11,6 +11,9 @@
 * Daemonize and handle PID files for non-daemonizing scripts [kevinclark]
 * Fix simple mode lifecycle gap
 * Remove necessity to specify pid_file for every condition
+* Change config file to use God.init and God.watch directly instead of God.meddle block
+* Moved god binary command logic to main library
+* Enhanced god binary with better reporting
 
 == 0.2.1 / 
 

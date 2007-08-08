@@ -1,6 +1,6 @@
 module God
   
-  class Metric < Base
+  class Metric
     attr_accessor :watch, :destination, :conditions
     
     def initialize(watch, destination)
@@ -31,7 +31,7 @@ module God
         abort "Exiting on invalid condition"
       end
       
-      # inherit interval from meddle if no poll condition specific interval was set
+      # inherit interval from watch if no poll condition specific interval was set
       if c.kind_of?(PollCondition) && !c.interval
         if self.watch.interval
           c.interval = self.watch.interval

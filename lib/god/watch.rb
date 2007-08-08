@@ -3,7 +3,7 @@ require 'forwardable'
 
 module God
   
-  class Watch < Base
+  class Watch
     VALID_STATES = [:init, :up, :start, :restart]
     
     # config
@@ -26,11 +26,9 @@ module God
     attr_accessor :mutex
     
     # 
-    def initialize(meddle)
+    def initialize
       @autostart ||= true
       @process = God::Process.new
-      
-      @meddle = meddle
             
       # no grace period by default
       self.grace = self.start_grace = self.stop_grace = self.restart_grace = 0
@@ -51,7 +49,7 @@ module God
     def behavior(kind)
       # create the behavior
       begin
-        b = Behavior.generate(kind)
+        b = Behavior.generate(kind, self)
       rescue NoSuchBehaviorError => e
         abort e.message
       end
@@ -136,7 +134,7 @@ module God
     
     # Move from one state to another
     def move(to_state)
-      msg = "move '#{self.state}' to '#{to_state}'"
+      msg = "#{self.name} move '#{self.state}' to '#{to_state}'"
       Syslog.debug(msg)
       puts msg
        

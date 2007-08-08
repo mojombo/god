@@ -9,17 +9,6 @@ require 'drb'
 require 'daemons'
 require 'god'
 
-unless God::EventHandler.loaded?
-  puts
-  puts "***********************************************************************"
-  puts "*"
-  puts "* Event conditions are not available for your installation of god."
-  puts "* You may still use and write custom conditions using the poll system"
-  puts "*"
-  puts "***********************************************************************"
-  puts
-end
-
 options = {:daemonize => true, :port => 17165}
 
 OptionParser.new do |opts|
@@ -53,10 +42,17 @@ EOF
 end.parse!
 
 if options[:version]
+  # disable at_exit
+  module God; def self.at_exit; end; end
+
+  # print version
   puts "Version #{God::VERSION}"
   exit
 elsif command = ARGV[0]
   # a command was specified
+  
+  # disable at_exit
+  module God; def self.at_exit; end; end
   
   # get the name of the watch/group
   name = ARGV[1]
@@ -65,24 +61,33 @@ elsif command = ARGV[0]
   DRb.start_service
   server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
   
-  # get the list of watches
-  watches = Array(server.watches[name] || server.groups[name])
-  
-  # do the command
-  case command
-    when "start", "monitor"
-      watches.each { |w| w.monitor }
-    when "restart"
-      watches.each { |w| w.move(:restart) }
-    when "stop"
-      watches.each { |w| w.unmonitor.action(:stop) }
-    when "unmonitor"
-      watches.each { |w| w.unmonitor }
-    else
-      abort "Command '#{command}' is not valid. Run 'god --help' for usage"
+  begin
+    puts "Sending '#{command}' command"
+    
+    # send command
+    watches = server.control(name, command)
+    
+    # output response
+    puts 'The following watches were affected:'
+    watches.each do |w|
+      puts '  ' + w.name
+    end
+  rescue God::InvalidCommandError
+    abort "Command '#{command}' is not valid. Run 'god --help' for usage"
   end
 else
   # start god
+  
+  unless God::EventHandler.loaded?
+    puts
+    puts "***********************************************************************"
+    puts "*"
+    puts "* Event conditions are not available for your installation of god."
+    puts "* You may still use and write custom conditions using the poll system"
+    puts "*"
+    puts "***********************************************************************"
+    puts
+  end
   
   options[:config] = File.expand_path(options[:config]) if options[:config]
 

@@ -73,7 +73,7 @@ module God
         
         ::Process.detach pid
         
-        if @tracking_pid or (self.pid_file.nil? and WRITES_PID.include?(action))
+        if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
           File.open(default_pid_file, 'w') do |f|
             f.write pid
           end

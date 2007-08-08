@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestWatch < Test::Unit::TestCase
   def setup
-    @watch = Watch.new(nil)
+    @watch = Watch.new
   end
   
   # new
