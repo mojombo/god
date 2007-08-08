@@ -42,24 +42,31 @@ module God
     
     def self.handle_poll(condition)
       Thread.new do
-        metric = @@directory[condition]
-        watch = metric.watch
+        begin
+          metric = @@directory[condition]
+          watch = metric.watch
         
-        watch.mutex.synchronize do
-          result = condition.test
+          watch.mutex.synchronize do
+            result = condition.test
           
-          msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
-          Syslog.debug(msg)
-          puts msg
+            msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
+            Syslog.debug(msg)
+            puts msg
           
-          condition.after
+            condition.after
           
-          if dest = metric.destination[result]
-            watch.move(dest)
-          else
-            # reschedule
-            Timer.get.schedule(condition)
+            if dest = metric.destination[result]
+              watch.move(dest)
+            else
+              # reschedule
+              Timer.get.schedule(condition)
+            end
           end
+        rescue => e
+          message = format("Unhandled exception (%s): %s\n%s",
+                           e.class, e.message, e.backtrace.join("\n"))
+          Syslog.crit message
+          abort message
         end
       end
     end

@@ -192,7 +192,7 @@ module God
       before_items.each { |b| b.send("before_#{action}") }
       
       @process.call_action(action)
-      
+
       # after
       after_items = self.behaviors
       after_items += [condition] if condition

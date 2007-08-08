@@ -28,7 +28,7 @@ module God
       # abort if the Condition is invalid, the Condition will have printed
       # out its own error messages by now
       unless c.valid?
-        abort
+        abort "Exiting on invalid condition"
       end
       
       # inherit interval from meddle if no poll condition specific interval was set
