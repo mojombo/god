@@ -14,6 +14,8 @@ module God
       @tracking_pid = false
     end
     
+    # DON'T USE THIS INTERNALLY. Use the instance variable. -- Kev
+    # No really, trust me. Use the instance variable.
     def pid_file=(value)
       @tracking_pid = false
       @pid_file = value
@@ -71,13 +73,13 @@ module God
         
         ::Process.detach pid
         
-        if @tracking_pid or (self.pid_file.nil? and WRITES_PID.include?(action))          
+        if @tracking_pid or (self.pid_file.nil? and WRITES_PID.include?(action))
           File.open(default_pid_file, 'w') do |f|
             f.write pid
           end
           
           @tracking_pid = true
-          self.pid_file = default_pid_file
+          @pid_file = default_pid_file
         end
         
       elsif command.kind_of?(Proc)
