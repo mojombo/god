@@ -148,6 +148,11 @@ module God
       # perform action (if available)
       self.action(to_state)
       
+      # enable simple mode
+      if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
+        to_state = :up
+      end
+      
       # move to new state
       if to_state
         self.metrics[to_state].each { |m| m.enable }

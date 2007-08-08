@@ -8,6 +8,8 @@
 * Implement command line control to start/restart/stop/monitor/unmonitor watches/groups by name
 * Watches can now belong to a group that can be controlled as a whole
 * Allow god to be installed (sans events) on systems that don't support events
+* Daemonize and handle PID files for non-daemonizing scripts [kevinclark]
+* Fix simple mode lifecycle gap
 
 == 0.2.1 / 
 
