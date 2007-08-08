@@ -1,12 +1,16 @@
 module God
   
   class Behavior < Base
+    attr_accessor :watch
+    
     # Generate a Behavior of the given kind. The proper class if found by camel casing the
     # kind (which is given as an underscored symbol).
     #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Behaviors::FooBar)
-    def self.generate(kind)
+    def self.generate(kind, watch)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
-      God::Behaviors.const_get(sym).new
+      b = God::Behaviors.const_get(sym).new
+      b.watch = watch
+      b
     rescue NameError
       raise NoSuchBehaviorError.new("No Behavior found with the class name God::Behaviors::#{sym}")
     end

@@ -14,7 +14,7 @@ module God
     def condition(kind)
       # create the condition
       begin
-        c = Condition.generate(kind)
+        c = Condition.generate(kind, self.watch)
       rescue NoSuchConditionError => e
         abort e.message
       end

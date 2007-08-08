@@ -2,7 +2,7 @@ module God
   module Conditions
     
     class CpuUsage < PollCondition
-      attr_accessor :pid_file, :above, :times
+      attr_accessor :above, :times
     
       def initialize
         super
@@ -20,15 +20,15 @@ module God
     
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute for :memory_usage") if self.pid_file.nil?
+        valid &= complain("You must specify the 'pid_file' attribute on the Watch for :memory_usage") if self.watch.pid_file.nil?
         valid &= complain("You must specify the 'above' attribute for :memory_usage") if self.above.nil?
         valid
       end
     
       def test
-        return false unless File.exist?(self.pid_file)
+        return false unless File.exist?(self.watch.pid_file)
         
-        pid = File.open(self.pid_file) { |f| f.read }.strip
+        pid = File.open(self.watch.pid_file) { |f| f.read }.strip
         process = System::Process.new(pid)
         @timeline.push(process.percent_cpu)
         if @timeline.select { |x| x > self.above }.size >= self.times.first

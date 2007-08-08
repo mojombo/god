@@ -4,15 +4,16 @@ module God
     # Generate a Condition of the given kind. The proper class if found by camel casing the
     # kind (which is given as an underscored symbol).
     #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Conditions::FooBar)
-    def self.generate(kind)
+    def self.generate(kind, watch)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
-      cond = God::Conditions.const_get(sym).new
+      c = God::Conditions.const_get(sym).new
       
-      unless cond.kind_of?(PollCondition) || cond.kind_of?(EventCondition)
-        abort "Condition '#{cond.class.name}' must subclass either God::PollCondition or God::EventCondition" 
+      unless c.kind_of?(PollCondition) || c.kind_of?(EventCondition)
+        abort "Condition '#{c.class.name}' must subclass either God::PollCondition or God::EventCondition" 
       end
       
-      cond
+      c.watch = watch
+      c
     rescue NameError
       raise NoSuchConditionError.new("No Condition found with the class name God::Conditions::#{sym}")
     end

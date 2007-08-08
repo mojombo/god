@@ -10,6 +10,7 @@
 * Allow god to be installed (sans events) on systems that don't support events
 * Daemonize and handle PID files for non-daemonizing scripts [kevinclark]
 * Fix simple mode lifecycle gap
+* Remove necessity to specify pid_file for every condition
 
 == 0.2.1 / 
 
