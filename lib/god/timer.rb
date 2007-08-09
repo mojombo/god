@@ -27,6 +27,7 @@ module God
     # Start the scheduler loop to handle events
     def initialize
       @events = []
+      @mutex = Mutex.new
       
       @timer = Thread.new do
         loop do
@@ -37,7 +38,9 @@ module God
           @events.each do |event|
             if t >= event.at
               self.trigger(event)
-              @events.delete(event)
+              @mutex.synchronize do
+                @events.delete(event)
+              end
             else
               break
             end
@@ -51,13 +54,17 @@ module God
     
     # Create and register a new TimerEvent with the given parameters
     def schedule(condition, interval = condition.interval)
-      @events << TimerEvent.new(condition, interval)
-      @events.sort! { |x, y| x.at <=> y.at }
+      @mutex.synchronize do
+        @events << TimerEvent.new(condition, interval)
+        @events.sort! { |x, y| x.at <=> y.at }
+      end
     end
     
     # Remove any TimerEvents for the given condition
     def unschedule(condition)
-      @events.reject! { |x| x.condition == condition }
+      @mutex.synchronize do
+        @events.reject! { |x| x.condition == condition }
+      end
     end
     
     def trigger(event)
