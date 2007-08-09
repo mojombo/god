@@ -14,7 +14,7 @@ module God
       def test
         return !self.running unless File.exist?(self.watch.pid_file)
         
-        pid = File.open(self.watch.pid_file) { |f| f.read }.strip
+        pid = File.read(self.watch.pid_file).strip
         active = System::Process.new(pid).exists?
         
         (self.running && active) || (!self.running && !active)

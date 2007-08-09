@@ -28,7 +28,7 @@ module God
       def test
         return false unless File.exist?(self.watch.pid_file)
         
-        pid = File.open(self.watch.pid_file) { |f| f.read }.strip
+        pid = File.read(self.watch.pid_file).strip
         process = System::Process.new(pid)
         @timeline.push(process.percent_cpu)
         if @timeline.select { |x| x > self.above }.size >= self.times.first

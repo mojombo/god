@@ -9,7 +9,7 @@ module God
       end
     
       def register
-        pid = File.open(self.watch.pid_file) { |f| f.read }.strip.to_i
+        pid = File.read(self.watch.pid_file).strip.to_i
         
         EventHandler.register(pid, :proc_exit) do
           Hub.trigger(self)
@@ -17,7 +17,7 @@ module God
       end
       
       def deregister
-        pid = File.open(self.watch.pid_file) { |f| f.read }.strip.to_i
+        pid = File.read(self.watch.pid_file).strip.to_i
         EventHandler.deregister(pid, :proc_exit)
       end
     end
