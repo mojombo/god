@@ -77,21 +77,47 @@ elsif command = ARGV[0]
   end
 else
   # start god
+  if !options[:daemonize]
+    load File.expand_path(options[:config])
+  else
+    pid = fork do
+      begin
+        # Dir.chdir "/"
+        STDIN.reopen "/dev/null"
+        STDOUT.reopen('god.log', "a")
+        STDERR.reopen STDOUT
+        
+        puts "Starting god"
+      
+        unless God::EventHandler.loaded?
+          puts
+          puts "***********************************************************************"
+          puts "*"
+          puts "* Event conditions are not available for your installation of god."
+          puts "* You may still use and write custom conditions using the poll system"
+          puts "*"
+          puts "***********************************************************************"
+          puts
+        end
+    
+        puts "Resetting file descriptors"
+      
+        # Daemons.daemonize if options[:daemonize]
   
-  unless God::EventHandler.loaded?
-    puts
-    puts "***********************************************************************"
-    puts "*"
-    puts "* Event conditions are not available for your installation of god."
-    puts "* You may still use and write custom conditions using the poll system"
-    puts "*"
-    puts "***********************************************************************"
-    puts
+        puts "Loading config"
+      
+        load File.expand_path(options[:config])
+      rescue => e
+        File.open('god.log', 'a') { |f| f.puts e.message + "\n" + e.backtrace }
+        abort "!!! ERROR !!!"
+      end
+    end
+  
+    File.open("god.pid", 'w') { |f| f.write pid }
+  
+    ::Process.detach pid
+  
+    # disable at_exit
+    module God; def self.at_exit; end; end
   end
-  
-  options[:config] = File.expand_path(options[:config]) if options[:config]
-
-  Daemons.daemonize if options[:daemonize]
-
-  load options[:config]
 end

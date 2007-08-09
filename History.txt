@@ -12,8 +12,9 @@
 * Fix simple mode lifecycle gap
 * Remove necessity to specify pid_file for every condition
 * Change config file to use God.init and God.watch directly instead of God.meddle block
-* Moved god binary command logic to main library
-* Enhanced god binary with better reporting
+* Move god binary command logic to main library
+* Enhance god binary with better reporting
+* Fix synchronization bug in Timer (reported by Srini Panguluri)
 
 == 0.2.1 / 
 
