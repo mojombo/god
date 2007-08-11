@@ -40,4 +40,8 @@ class TestSugar < Test::Unit::TestCase
     assert_equal 1024 ** 3, 1.gigabytes
     assert_equal 1024 ** 3, 1.gigabyte
   end
+  
+  def test_percent
+    assert_equal 1, 1.percent
+  end
 end

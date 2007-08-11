@@ -14,6 +14,7 @@ lib/god/behaviors/clean_pid_file.rb
 lib/god/condition.rb
 lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
+lib/god/conditions/lambda.rb
 lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_exits.rb
 lib/god/conditions/process_running.rb
@@ -29,6 +30,7 @@ lib/god/process.rb
 lib/god/registry.rb
 lib/god/reporter.rb
 lib/god/server.rb
+lib/god/sugar.rb
 lib/god/system/process.rb
 lib/god/timer.rb
 lib/god/watch.rb
@@ -46,6 +48,7 @@ test/test_process.rb
 test/test_registry.rb
 test/test_reporter.rb
 test/test_server.rb
+test/test_sugar.rb
 test/test_system_process.rb
 test/test_timeline.rb
 test/test_timer.rb
