@@ -42,17 +42,14 @@ EOF
 end.parse!
 
 if options[:version]
-  # disable at_exit
-  module God; def self.at_exit; end; end
-
   # print version
   puts "Version #{God::VERSION}"
-  exit
+  exit!
 elsif command = ARGV[0]
   # a command was specified
   
   # disable at_exit
-  module God; def self.at_exit; end; end
+  # module God; def self.at_exit; end; end
   
   # get the name of the watch/group
   name = ARGV[1]
@@ -75,6 +72,8 @@ elsif command = ARGV[0]
   rescue God::InvalidCommandError
     abort "Command '#{command}' is not valid. Run 'god --help' for usage"
   end
+  
+  exit!
 else
   # start god
   if !options[:daemonize]
