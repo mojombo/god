@@ -7,7 +7,6 @@ require 'optparse'
 require 'drb'
 
 require 'daemons'
-require 'god'
 
 options = {:daemonize => true, :port => 17165}
 
@@ -32,6 +31,14 @@ EOF
     options[:port] = x
   end
   
+  opts.on("-PFILE", "--pid FILE", "Where to write the PID file") do |x|
+    options[:pid] = x
+  end
+  
+  opts.on("-lFILE", "--log FILE", "Where to write the log file") do |x|
+    options[:log] = x
+  end
+  
   opts.on("-D", "--no-daemonize", "Don't daemonize") do
     options[:daemonize] = false
   end
@@ -42,10 +49,14 @@ EOF
 end.parse!
 
 if options[:version]
+  require 'god'
+  
   # print version
   puts "Version #{God::VERSION}"
   exit!
 elsif command = ARGV[0]
+  require 'god'
+  
   # a command was specified
   
   # disable at_exit
@@ -77,13 +88,19 @@ elsif command = ARGV[0]
 else
   # start god
   if !options[:daemonize]
+    require 'god'
     load File.expand_path(options[:config])
   else
     pid = fork do
       begin
+        require 'god'
+        
         # Dir.chdir "/"
+        
+        log_file = options[:log] || "/dev/null"
+        
         STDIN.reopen "/dev/null"
-        STDOUT.reopen('god.log', "a")
+        STDOUT.reopen(log_file, "a")
         STDERR.reopen STDOUT
         
         puts "Starting god"
@@ -112,11 +129,11 @@ else
       end
     end
   
-    File.open("god.pid", 'w') { |f| f.write pid }
+    pid_file = options[:pid] || "god.pid"
+    File.open(pid_file, 'w') { |f| f.write pid }
   
     ::Process.detach pid
   
-    # disable at_exit
-    module God; def self.at_exit; end; end
+    exit!
   end
 end

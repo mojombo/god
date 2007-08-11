@@ -77,11 +77,9 @@ module God
         watch = metric.watch
         
         watch.mutex.synchronize do
-          msg = watch.name + ' ' + condition.class.name + " [true]"
+          msg = watch.name + ' ' + condition.class.name + " [true] " + metric.destination.inspect
           Syslog.debug(msg)
           puts msg
-          
-          p metric.destination
           
           dest = metric.destination[true]
           watch.move(dest)
