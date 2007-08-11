@@ -1,5 +1,6 @@
 == 0.3.0 /
 
+* Fix netlink header problem on Ubuntu Edgy [Dan Sully]
 * Add uid/gid setting for processes [kevinclark]
 * Add autostart flag for watches so they don't necessarily startup with god [kevinclark]
 * Change command line call options for god binary to accommodate watch start/stop functionality
@@ -15,10 +16,8 @@
 * Move god binary command logic to main library
 * Enhance god binary with better reporting
 * Fix synchronization bug in Timer (reported by Srini Panguluri)
-
-== 0.2.1 / 
-
-* Fix netlink header problem on Ubuntu Edgy [Dan Sully]
+* Add Lambda condition for easy custom conditions [Mike Mintz]
+* Add sugar for numerics (seconds, minutes, bytes, kilobytes, etc)
 
 == 0.2.0 / 2007-07-18
 

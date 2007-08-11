@@ -30,6 +30,8 @@ require 'god/event_handler'
 require 'god/registry'
 require 'god/process'
 
+require 'god/sugar'
+
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
 begin

@@ -241,50 +241,42 @@ code {
 	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
 	
 <pre><code class="ruby"># file:      gravatar.god
-# run with:  god start -c /path/to/gravatar.god
+# run with:  god -c /path/to/gravatar.god
 # 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
 RAILS_ROOT = "/var/www/gravatar2/current"
 
-God.meddle do |god|
-  %w{8200 8201 8202}.each do |port|
-    god.watch do |w|
-      w.name = "gravatar2-mongrel-#{port}"
-      w.interval = 30 # seconds default
-      w.start = "mongrel_rails cluster::start --only #{port} \
-        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-      w.stop = "mongrel_rails cluster::stop --only #{port} \
-        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-      w.grace = 10 # seconds
-      
-      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
-      
-      w.behavior(:clean_pid_file) do |b|
-        b.pid_file = pid_file
-      end
+%w{8200 8201 8202}.each do |port|
+  God.watch do |w|
+    w.name = "gravatar2-mongrel-#{port}"
+    w.interval = 30.seconds # default
+    w.start = "mongrel_rails cluster::start --only #{port} \
+      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+    w.stop = "mongrel_rails cluster::stop --only #{port} \
+      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+    w.grace = 10.seconds
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+    
+    w.behavior(:clean_pid_file)
 
-      w.start_if do |start|
-        start.condition(:process_running) do |c|
-          c.interval = 5 # seconds
-          c.running = false
-          c.pid_file = pid_file
-        end
+    w.start_if do |start|
+      start.condition(:process_running) do |c|
+        c.interval = 5.seconds
+        c.running = false
       end
-      
-      w.restart_if do |restart|
-        restart.condition(:memory_usage) do |c|
-          c.pid_file = pid_file
-          c.above = (150 * 1024) # 150mb
-          c.times = [3, 5] # 3 out of 5 intervals
-        end
-      
-        restart.condition(:cpu_usage) do |c|
-          c.pid_file = pid_file
-          c.above = 50 # percent
-          c.times = 5
-        end
+    end
+    
+    w.restart_if do |restart|
+      restart.condition(:memory_usage) do |c|
+        c.above = 150.megabytes
+        c.times = [3, 5] # 3 out of 5 intervals
+      end
+    
+      restart.condition(:cpu_usage) do |c|
+        c.above = 50.percent
+        c.times = 5
       end
     end
   end
@@ -296,76 +288,64 @@ end</code></pre>
 
 <p>Here I've set a constant that is used throughout the file. Keeping the <code>RAILS_ROOT</code> value in a constant makes it easy to adapt this script to other applications. Because the config file is Ruby code, I can set whatever variables or constants I want that make the configuration more concise and easier to work with.</p>
 
-<pre><code class="ruby">God.meddle do |god|
+<pre><code class="ruby">%w{8200 8201 8202}.each do |port|
   ...
 end</code></pre>
 
-<p>The meat of the config file is defined inside a <code>God.meddle</code> block.</p>
+<p>Because the config file is written in actual Ruby code, we can construct loops and do other intelligent things that are impossible in your every day, run of the mill config file. I need to watch three mongrels, so I simply loop over their port numbers, eliminating duplication and making my life a whole lot easier.</p>
 
-<pre><code class="ruby">  %w{8200 8201 8202}.each do |port|
+<pre><code class="ruby">  God.watch do |w|
+    w.name = "gravatar2-mongrel-#{port}"
+    w.interval = 30.seconds # default
+    w.start = "mongrel_rails cluster::start --only #{port} \
+      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+    w.stop = "mongrel_rails cluster::stop --only #{port} \
+      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+    w.grace = 10.seconds
+    pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+        
     ...
   end</code></pre>
 
-<p>Because the config file is written in actual Ruby code, we can construct loops and do other intelligent things that are impossible in your every day, run of the mill config file. I need to watch three mongrels, so I simply loop over their port numbers, eliminating duplication and making my life a whole lot easier.</p>
+<p>A <code>watch</code> represents a single process that has concrete start, stop, and/or restart operations. You can define as many watches as you like. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The <code>interval</code> option sets the default poll interval (this can be overridden in each condition). The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations. If the process you're watches runs as a daemon, you'll need to set the <code>pid_file</code> attribute in order for the behaviors and conditions to function.</p>
 
-<pre><code class="ruby">    god.watch do |w|
-      w.name = "gravatar2-mongrel-#{port}"
-      w.interval = 30 # seconds default
-      w.start = "mongrel_rails cluster::start --only #{port} \
-        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-      w.stop = "mongrel_rails cluster::stop --only #{port} \
-        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-      w.grace = 10 # seconds
+<pre><code class="ruby">    w.behavior(:clean_pid_file)</code></pre>
       
-      ...
+<p>Behaviors allow you to execute additional commands around start/stop/restart commands. In our case, if the process dies it will leave a PID file behind. The next time a start command is issued, it will fail, complaining about the leftover PID file. We'd like the PID file cleaned up before a start command is issued. The built-in behavior <code>clean_pid_file</code> will do just that.</p>
+
+<pre><code class="ruby">    w.start_if do |start|
+      start.condition(:process_running) do |c|
+        c.interval = 5.seconds
+        c.running = false
+      end
     end</code></pre>
-
-<p>A <code>watch</code> represents a single process or task that has concrete start, stop, and/or restart operations. You can define as many watches as you like inside the <code>God.meddle</code> block. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The <code>interval</code> option sets the default poll interval (this can be overridden in each condition). The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations.</p>
-
-<pre><code class="ruby">      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")</code></pre>
-      
-<p>A variable to hold the location of the PID file.</p>
-
-<pre><code class="ruby">      w.behavior(:clean_pid_file) do |b|
-        b.pid_file = pid_file
-      end</code></pre>
-      
-<p>Behaviors allow you to execute additional commands around start/stop/restart commands. In our case, if the process dies it will leave a PID file behind. The next time a start command is issued, it will fail, complaining about the leftover PID file. We'd like the PID file cleaned up before a start command is issued. The built-in behavior <code>clean_pid_file</code> will do just that. All we have to do is specify the location of the PID file.</p>
-
-<pre><code class="ruby">      w.start_if do |start|
-        start.condition(:process_running) do |c|
-          c.interval = 5 # seconds
-          c.running = false
-          c.pid_file = pid_file
-        end
-      end</code></pre>
       
 <p>Watches contain conditions grouped by the action to execute should they return <code>true</code>. I start with a <code>start_if</code> block that contains a single condition. Conditions are specified by calling <code>condition</code> with an identifier, in this case 
 <code>:process_not_running</code>. Each condition can specify a poll interval that will override the default watch interval. In this case, I want to check that the process is still running every 5 seconds instead of the 30 second interval that other conditions will inherit. The ability to set condition specific poll intervals makes it possible to run costly tests less often then cheap tests.</p>
 
-<pre><code class="ruby">      w.restart_if do |restart|
-        restart.condition(:memory_usage) do |c|
-          c.pid_file = pid_file
-          c.above = (150 * 1024) # 150mb
-          c.times = [3, 5] # 3 out of 5 intervals
-        end
-      
-        ...
-      end</code></pre>
+<pre><code class="ruby">    w.restart_if do |restart|
+      restart.condition(:memory_usage) do |c|
+        c.above = 150.megabytes
+        c.times = [3, 5] # 3 out of 5 intervals
+      end
+    
+      ...
+    end</code></pre>
 
-<p>Similar to <code>start_if</code> there is a <code>restart_if</code> command that groups conditions that should trigger a restart. The <code>memory_usage</code> condition will fail if the specified process is using too much memory. Once again, the <code>pid_file</code> must be set. The maximum allowable amount of memory is specified with the <code>above</code> attribute in units of kilobytes. The number of times the test needs to fail in order to trigger a restart is set with <code>times</code>. This can be either an integer or an array. An integer means it must fail that many times in a row while an array [x, y] means it must fail x times out of the last y tests.</p>
+<p>Similar to <code>start_if</code> there is a <code>restart_if</code> command that groups conditions that should trigger a restart. The <code>memory_usage</code> condition will fail if the specified process is using too much memory. The maximum allowable amount of memory is specified with the <code>above</code> attribute (you can use the bytes, kilobytes, megabytes, or gigabytes helpers). The number of times the test needs to fail in order to trigger a restart is set with <code>times</code>. This can be either an integer or an array. An integer means it must fail that many times in a row while an array [x, y] means it must fail x times out of the last y tests.</p>
 
-<pre><code class="ruby">      w.restart_if do |restart|
-        ...
-      
-        restart.condition(:cpu_usage) do |c|
-          c.pid_file = pid_file
-          c.above = 50 # percent
-          c.times = 5
-        end
-      end</code></pre>
+<pre><code class="ruby">    w.restart_if do |restart|
+      ...
+    
+      restart.condition(:cpu_usage) do |c|
+        c.above = 50.percent
+        c.times = 5
+      end
+    end</code></pre>
       
 <p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted.</p>
+
+<p>That's it! Simple, huh?</p>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -373,14 +353,14 @@ end</code></pre>
 
 <p>It is possible to have god run your start/stop/restart commands as a specific user/group. This can be done by setting the <code>uid</code> and/or <code>gid</code> attributes of a watch.</p>
 
-<pre><code class="ruby">    god.watch do |w|
-      ...
-      
-      w.uid = 'tom'
-      w.gid = 'devs'
-      
-      ...
-    end</code></pre>
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.uid = 'tom'
+    w.gid = 'devs'
+    
+    ...
+  end</code></pre>
     
 </p>This only works for commands specified as a string. Lambda commands are unaffected.</p>
 
@@ -391,13 +371,13 @@ end</code></pre>
 
 <p>In addition to specifying start/stop/restart commands as strings (to be executed via the shell), you can specify a lambda that will be called.</p>
 
-<pre><code class="ruby">    god.watch do |w|
-      ...
-      
-      w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
-      
-      ...
-    end</code></pre>
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
+    
+    ...
+  end</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -421,13 +401,13 @@ end</code></pre>
 
 <p>Watches can be assigned to groups. These groups can then be controlled together from the command line.</p>
 
-<pre><code class="ruby">    god.watch do |w|
-      ...
-      
-      w.group = 'mongrels'
-      
-      ...
-    end</code></pre>
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.group = 'mongrels'
+    
+    ...
+  end</code></pre>
     
 <p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
 
@@ -443,64 +423,53 @@ end</code></pre>
 
 <pre><code class="ruby">RAILS_ROOT = "/Users/tom/dev/git/helloworld"
 
-God.meddle do |god|
-  god.watch do |w|
-    w.name = "local-3000"
-    w.interval = 5 # seconds
-    w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-    w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-    
-    pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
-    
-    # clean pid files before start if necessary
-    w.behavior(:clean_pid_file) do |b|
-      b.pid_file = pid_file
-    end
-    
-    # determine the state on startup
-    w.transition(:init, { true => :up, false => :start }) do |on|
-      on.condition(:process_running) do |c|
-        c.running = true
-        c.pid_file = pid_file
-      end
-    end
-    
-    # determine when process has finished starting
-    w.transition([:start, :restart], :up) do |on|
-      on.condition(:process_running) do |c|
-        c.running = true
-        c.pid_file = pid_file
-      end
-    end
+God.watch do |w|
+  w.name = "local-3000"
+  w.interval = 5.seconds # default
+  w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT}"
+  w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
+  w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
   
-    # start if process is not running
-    w.transition(:up, :start) do |on|
-      on.condition(:process_exits) do |c|
-        c.pid_file = pid_file
-      end
+  # clean pid files before start if necessary
+  w.behavior(:clean_pid_file)
+  
+  # determine the state on startup
+  w.transition(:init, { true => :up, false => :start }) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end
+  
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end
+
+  # start if process is not running
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits)
+  end
+  
+  # restart if memory or cpu is too high
+  w.transition(:up, :restart) do |on|
+    on.condition(:memory_usage) do |c|
+      c.interval = 20
+      c.above = 50.megabytes
+      c.times = [3, 5]
     end
     
-    # restart if memory or cpu is too high
-    w.transition(:up, :restart) do |on|
-      on.condition(:memory_usage) do |c|
-        c.interval = 20
-        c.pid_file = pid_file
-        c.above = (50 * 1024) # 50mb
-        c.times = [3, 5]
-      end
-      
-      on.condition(:cpu_usage) do |c|
-        c.interval = 10
-        c.pid_file = pid_file
-        c.above = 10 # percent
-        c.times = [3, 5]
-      end
+    on.condition(:cpu_usage) do |c|
+      c.interval = 10
+      c.above = 10.percent
+      c.times = [3, 5]
     end
   end
 end
 </code></pre>
 
-<p>A bit longer, I know, but very straighforward once you understand how the <code>transition</code> calls work. The <code>name</code>, <code>interval</code>, <code>start</code>, and <code>stop</code> commands should be familiar. We again define a <code>pid_file</code> variable and specify the <code>clean_pid_file</code> behavior.</p>
+<p>A bit longer, I know, but very straighforward once you understand how the <code>transition</code> calls work. The <code>name</code>, <code>interval</code>, <code>start</code>, <code>stop</code>, and <code>pid_file</code> attributes should be familiar. We also specify the <code>clean_pid_file</code> behavior.</p>
 
 <p>Before jumping into the code, it's important to understand the different states that a Watch can have, and how that state changes over time. At any given time, a Watch will be in one of the <code>init</code>, <code>up</code>, <code>start</code>, or <code>restart</code> states. As different conditions are satisfied, the Watch will progress from state to state, enabling and disabling conditions along the way.</p>
   
@@ -508,51 +477,45 @@ end
 
 <p>You'll use the <code>transition</code> method to tell god how to transition between states. It takes two arguments. The first argument may be either a symbol or an array of symbols representing the state or states during which the specified conditions should be enabled. The second argument may be either a symbol or a hash. If it is a symbol, then that is the state that will be transitioned to if any of the conditions return <code>true</code>. If it is a hash, then that hash must have both <code>true</code> and <code>false</code> keys, each of which point to a symbol that represents the state to transition to given the corresponding return from the single condition that must be specified.</p>
 
-<pre><code class="ruby">    # determine the state on startup
-    w.transition(:init, { true => :up, false => :start }) do |on|
-      on.condition(:process_running) do |c|
-        c.running = true
-        c.pid_file = pid_file
-      end
-    end</code></pre>
+<pre><code class="ruby">  # determine the state on startup
+  w.transition(:init, { true => :up, false => :start }) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end</code></pre>
 
 <p>The first transition block tells god what to do when the Watch is in the <code>init</code> state (first argument). This is where I tell god how to determine if my task is already running. Since I'm monitoring a process, I can use the <code>process_running</code> condition to determine whether the process is running. If the process is running, it will return true, otherwise it will return false. Since I sent a hash as the second argument to <code>transition</code>, the return from <code>process_running</code> will determine which of the two states will be transitioned to. If the process is running, the return is true and god will put the Watch into the <code>up</code> state. If the process is not running, the return is false and god will put the Watch into the <code>start</code> state.</p>
 
-<pre><code class="ruby">    # determine when process has finished starting
-    w.transition([:start, :restart], :up) do |on|
-      on.condition(:process_running) do |c|
-        c.running = true
-        c.pid_file = pid_file
-      end
-    end</code></pre>
+<pre><code class="ruby">  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end</code></pre>
 
 <p>If god has determined that my process isn't running, the Watch will be put into the <code>start</code> state. Upon entering this state, the <code>start</code> command that I specified on the Watch will be called. In addition, the above transition specifies a condition that should be enabled when in either the <code>start</code> or <code>restart</code> states. The condition is another <code>process_running</code>, however this time I'm only interested in moving to another state once it returns <code>true</code>. A <code>true</code> return from this condition means that the process is running and it's ok to transition to the <code>up</code> state (second argument to <code>transition</code>).</p>
 
-<pre><code class="ruby">    # start if process is not running
-    w.transition(:up, :start) do |on|
-      on.condition(:process_exits) do |c|
-        c.pid_file = pid_file
-      end
-    end</code></pre>
+<pre><code class="ruby">  # start if process is not running
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits)
+  end</code></pre>
 
 <p>This is where the event based system comes into play. Once in the <code>up</code> state, I want to be notified when my process exits. The <code>process_exits</code> condition registers a callback that will trigger a transition change when it is fired off. Event conditions (like this one) cannot be used in transitions that have a hash for the second argument (as they do not return true or false).</p>
 
-<pre><code class="ruby">    # restart if memory or cpu is too high
-    w.transition(:up, :restart) do |on|
-      on.condition(:memory_usage) do |c|
-        c.interval = 20
-        c.pid_file = pid_file
-        c.above = (50 * 1024) # 50mb
-        c.times = [3, 5]
-      end
-      
-      on.condition(:cpu_usage) do |c|
-        c.interval = 10
-        c.pid_file = pid_file
-        c.above = 10 # percent
-        c.times = [3, 5]
-      end
-    end</code></pre>
+<pre><code class="ruby">  # restart if memory or cpu is too high
+  w.transition(:up, :restart) do |on|
+    on.condition(:memory_usage) do |c|
+      c.interval = 20
+      c.above = 50.megabytes
+      c.times = [3, 5]
+    end
+    
+    on.condition(:cpu_usage) do |c|
+      c.interval = 10
+      c.above = 10.percent
+      c.times = [3, 5]
+    end
+  end</code></pre>
 
 <p>Notice that I can have multiple transitions with the same start state. In this case, I want to have the <code>memory_usage</code> and <code>cpu_usage</code> poll conditions going at the same time that I listen for the process exit event. In the case of runaway CPU or memory usage, however, I want to transition to the <code>restart</code> state. When a Watch enters the <code>restart</code> state it will either call the <code>restart</code> command that you specified, or if none has been set, call the <code>stop</code> and then <code>start</code> commands.</p>
 
@@ -566,21 +529,21 @@ end
   module Conditions
     
     class ProcessRunning < PollCondition
-      attr_accessor :pid_file, :running
+      attr_accessor :running
       
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute
-          for :process_running") if self.pid_file.nil?
-        valid &= complain("You must specify the 'running' attribute
+        valid &= complain("You must specify the 'pid_file' attribute \
+          on the Watch for :process_running") if self.watch.pid_file.nil?
+        valid &= complain("You must specify the 'running' attribute \
           for :process_running") if self.running.nil?
         valid
       end
     
       def test
-        return !self.running unless File.exist?(self.pid_file)
+        return !self.running unless File.exist?(self.watch.pid_file)
         
-        pid = File.open(self.pid_file) { |f| f.read }.strip
+        pid = File.read(self.watch.pid_file).strip
         active = System::Process.new(pid).exists?
         
         (self.running && active) || (!self.running && !active)

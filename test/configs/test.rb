@@ -1,3 +1,5 @@
+puts "CONFIG"
+
 if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
@@ -51,13 +53,13 @@ God.watch do |w|
   # restart if memory or cpu is too high
   w.transition(:up, :restart) do |on|
     on.condition(:memory_usage) do |c|
-      c.interval = 20
+      c.interval = 0.5
       c.above = (50 * 1024) # 50mb
       c.times = [3, 5]
     end
     
     on.condition(:cpu_usage) do |c|
-      c.interval = 10
+      c.interval = 0.5
       c.above = 10 # percent
       c.times = [3, 5]
     end
