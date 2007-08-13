@@ -1,14 +1,18 @@
 module God
   
   class Hub
-    # directory to hold conditions and their corresponding metric
-    #   key: condition
-    #   val: metric
-    @@directory = {}
+    class << self
+      # directory to hold conditions and their corresponding metric
+      #   key: condition
+      #   val: metric
+      attr_accessor :directory
+    end
+    
+    self.directory = {}
     
     def self.attach(condition, metric)
       # add the condition to the directory
-      @@directory[condition] = metric
+      self.directory[condition] = metric
       
       # schedule poll condition
       # register event condition
@@ -21,7 +25,7 @@ module God
     
     def self.detach(condition)
       # remove the condition from the directory
-      @@directory.delete(condition)
+      self.directory.delete(condition)
       
       # unschedule any pending polls
       Timer.get.unschedule(condition)
@@ -43,7 +47,7 @@ module God
     def self.handle_poll(condition)
       Thread.new do
         begin
-          metric = @@directory[condition]
+          metric = self.directory[condition]
           watch = metric.watch
         
           watch.mutex.synchronize do
@@ -55,7 +59,8 @@ module God
           
             condition.after
           
-            if dest = metric.destination[result]
+            dest = metric.destination[result]
+            if dest
               watch.move(dest)
             else
               # reschedule
@@ -73,7 +78,7 @@ module God
     
     def self.handle_event(condition)
       Thread.new do
-        metric = @@directory[condition]
+        metric = self.directory[condition]
         watch = metric.watch
         
         watch.mutex.synchronize do

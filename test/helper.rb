@@ -18,9 +18,6 @@ end
 include God
 
 module God
-  class AbortCalledError < StandardError
-  end
-
   module Conditions
     class FakeCondition < Condition
       def test
@@ -46,6 +43,10 @@ module God
     end
   end
   
+  class << self
+    alias :at_exit_orig :at_exit
+  end
+  
   def self.at_exit
     # disable at_exit
   end
@@ -57,13 +58,8 @@ module God
     self.inited = nil
     self.host = nil
     self.port = nil
+    self.pid_file_directory = nil
     self.registry.reset
-  end
-end
-
-module Kernel
-  def abort(msg)
-    raise God::AbortCalledError.new(msg)
   end
 end
 
@@ -72,6 +68,30 @@ def silence_warnings
   yield
 ensure
   $VERBOSE = old_verbose
+end
+
+def no_stdout
+  old_stdout = $stdout.dup
+  $stdout.reopen(File.open((PLATFORM =~ /mswin/ ? "NUL" : "/dev/null"), 'w'))
+  yield
+  $stdout.reopen(old_stdout)
+end
+
+def no_stderr
+  old_stderr = $stderr.dup
+  $stderr.reopen(File.open((PLATFORM =~ /mswin/ ? "NUL" : "/dev/null"), 'w'))
+  yield
+  $stderr.reopen(old_stderr)
+end
+
+module Test::Unit::Assertions
+  def assert_abort
+    assert_raise SystemExit do
+      no_stderr do
+        yield
+      end
+    end
+  end
 end
 
 # This allows you to be a good OOP citizen and honor encapsulation, but

@@ -11,13 +11,15 @@
 * Allow god to be installed (sans events) on systems that don't support events
 * Daemonize and handle PID files for non-daemonizing scripts [kevinclark]
 * Fix simple mode lifecycle gap
-* Remove necessity to specify pid_file for every condition
+* Remove necessity to specify pid_file for conditions
 * Change config file to use God.init and God.watch directly instead of God.meddle block
 * Move god binary command logic to main library
 * Enhance god binary with better reporting
 * Fix synchronization bug in Timer (reported by Srini Panguluri)
 * Add Lambda condition for easy custom conditions [Mike Mintz]
 * Add sugar for numerics (seconds, minutes, bytes, kilobytes, etc)
+* Add PID and log file generation to god binary
+* Add God.load to do glob enabled loading
 
 == 0.2.0 / 2007-07-18
 

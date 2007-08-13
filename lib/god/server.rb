@@ -16,10 +16,6 @@ module God
     def method_missing(*args, &block)
       God.send(*args, &block)
     end
-    
-    def ping
-      'pong'
-    end
 
     private
 

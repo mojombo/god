@@ -66,4 +66,11 @@ class TestProcess < Test::Unit::TestCase
     @p.start = "starting"
     @p.call_action(:start)
   end
+  
+  def test_start_stop_restart_bang
+    [:start, :stop, :restart].each do |x|
+      @p.expects(:call_action).with(x)
+      @p.send("#{x}!")
+    end
+  end
 end

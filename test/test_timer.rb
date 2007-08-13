@@ -50,4 +50,11 @@ class TestTimer < Test::Unit::TestCase
     @t.unschedule(a)
     assert_equal 1, @t.events.size
   end
+  
+  # join
+  
+  def test_join_should_join
+    Thread.any_instance.expects(:join)
+    @t.join
+  end
 end

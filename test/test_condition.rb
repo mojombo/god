@@ -1,6 +1,12 @@
 require File.dirname(__FILE__) + '/helper'
 
+class BadlyImplementedCondition < PollCondition
+end
+
 class TestCondition < Test::Unit::TestCase
+  
+  # generate
+  
   def test_generate_should_return_an_object_corresponding_to_the_given_type
     assert_equal Conditions::ProcessRunning, Condition.generate(:process_running, nil).class
   end
@@ -22,5 +28,15 @@ class TestCondition < Test::Unit::TestCase
     end
     
     assert_equal emsg, rmsg
+  end
+  
+  # test
+  
+  def test_test_should_raise_if_not_defined_in_subclass
+    c = BadlyImplementedCondition.new
+    
+    assert_raise AbstractMethodNotOverriddenError do
+      c.test
+    end
   end
 end

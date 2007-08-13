@@ -10,4 +10,12 @@ class TestBehavior < Test::Unit::TestCase
       Behavior.generate(:foo, nil)
     end
   end
+  
+  def test_complain
+    Syslog.expects(:err).with('foo')
+    # Kernel.expects(:puts).with('foo')
+    no_stdout do
+      assert !Behavior.allocate.bypass.complain('foo')
+    end
+  end
 end

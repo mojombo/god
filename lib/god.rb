@@ -116,7 +116,7 @@ module God
   
   def self.control(name, command)
     # get the list of watches
-    watches = Array(server.watches[name] || server.groups[name])
+    watches = Array(self.watches[name] || self.groups[name])
   
     # do the command
     case command
@@ -156,6 +156,12 @@ module God
   
   def self.at_exit
     self.start
+  end
+  
+  def self.load(glob)
+    Dir[glob].each do |f|
+      Kernel.load f
+    end
   end
 end
 

@@ -139,11 +139,12 @@ module God
       puts msg
        
       # cleanup from current state
-      if from_state = self.state
+      from_state = self.state
+      if from_state
         self.metrics[from_state].each { |m| m.disable }
       end
       
-      # perform action (if available)
+      # perform action
       self.action(to_state)
       
       # enable simple mode
@@ -166,13 +167,13 @@ module God
     def action(a, c = nil)
       case a
       when :start
-        Syslog.debug(self.start)
-        puts self.start
+        Syslog.debug(self.start.to_s)
+        puts self.start.to_s
         call_action(c, :start)
         sleep(self.start_grace + self.grace)
       when :restart
         if self.restart
-          Syslog.debug(self.restart)
+          Syslog.debug(self.restart.to_s)
           puts self.restart
           call_action(c, :restart)
         else
@@ -181,8 +182,8 @@ module God
         end
         sleep(self.restart_grace + self.grace)
       when :stop
-        Syslog.debug(self.stop)
-        puts self.stop
+        Syslog.debug(self.stop.to_s)
+        puts self.stop.to_s
         call_action(c, :stop)
         sleep(self.stop_grace + self.grace)
       end      
@@ -207,7 +208,7 @@ module God
     end
     
     def register!
-      God.registry.add @process
+      God.registry.add(@process)
     end
   end
   

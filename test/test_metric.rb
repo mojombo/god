@@ -36,7 +36,7 @@ class TestMetric < Test::Unit::TestCase
   def test_poll_condition_should_abort_if_no_interval_and_no_watch_interval
     metric = Metric.new(stub(:name => 'foo', :interval => nil), nil)
     
-    assert_raise AbortCalledError do
+    assert_abort do
       metric.condition(:fake_poll_condition)
     end
   end
@@ -53,8 +53,36 @@ class TestMetric < Test::Unit::TestCase
   def test_condition_should_abort_if_not_subclass_of_poll_or_event
     metric = Metric.new(stub(:name => 'foo', :interval => 10), nil)
     
-    assert_raise AbortCalledError do
+    assert_abort do
       metric.condition(:fake_condition) { |c| }
     end
+  end
+  
+  def test_condition_should_abort_on_invalid_condition
+    assert_abort do
+      @metric.condition(:fake_poll_condition) { |c| c.stubs(:valid?).returns(false) }
+    end
+  end
+  
+  def test_condition_should_abort_on_no_such_condition
+    assert_abort do
+      @metric.condition(:invalid) { }
+    end
+  end
+  
+  # enable
+  
+  def test_enable_should_attach_conditions
+    @metric.condition(:fake_poll_condition)
+    Hub.expects(:attach).with(@metric.conditions.first, @metric)
+    @metric.enable
+  end
+  
+  # disable
+  
+  def test_disable_should_detach_conditions
+    @metric.condition(:fake_poll_condition)
+    Hub.expects(:detach).with(@metric.conditions.first)
+    @metric.disable
   end
 end
