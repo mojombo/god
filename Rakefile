@@ -25,4 +25,9 @@ task :site do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god"
 end
 
+desc "Upload site to Rubyforge"
+task :site_edge do
+  sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
+end
+
 # vim: syntax=Ruby

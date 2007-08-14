@@ -23,26 +23,20 @@ class Numeric
   
   alias :day :days
   
-  def bytes
-    self
-  end
-  
-  alias :byte :bytes
-  
   def kilobytes
-    self * 1024
+    self
   end
   
   alias :kilobyte :kilobytes
   
   def megabytes
-    self * (1024 ** 2)
+    self * 1024
   end
   
   alias :megabyte :megabytes
   
   def gigabytes
-    self * (1024 ** 3)
+    self * (1024 ** 2)
   end
   
   alias :gigabyte :gigabytes

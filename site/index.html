@@ -332,7 +332,7 @@ end</code></pre>
       ...
     end</code></pre>
 
-<p>Similar to <code>start_if</code> there is a <code>restart_if</code> command that groups conditions that should trigger a restart. The <code>memory_usage</code> condition will fail if the specified process is using too much memory. The maximum allowable amount of memory is specified with the <code>above</code> attribute (you can use the bytes, kilobytes, megabytes, or gigabytes helpers). The number of times the test needs to fail in order to trigger a restart is set with <code>times</code>. This can be either an integer or an array. An integer means it must fail that many times in a row while an array [x, y] means it must fail x times out of the last y tests.</p>
+<p>Similar to <code>start_if</code> there is a <code>restart_if</code> command that groups conditions that should trigger a restart. The <code>memory_usage</code> condition will fail if the specified process is using too much memory. The maximum allowable amount of memory is specified with the <code>above</code> attribute (you can use the kilobytes, megabytes, or gigabytes helpers). The number of times the test needs to fail in order to trigger a restart is set with <code>times</code>. This can be either an integer or an array. An integer means it must fail that many times in a row while an array [x, y] means it must fail x times out of the last y tests.</p>
 
 <pre><code class="ruby">    w.restart_if do |restart|
       ...

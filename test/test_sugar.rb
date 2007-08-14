@@ -21,24 +21,19 @@ class TestSugar < Test::Unit::TestCase
     assert_equal 86400, 1.day
   end
   
-  def test_bytes
-    assert_equal 1, 1.bytes
-    assert_equal 1, 1.byte
-  end
-  
   def test_kilobytes
-    assert_equal 1024, 1.kilobytes
-    assert_equal 1024, 1.kilobyte
+    assert_equal 1, 1.kilobytes
+    assert_equal 1, 1.kilobyte
   end
   
   def test_megabytes
-    assert_equal 1024 ** 2, 1.megabytes
-    assert_equal 1024 ** 2, 1.megabyte
+    assert_equal 1024, 1.megabytes
+    assert_equal 1024, 1.megabyte
   end
   
   def test_gigabytes
-    assert_equal 1024 ** 3, 1.gigabytes
-    assert_equal 1024 ** 3, 1.gigabyte
+    assert_equal 1024 ** 2, 1.gigabytes
+    assert_equal 1024 ** 2, 1.gigabyte
   end
   
   def test_percent

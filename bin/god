@@ -107,8 +107,6 @@ else
       begin
         require 'god'
         
-        # Dir.chdir "/"
-        
         log_file = options[:log] || "/dev/null"
         
         STDIN.reopen "/dev/null"
@@ -129,9 +127,7 @@ else
         end
     
         puts "Resetting file descriptors"
-      
-        # Daemons.daemonize if options[:daemonize]
-  
+        
         puts "Loading config"
       
         load File.expand_path(options[:config])
@@ -141,8 +137,9 @@ else
       end
     end
   
-    pid_file = options[:pid] || "god.pid"
-    File.open(pid_file, 'w') { |f| f.write pid }
+    if options[:pid]
+      File.open(options[:pid], 'w') { |f| f.write pid }
+    end
   
     ::Process.detach pid
   

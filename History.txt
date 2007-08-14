@@ -17,9 +17,10 @@
 * Enhance god binary with better reporting
 * Fix synchronization bug in Timer (reported by Srini Panguluri)
 * Add Lambda condition for easy custom conditions [Mike Mintz]
-* Add sugar for numerics (seconds, minutes, bytes, kilobytes, etc)
-* Add PID and log file generation to god binary
+* Add sugar for numerics (seconds, minutes, kilobytes, megabytes, percent, etc)
+* Add optional PID and log file generation to god binary for daemon mode
 * Add God.load to do glob enabled loading
+* Add -V option to god binary for detailed version/build info
 
 == 0.2.0 / 2007-07-18
 
