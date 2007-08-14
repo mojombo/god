@@ -8,6 +8,10 @@ module God
       @@loaded
     end
     
+    def self.event_system
+      @@handler::EVENT_SYSTEM
+    end
+    
     def self.load
       begin
         case RUBY_PLATFORM

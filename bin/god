@@ -46,6 +46,10 @@ EOF
   opts.on("-v", "--version", "Print the version number and exit") do
     options[:version] = true
   end
+  
+  opts.on("-V", "Print extended version and build information") do
+    options[:info] = true
+  end
 end.parse!
 
 if options[:version]
@@ -53,6 +57,14 @@ if options[:version]
   
   # print version
   puts "Version #{God::VERSION}"
+  exit!
+elsif options[:info]
+  require 'god'
+  
+  puts "Version: #{God::VERSION}"
+  puts "Polls: enabled"
+  puts "Events: " + God::EventHandler.event_system
+  
   exit!
 elsif command = ARGV[0]
   require 'god'
