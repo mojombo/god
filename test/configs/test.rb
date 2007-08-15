@@ -1,5 +1,3 @@
-puts "CONFIG"
-
 if $0 == __FILE__
   require File.join(File.dirname(__FILE__), *%w[.. .. lib god])
 end
@@ -16,12 +14,12 @@ end
 
 God.watch do |w|
   w.name = "local-3000"
-  w.interval = 5 # seconds
+  w.interval = 5.seconds
   w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -p 3001 -d"
   w.restart = "mongrel_rails restart -P ./log/mongrel.pid -c #{RAILS_ROOT}"
   w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-  w.restart_grace = 5 # seconds
-  w.stop_grace = 5 # seconds
+  w.restart_grace = 5.seconds
+  w.stop_grace = 5.seconds
   w.autostart = true
   w.uid = 'tom'
   w.gid = 'tom'
@@ -53,14 +51,14 @@ God.watch do |w|
   # restart if memory or cpu is too high
   w.transition(:up, :restart) do |on|
     on.condition(:memory_usage) do |c|
-      c.interval = 0.5
-      c.above = (50 * 1024) # 50mb
+      c.interval = 1
+      c.above = 50.megabytes
       c.times = [3, 5]
     end
     
     on.condition(:cpu_usage) do |c|
-      c.interval = 0.5
-      c.above = 10 # percent
+      c.interval = 1
+      c.above = 10.percent
       c.times = [3, 5]
     end
   end

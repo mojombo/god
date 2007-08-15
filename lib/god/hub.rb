@@ -48,6 +48,11 @@ module God
       Thread.new do
         begin
           metric = self.directory[condition]
+          
+          # it's possible that the timer will trigger an event before it can be cleared
+          # by an exiting metric, in which case it should be ignored
+          return if metric.nil?
+          
           watch = metric.watch
         
           watch.mutex.synchronize do
