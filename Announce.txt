@@ -1,6 +1,19 @@
-Subject: [ANN] god 0.2.0 released
+Subject: [ANN] god 0.3.0 released
 
-A lot of work has gone into god since the last release. Say goodbye to polling for process status--support for event based conditions via kqueue/netlink has been added (thanks Kevin Clark)! Only a few events are currently supported (most prominently process exit), but the way is now open for the addition of other events. A new, advanced syntax is available (in addition to the familiar simple syntax) that gives you full power over the new state based lifecycle of your Watches. Updated documentation is available on the website:
+Wow, there are some really big changes and improvements in this release of god. Most noticeable is a simplification of the config file. Sadly, we must say goodbye to the much loved God.meddle and promote God.watch to top level. This change allows you to easily load in other god config files and have them work as expected. There's even a God.load that takes a glob-style file path string and expands it to load multiple files.
+
+PID file support is now baked in so you don't have to set a pid_file attribute on any conditions. This also allows god to support processes that aren't already daemons. If you don't specify a PID file for the watch, god will auto-daemonize and keep track of your process for you! To use this feature, you must either run as root (pid files will be stored by default in /var/run/god) or set the pid_file_directory attribute in a God.init block (see docs).
+
+For anyone that had problems installing the 0.2.0 release because of the events system not compiling, god 0.3.0 will now allow you to install without event support. Most systems are capable of supporting events, but it requires some dedication to get the headers in place and make sure your kernel is new enough. To determine if you have event support you can run "sudo god -V" (this MUST be run as root on Linux, as netlink connector requires root permissions).
+
+Using the god binary you will now be able to control your watches from the command line. You can start/stop/restart/monitor/unmonitor watches at your demand.
+
+New watch attributes now available:
+  uid/gid: start processes as someone else (requires root access)
+  group: assign a watch to a group
+  autostart: prevent auto start on god start
+
+Updated documentation is now available on the website:
 
   http://god.rubyforge.org/
 
@@ -30,6 +43,7 @@ FEATURES
 * Easily write your own custom conditions in Ruby
 * Supports both poll and event based conditions
 * Different poll conditions can have different intervals
+* Easily control non-daemonized processes
 
 
 EXAMPLE
@@ -37,50 +51,42 @@ EXAMPLE
 The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at gravatar.com to keep the mongrels running:
 
 # file:      gravatar.god
-# run with:  god start -c /path/to/gravatar.god
+# run with:  god -c /path/to/gravatar.god
 # 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
 RAILS_ROOT = "/var/www/gravatar2/current"
 
-God.meddle do |god|
-  %w{8200 8201 8202}.each do |port|
-    god.watch do |w|
-      w.name = "gravatar2-mongrel-#{port}"
-      w.interval = 30 # seconds default
-      w.start = "mongrel_rails cluster::start --only #{port} \
-        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-      w.stop = "mongrel_rails cluster::stop --only #{port} \
-        -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-      w.grace = 10 # seconds
-      
-      pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
-      
-      w.behavior(:clean_pid_file) do |b|
-        b.pid_file = pid_file
-      end
+%w{8200 8201 8202}.each do |port|
+  God.watch do |w|
+    w.name = "gravatar2-mongrel-#{port}"
+    w.interval = 30.seconds # default
+    w.start = "mongrel_rails cluster::start --only #{port} \
+      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+    w.stop = "mongrel_rails cluster::stop --only #{port} \
+      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
+    w.grace = 10.seconds
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+    
+    w.behavior(:clean_pid_file)
 
-      w.start_if do |start|
-        start.condition(:process_running) do |c|
-          c.interval = 5 # seconds
-          c.running = false
-          c.pid_file = pid_file
-        end
+    w.start_if do |start|
+      start.condition(:process_running) do |c|
+        c.interval = 5.seconds
+        c.running = false
       end
-      
-      w.restart_if do |restart|
-        restart.condition(:memory_usage) do |c|
-          c.pid_file = pid_file
-          c.above = (150 * 1024) # 150mb
-          c.times = [3, 5] # 3 out of 5 intervals
-        end
-      
-        restart.condition(:cpu_usage) do |c|
-          c.pid_file = pid_file
-          c.above = 50 # percent
-          c.times = 5
-        end
+    end
+    
+    w.restart_if do |restart|
+      restart.condition(:memory_usage) do |c|
+        c.above = 150.megabytes
+        c.times = [3, 5] # 3 out of 5 intervals
+      end
+    
+      restart.condition(:cpu_usage) do |c|
+        c.above = 50.percent
+        c.times = 5
       end
     end
   end
@@ -94,13 +100,29 @@ Detailed documentation is available at http://god.rubyforge.org/
 
 CHANGES
 
-== 0.2.0 / 2007-07-18
+== 0.3.0 / 2007-08-17
 
-* Rewrote innards to use a state and event based lifecycle
-* Basic support for events via kqueue (bsd/darwin) and netlink/pec (linux) [kevinclark]
-* Added advanced syntax (simple syntax calls advanced api underneath)
-* Condition returns have changed meaning. With simple syntax, a true return activates block
-* Updated http://god.rubyforge.org with updated simple config and new advanced config
+* Fix netlink header problem on Ubuntu Edgy [Dan Sully]
+* Add uid/gid setting for processes [kevinclark]
+* Add autostart flag for watches so they don't necessarily startup with god [kevinclark]
+* Change command line call options for god binary to accommodate watch start/stop functionality
+* Add individual start/stop/restart grace periods for finer grained control
+* Change default DRb port to 17165 ('god'.to_i(32))
+* Implement command line control to start/restart/stop/monitor/unmonitor watches/groups by name
+* Watches can now belong to a group that can be controlled as a whole
+* Allow god to be installed (sans events) on systems that don't support events
+* Daemonize and handle PID files for non-daemonizing scripts [kevinclark]
+* Fix simple mode lifecycle gap
+* Remove necessity to specify pid_file for conditions
+* Change config file to use God.init and God.watch directly instead of God.meddle block
+* Move god binary command logic to main library
+* Enhance god binary with better reporting
+* Fix synchronization bug in Timer (reported by Srini Panguluri)
+* Add Lambda condition for easy custom conditions [Mike Mintz]
+* Add sugar for numerics (seconds, minutes, kilobytes, megabytes, percent, etc)
+* Add optional PID and log file generation to god binary for daemon mode
+* Add God.load to do glob enabled loading
+* Add -V option to god binary for detailed version/build info
 
 
 AUTHORS

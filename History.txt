@@ -1,4 +1,4 @@
-== 0.3.0 /
+== 0.3.0 / 2007-08-17
 
 * Fix netlink header problem on Ubuntu Edgy [Dan Sully]
 * Add uid/gid setting for processes [kevinclark]

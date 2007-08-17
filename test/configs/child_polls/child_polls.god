@@ -1,5 +1,5 @@
 God.watch do |w|
-  w.name = 'simple_server'
+  w.name = 'child-polls'
   w.start = File.join(File.dirname(__FILE__), *%w[simple_server.rb])
   w.stop = ''
   w.interval = 5
@@ -13,5 +13,3 @@ God.watch do |w|
     end
   end
 end
-
-God.load '/Users/tom/dev/god/test/configs/events/*.god'

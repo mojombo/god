@@ -1,5 +1,5 @@
 God.watch do |w|
-  w.name = "simple"
+  w.name = "child-events"
   w.interval = 5.seconds
   w.start = File.join(File.dirname(__FILE__), *%w[simple_server.rb])
   w.stop = ""
