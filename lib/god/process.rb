@@ -59,19 +59,27 @@ module God
         
         # string command
         # fork/exec to setuid/gid
-        pid = fork {
-          ::Process.setsid
-          ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-          ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
-          Dir.chdir "/"
-          $0 = command
-          STDIN.reopen "/dev/null"
-          STDOUT.reopen "/dev/null", "a"
-          STDERR.reopen STDOUT
-          exec command
-        }
+        r, w = IO.pipe
+        opid = fork do
+          STDOUT.reopen(w)
+          r.close
+          pid = fork do
+            ::Process.setsid
+            ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
+            ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
+            Dir.chdir "/"
+            $0 = command
+            STDIN.reopen "/dev/null"
+            STDOUT.reopen "/dev/null", "a"
+            STDERR.reopen STDOUT
+            exec command
+          end
+          puts pid.to_s
+        end
         
-        ::Process.detach pid
+        ::Process.waitpid(opid, 0)
+        w.close
+        pid = r.gets.chomp
         
         if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
           File.open(default_pid_file, 'w') do |f|
