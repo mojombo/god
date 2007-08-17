@@ -11,7 +11,7 @@ Hoe.new('god', '0.3.0') do |p|
   p.summary = 'Like monit, only awesome'
   p.description = "God is an easy to configure, easy to extend monitoring framework written in Ruby."
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
-  p.extra_deps << ['daemons', '>=1.0.7']
+  # p.extra_deps << ['daemons', '>=1.0.7']
   p.spec_extras = {:extensions => ['ext/god/extconf.rb']}
 end
 

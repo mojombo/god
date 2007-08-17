@@ -22,7 +22,9 @@ class TestProcess < Test::Unit::TestCase
   # These actually excercise call_action in the back at this point - Kev
   def test_call_action_with_string_should_fork_exec 
     @p.start = "do something"
+    IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
     @p.expects(:fork)
+    Process.expects(:waitpid)
     @p.call_action(:start)
   end
   
@@ -42,7 +44,9 @@ class TestProcess < Test::Unit::TestCase
     [:start, :restart].each do |action|
       @p = God::Process.new(:name => 'foo')
       @p.stubs(:test).returns true
+      IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
       @p.expects(:fork)
+      Process.expects(:waitpid)
       File.expects(:open).with(@p.default_pid_file, 'w')
       @p.send("#{action}=", "run")
       @p.call_action(action)
@@ -51,7 +55,9 @@ class TestProcess < Test::Unit::TestCase
   
   def test_call_action_should_not_write_pid_for_stop
     @p.pid_file = nil
+    IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
     @p.expects(:fork)
+    Process.expects(:waitpid)
     File.expects(:open).times(0)
     @p.stop = "stopping"
     @p.call_action(:stop)
@@ -59,7 +65,9 @@ class TestProcess < Test::Unit::TestCase
   
   def test_call_action_should_mkdir_p_if_pid_file_dir_existence_test_fails
     @p.pid_file = nil
+    IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
     @p.expects(:fork)
+    Process.expects(:waitpid)
     @p.expects(:test).returns(false, true)
     FileUtils.expects(:mkdir_p).with(God.pid_file_directory)
     File.expects(:open)

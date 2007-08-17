@@ -522,6 +522,33 @@ end
 
 <!-- ------------------------------------------------------------------------- -->
 
+<h1>Watching Non-Daemon Processes</h1>
+
+<p>Need to watch a script that doesn't have built in daemonization? No problem! God will daemonize and keep track of your process for you. If you don't specify a <code>pid_file</code> attribute for a watch, it will be auto-daemonized and a PID file will be stored for it in <code>/var/run/god</code>. If you'd rather have the PID file stored in a different location, you can set it in a <code>God.init</code> block at the top of your config:</p>
+
+<pre><code class="ruby">God.init do |god|
+  god.pid_file_directory = '/home/tom/pids'
+end
+
+God.watch do |w|
+  # watch with no pid_file attribute set
+end</code></pre>
+
+<p>The directory you specify must be writable by god.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Loading Other Config Files</h1>
+
+<p>You should feel free to separate your god configs into separate files for easier organization. You can load in other configs using Ruby's normal <code>load</code> method, or use the convenience method <code>God.load</code> which allows for glob-style paths:</p>
+
+<pre><code class="ruby"># load in all god configs
+God.load "/usr/local/conf/*.god"</code></pre>
+
+<p>God won't start it's monitoring operations until all configurations have been loaded.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
 <h1>Extend God with your own Conditions</h1>
 
 <p>God was designed from the start to allow you to easily write your own custom conditions, making it simple to add tests that are application specific.</p>

@@ -6,8 +6,6 @@ require 'rubygems'
 require 'optparse'
 require 'drb'
 
-require 'daemons'
-
 options = {:daemonize => true, :port => 17165}
 
 OptionParser.new do |opts|
