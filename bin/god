@@ -55,7 +55,7 @@ if options[:version]
   
   # print version
   puts "Version #{God::VERSION}"
-  exit!
+  exit!(0)
 elsif options[:info]
   require 'god'
   
@@ -63,15 +63,12 @@ elsif options[:info]
   puts "Polls: enabled"
   puts "Events: " + God::EventHandler.event_system
   
-  exit!
+  exit!(0)
 elsif command = ARGV[0]
   require 'god'
   
   # a command was specified
-  
-  # disable at_exit
-  # module God; def self.at_exit; end; end
-  
+    
   # get the name of the watch/group
   name = ARGV[1]
   
@@ -94,7 +91,7 @@ elsif command = ARGV[0]
     abort "Command '#{command}' is not valid. Run 'god --help' for usage"
   end
   
-  exit!
+  exit!(0)
 else
   # start god
   if !options[:daemonize]
@@ -141,6 +138,6 @@ else
   
     ::Process.detach pid
   
-    exit!
+    exit!(0)
   end
 end

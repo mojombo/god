@@ -107,7 +107,7 @@ module God
       end
     
       self.groups[w.group] ||= []
-      self.groups[w.group] << w.name
+      self.groups[w.group] << w
     end
 
     # register watch

@@ -52,26 +52,34 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_watch_should_get_stored_by_group
+    a = nil
+    
     God.watch do |w|
+      a = w
       w.name = 'foo'
       w.group = 'test'
     end
     
-    assert_equal({'test' => ['foo']}, God.groups)
+    assert_equal({'test' => [a]}, God.groups)
   end
   
   def test_watches_should_get_stored_by_group
+    a = nil
+    b = nil
+    
     God.watch do |w|
+      a = w
       w.name = 'foo'
       w.group = 'test'
     end
     
     God.watch do |w|
+      b = w
       w.name = 'bar'
       w.group = 'test'
     end
     
-    assert_equal({'test' => ['foo', 'bar']}, God.groups)
+    assert_equal({'test' => [a, b]}, God.groups)
   end
       
   def test_watch_should_allow_multiple_watches
@@ -147,6 +155,23 @@ class TestGod < Test::Unit::TestCase
     assert_raise InvalidCommandError do
       God.control('foo', 'invalid')
     end
+  end
+  
+  def test_control_should_operate_on_each_watch_in_group
+    God.watch do |w|
+      w.name = 'foo1'
+      w.group = 'bar'
+    end
+    
+    God.watch do |w|
+      w.name = 'foo2'
+      w.group = 'bar'
+    end
+    
+    God.watches['foo1'].expects(:monitor)
+    God.watches['foo2'].expects(:monitor)
+    
+    God.control('bar', 'start')
   end
   
   # start

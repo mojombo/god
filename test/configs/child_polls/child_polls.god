@@ -6,6 +6,7 @@ God.watch do |w|
   w.grace = 2
   w.uid = 'tom'
   w.gid = 'tom'
+  w.group = 'test'
   
   w.start_if do |start|
     start.condition(:process_running) do |c|

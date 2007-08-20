@@ -1,17 +1,18 @@
 Subject: [ANN] god 0.3.0 released
 
-Wow, there are some really big changes and improvements in this release of god. Most noticeable is a simplification of the config file. Sadly, we must say goodbye to the much loved God.meddle and promote God.watch to top level. This change allows you to easily load in other god config files and have them work as expected. There's even a God.load that takes a glob-style file path string and expands it to load multiple files.
+Plenty of big changes and improvements in this release of god. Most noticeable is a simplification of the config file. Sadly, we must say goodbye to the much loved God.meddle and promote God.watch to top level. This change allows you to easily load in other god config files and have them work as expected. There's even a God.load that takes a glob-style file path string and expands it to load multiple files.
 
-PID file support is now baked in so you don't have to set a pid_file attribute on any conditions. This also allows god to support processes that aren't already daemons. If you don't specify a PID file for the watch, god will auto-daemonize and keep track of your process for you! To use this feature, you must either run as root (pid files will be stored by default in /var/run/god) or set the pid_file_directory attribute in a God.init block (see docs).
+PID file support is now baked in so you don't have to set the pid_file attribute on conditions anymore. This also allows god to support processes that aren't already daemons. If you don't specify a PID file for the watch, god will auto-daemonize and keep track of your process for you! To use this feature, you must either run as root (pid files will be stored by default in /var/run/god) or set the pid_file_directory attribute in a God.init block (see docs).
 
-For anyone that had problems installing the 0.2.0 release because of the events system not compiling, god 0.3.0 will now allow you to install without event support. Most systems are capable of supporting events, but it requires some dedication to get the headers in place and make sure your kernel is new enough. To determine if you have event support you can run "sudo god -V" (this MUST be run as root on Linux, as netlink connector requires root permissions).
+For anyone that had problems installing the 0.2.0 release because of the events system not compiling, god 0.3.0 will now allow you to install without event support. Most systems are capable of supporting events, but it requires some dedication to get the headers in place and make sure your kernel is new enough. To determine if your god installation has event support you can run "sudo god -V" (this MUST be run as root on Linux, as netlink connector requires root permissions).
 
-Using the god binary you will now be able to control your watches from the command line. You can start/stop/restart/monitor/unmonitor watches at your demand.
+Using the god binary you can now control your watches from the command line. You can start/stop/restart/monitor/unmonitor watches at your demand.
 
 New watch attributes now available:
+  pid_file: sets the watch process' PID file location
   uid/gid: start processes as someone else (requires root access)
-  group: assign a watch to a group
-  autostart: prevent auto start on god start
+  group: assign a watch to a group (to control them all at once)
+  autostart: prevent auto start on god start if false
 
 Updated documentation is now available on the website:
 
@@ -33,8 +34,6 @@ God is still very young, I'd love to get feedback and bug reports, but I do not 
 INSTALL
 
 sudo gem install god
-
-* note: currently tested only on Redhat Linux and Darwin (won't work on Windows)
 
 
 FEATURES
