@@ -47,7 +47,7 @@ module God
   VERSION = '0.3.0'
   
   class << self
-    attr_accessor :inited, :host, :port
+    attr_accessor :inited, :running, :host, :port
     
     # drb
     attr_accessor :server
@@ -72,6 +72,9 @@ module God
     
     # init has been executed
     self.inited = true
+    
+    # not yet running
+    self.running = false
   end
     
   # Where pid files created by god will go by default
@@ -91,6 +94,13 @@ module God
     
     w = Watch.new
     yield(w)
+    
+    # if running, completely remove the watch (if necessary) to
+    # prepare for the reload
+    existing_watch = self.watches[w.name]
+    if self.running && existing_watch
+      self.unwatch(existing_watch)
+    end
     
     # ensure the new watch has a unique name
     if self.watches[w.name] || self.groups[w.name]
@@ -113,6 +123,19 @@ module God
 
     # register watch
     w.register!
+  end
+  
+  def self.unwatch(watch)
+    # unmonitor
+    watch.unmonitor
+    
+    # remove from watches
+    self.watches.delete(watch.name)
+    
+    # remove from groups
+    if watch.group
+      self.groups[watch.group].delete(watch)
+    end
   end
   
   def self.control(name, command)
@@ -150,6 +173,9 @@ module God
 
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }
+    
+    # mark as running
+    self.running = true
     
     # join the timer thread so we don't exit
     Timer.get.join

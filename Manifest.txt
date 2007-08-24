@@ -19,6 +19,7 @@ lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_exits.rb
 lib/god/conditions/process_running.rb
 lib/god/conditions/timeline.rb
+lib/god/conditions/tries.rb
 lib/god/errors.rb
 lib/god/event_handler.rb
 lib/god/event_handlers/dummy_handler.rb
