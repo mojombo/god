@@ -1,7 +1,9 @@
 == 0.4.0
 
 * Major Enhancements
-
+  * Add the ability for conditions to override transition state (for exceptional cases)
+* New Conditions
+  * Tries < PollCondition - triggers after the specified number of tries
 * Bug Fixes
   * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
   * Command line group control fixed

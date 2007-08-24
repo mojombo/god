@@ -56,16 +56,30 @@ module God
           watch = metric.watch
         
           watch.mutex.synchronize do
+            # run the test
             result = condition.test
           
+            # log
             msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
             Syslog.debug(msg)
             puts msg
           
+            # after-condition
             condition.after
           
-            dest = metric.destination[result]
+            # get the destination
+            dest = 
+            if result && condition.transition
+              # condition override
+              condition.transition
+            else
+              # regular
+              metric.destination[result]
+            end
+            
+            # transition or reschedule
             if dest
+              # transition
               watch.move(dest)
             else
               # reschedule

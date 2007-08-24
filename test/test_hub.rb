@@ -139,6 +139,23 @@ class TestHub < Test::Unit::TestCase
     end
   end
   
+  def test_handle_poll_should_use_overridden_transition
+    c = Conditions::Tries.new
+    c.times = 1
+    c.transition = :start
+    c.prepare
+    
+    m = Metric.new(@watch, {true => :up})
+    Hub.attach(c, m)
+    
+    @watch.expects(:move).with(:start)
+    
+    no_stdout do
+      t = Hub.handle_poll(c)
+      t.join
+    end
+  end
+  
   # handle_event
   
   def test_handle_event_should_move

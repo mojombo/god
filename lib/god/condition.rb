@@ -22,6 +22,7 @@ module God
   class PollCondition < Condition
     # all poll conditions can specify a poll interval 
     attr_accessor :interval
+    attr_accessor :transition
     
     # Override this method in your Conditions (optional)
     def before

@@ -11,8 +11,14 @@ module God
       def register
         pid = File.read(self.watch.pid_file).strip.to_i
         
-        EventHandler.register(pid, :proc_exit) do
-          Hub.trigger(self)
+        begin
+          EventHandler.register(pid, :proc_exit) do
+            Hub.trigger(self)
+          end
+        rescue StandardError
+          # Rapid consecutive kills of a process using ProcessExits can cause
+          # the registration to fail. Capturing the exception and having the
+          # start->up transition recover is the best current solution - Tom
         end
       end
       
