@@ -17,6 +17,7 @@ Usage: god [command] [options]
     stop <watch or group name>
     monitor <watch or group name>
     unmonitor <watch or group name>
+    load <file>
 
   Options:
 EOF

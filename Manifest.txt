@@ -41,7 +41,10 @@ test/configs/child_polls/child_polls.god
 test/configs/child_polls/simple_server.rb
 test/configs/daemon_events/daemon_events.god
 test/configs/daemon_events/simple_server.rb
+test/configs/daemon_polls/daemon_polls.god
+test/configs/daemon_polls/simple_server.rb
 test/configs/real.rb
+test/configs/running_load/running_load.god
 test/configs/test.rb
 test/helper.rb
 test/suite.rb

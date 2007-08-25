@@ -2,6 +2,7 @@
 
 * Major Enhancements
   * Add the ability for conditions to override transition state (for exceptional cases)
+  * Implement dynamic load of config files while god is running (god load <filename>)
 * New Conditions
   * Tries < PollCondition - triggers after the specified number of tries
 * Bug Fixes
