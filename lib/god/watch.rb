@@ -210,6 +210,10 @@ module God
     def register!
       God.registry.add(@process)
     end
+    
+    def unregister!
+      God.registry.remove(@process)
+    end
   end
   
 end

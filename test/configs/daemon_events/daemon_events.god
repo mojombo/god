@@ -3,8 +3,6 @@ God.watch do |w|
   w.interval = 5.seconds
   w.start = '/usr/local/bin/ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' start'
   w.stop = '/usr/local/bin/ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' stop'
-  w.uid = 'tom'
-  w.gid = 'tom'
   w.pid_file = '/var/run/daemon-events.pid'
   
   w.behavior(:clean_pid_file)
@@ -20,6 +18,12 @@ God.watch do |w|
   w.transition(:start, :up) do |on|
     on.condition(:process_running) do |c|
       c.running = true
+    end
+    
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 2
+      c.transition = :start
     end
   end
 

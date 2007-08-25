@@ -47,7 +47,7 @@ module God
   VERSION = '0.3.0'
   
   class << self
-    attr_accessor :inited, :running, :host, :port
+    attr_accessor :inited, :running, :pending_watches, :host, :port
     
     # drb
     attr_accessor :server
@@ -63,6 +63,7 @@ module God
     # variable init
     self.watches = {}
     self.groups = {}
+    self.pending_watches = []
     
     # yield to the config file
     yield self if block_given?
@@ -110,6 +111,9 @@ module God
     # add to list of watches
     self.watches[w.name] = w
     
+    # add to pending watches
+    self.pending_watches << w
+    
     # add to group if specified
     if w.group
       # ensure group name hasn't been used for a watch already
@@ -128,6 +132,9 @@ module God
   def self.unwatch(watch)
     # unmonitor
     watch.unmonitor
+    
+    # unregister
+    watch.unregister!
     
     # remove from watches
     self.watches.delete(watch.name)
@@ -158,7 +165,21 @@ module God
     
     watches
   end
-    
+  
+  def self.running_load(code)
+    eval(code)
+    self.pending_watches.each { |w| w.monitor if w.autostart? }
+    watches = self.pending_watches.dup
+    self.pending_watches.clear
+    watches
+  end
+  
+  def self.load(glob)
+    Dir[glob].each do |f|
+      Kernel.load f
+    end
+  end
+  
   def self.start
     # make sure there's something to do
     if self.watches.nil? || self.watches.empty?
@@ -174,6 +195,9 @@ module God
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }
     
+    # clear pending watches
+    self.pending_watches.clear
+    
     # mark as running
     self.running = true
     
@@ -183,12 +207,6 @@ module God
   
   def self.at_exit
     self.start
-  end
-  
-  def self.load(glob)
-    Dir[glob].each do |f|
-      Kernel.load f
-    end
   end
 end
 

@@ -68,27 +68,45 @@ elsif command = ARGV[0]
   require 'god'
   
   # a command was specified
-    
-  # get the name of the watch/group
-  name = ARGV[1]
   
   # connect to remote drb
-  DRb.start_service
-  server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
+    DRb.start_service
+    server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
   
-  begin
+  if command == 'load'
+    file = ARGV[1]
+    
     puts "Sending '#{command}' command"
     
-    # send command
-    watches = server.control(name, command)
+    code = File.read(file)
+    
+    watches = server.running_load(code)
     
     # output response
     puts 'The following watches were affected:'
     watches.each do |w|
       puts '  ' + w.name
     end
-  rescue God::InvalidCommandError
-    abort "Command '#{command}' is not valid. Run 'god --help' for usage"
+    
+    puts "Done"
+  else
+    # get the name of the watch/group
+    name = ARGV[1]
+  
+    begin
+      puts "Sending '#{command}' command"
+    
+      # send command
+      watches = server.control(name, command)
+    
+      # output response
+      puts 'The following watches were affected:'
+      watches.each do |w|
+        puts '  ' + w.name
+      end
+    rescue God::InvalidCommandError
+      abort "Command '#{command}' is not valid. Run 'god --help' for usage"
+    end
   end
   
   exit!(0)

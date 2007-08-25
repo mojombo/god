@@ -45,6 +45,14 @@ class TestGod < Test::Unit::TestCase
     assert_equal 0, God.groups.size
   end
   
+  def test_watch_should_get_stored_in_pending_watches
+    watch = nil
+    God.watch { |w| watch = w }
+    
+    assert_equal 1, God.pending_watches.size
+    assert_equal watch, God.pending_watches.first
+  end
+  
   def test_watch_should_register_processes
     assert_nil God.registry['foo']
     God.watch { |w| w.name = 'foo' }
@@ -114,6 +122,56 @@ class TestGod < Test::Unit::TestCase
     end
   end
   
+  def test_watch_should_unwatch_new_watch_if_running_and_duplicate_watch
+    God.watch { |w| w.name = 'foo' }
+    God.running = true
+    
+    assert_nothing_raised do
+      no_stdout do
+        God.watch { |w| w.name = 'foo' }
+      end
+    end
+  end
+  
+  # unwatch
+  
+  def test_unwatch_should_unmonitor_watch
+    God.watch { |w| w.name = 'bar' }
+    w = God.watches['bar']
+    w.expects(:unmonitor)
+    God.unwatch(w)
+  end
+  
+  def test_unwatch_should_unregister_watch
+    God.watch { |w| w.name = 'bar' }
+    w = God.watches['bar']
+    w.expects(:unregister!)
+    no_stdout do
+      God.unwatch(w)
+    end
+  end
+  
+  def test_unwatch_should_remove_same_name_watches
+    God.watch { |w| w.name = 'bar' }
+    w = God.watches['bar']
+    no_stdout do
+      God.unwatch(w)
+    end
+    assert_equal 0, God.watches.size
+  end
+  
+  def test_unwatch_should_remove_from_group
+    God.watch do |w|
+      w.name = 'bar'
+      w.group = 'test'
+    end
+    w = God.watches['bar']
+    no_stdout do
+      God.unwatch(w)
+    end
+    assert !God.groups[w.group].include?(w)
+  end
+  
   # control
   
   def test_control_should_monitor_on_start
@@ -174,6 +232,86 @@ class TestGod < Test::Unit::TestCase
     God.control('bar', 'start')
   end
   
+  # running_load
+  
+  def test_running_load_should_eval_code
+    code = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+      end
+    EOF
+    
+    no_stdout do
+      God.running_load(code)
+    end
+    
+    assert_equal 1, God.watches.size
+  end
+  
+  def test_running_load_should_monitor_new_watches
+    code = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+      end
+    EOF
+    
+    Watch.any_instance.expects(:monitor)
+    no_stdout do
+      God.running_load(code)
+    end
+  end
+  
+  def test_running_load_should_not_monitor_new_watches_with_autostart_false
+    code = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+        w.autostart = false
+      end
+    EOF
+    
+    Watch.any_instance.expects(:monitor).never
+    no_stdout do
+      God.running_load(code)
+    end
+  end
+  
+  def test_running_load_should_return_array_of_affected_watches
+    code = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+      end
+    EOF
+    
+    w = nil
+    no_stdout do
+      w = God.running_load(code)
+    end
+    assert_equal 1, w.size
+    assert_equal 'foo', w.first.name
+  end
+  
+  def test_running_load_should_clear_pending_watches
+    code = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+      end
+    EOF
+    
+    no_stdout do
+      God.running_load(code)
+    end
+    assert_equal 0, God.pending_watches.size
+  end
+  
+  # load
+  
+  def test_load_should_collect_and_load_globbed_path
+    Dir.expects(:[]).with('/path/to/*.thing').returns(['a', 'b'])
+    Kernel.expects(:load).with('a').once
+    Kernel.expects(:load).with('b').once
+    God.load('/path/to/*.thing')
+  end
+  
   # start
   
   def test_start_should_check_for_at_least_one_watch
@@ -225,14 +363,5 @@ class TestGod < Test::Unit::TestCase
   def test_at_exit_should_call_start
     God.expects(:start).once
     God.at_exit_orig
-  end
-  
-  # load
-  
-  def test_load_should_collect_and_load_globbed_path
-    Dir.expects(:[]).with('/path/to/*.thing').returns(['a', 'b'])
-    Kernel.expects(:load).with('a').once
-    Kernel.expects(:load).with('b').once
-    God.load('/path/to/*.thing')
   end
 end

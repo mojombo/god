@@ -13,6 +13,10 @@ module God
       @storage[item.name] = item
     end
     
+    def remove(item)
+      @storage.delete(item.name)
+    end
+    
     def size
       @storage.size
     end
