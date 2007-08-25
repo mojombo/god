@@ -123,6 +123,10 @@ p {
 	margin-bottom: 1em;
 }
 
+ul {
+  margin-bottom: 1em;
+}
+
 ul.features {
 	padding: 0;
 	margin-left: 1.5em !important;
@@ -219,7 +223,7 @@ code {
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.3.0)</h1>
+	<h1>Installation (v 0.4.0)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	<p>You can also peruse or clone the code from <a href="http://repo.or.cz/w/god.git">http://repo.or.cz/w/god.git</a></p>
@@ -546,6 +550,23 @@ end</code></pre>
 God.load "/usr/local/conf/*.god"</code></pre>
 
 <p>God won't start it's monitoring operations until all configurations have been loaded.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Dynamically Loading Config Files Into an Already Running God</h1>
+
+<p>God allows you to load or reload configurations into an already running instance. There are a few things to consider when doing this:</p>
+
+<ul>
+  <li>Existng Watches with the same <code>name</code> as the incoming Watches will be overidden by the new config.</li>
+  <li>All paths must be either absolute or relative to the path from which god was started.</li>
+</ul>
+
+<p>To load a config into a running god, issue the following command:</p>
+
+<pre>$ sudo god load path/to/config.god</pre>
+
+<p>Config files that are loaded dynamically can contain anything that a normal config file contains, however, <code>God.init</code> blocks will be ignored.</p>
 
 <!-- ------------------------------------------------------------------------- -->
 
