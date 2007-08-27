@@ -16,12 +16,10 @@ module God
         valid &= complain("You must specify the 'failures' attribute for :notify_when_flapping") unless self.failures
         valid &= complain("You must specify the 'seconds' attribute for :notify_when_flapping") unless self.seconds
         valid &= complain("You must specify the 'notifier' attribute for :notify_when_flapping") unless self.notifier
-        
-        valid &= complain("The 'notifier' attribute must be a class") unless self.notifier.is_a? Class
-        
+                
         # Must take one arg or variable args
         unless self.notifier.respond_to?(:notify) and [1,-1].include?(self.notifier.method(:notify).arity)
-          valid &= complain("The 'notifier' class must have a method 'notify' which takes 1 or variable args")
+          valid &= complain("The 'notifier' must have a method 'notify' which takes 1 or variable args")
         end
         
         valid
