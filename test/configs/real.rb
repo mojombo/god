@@ -17,7 +17,7 @@ God.watch do |w|
   w.behavior(:clean_pid_file) do |b|
     b.pid_file = pid_file
   end
-
+  
   # start if process is not running
   w.start_if do |start|
     start.condition(:process_running) do |c|

@@ -8,6 +8,7 @@
 * Bug Fixes
   * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
   * Command line group control fixed
+  * Add :notify_when_flapping behavior to check for oscillation
 
 == 0.3.0 / 2007-08-17
 

@@ -12,6 +12,12 @@ God.init do |g|
   # g.pid_file_directory = 
 end
 
+class SimpleNotifier
+  def self.notify(str)
+    puts "Notifying: #{str}"
+  end
+end
+
 God.watch do |w|
   w.name = "local-3000"
   w.interval = 5.seconds
@@ -21,13 +27,19 @@ God.watch do |w|
   w.restart_grace = 5.seconds
   w.stop_grace = 5.seconds
   w.autostart = true
-  w.uid = 'tom'
-  w.gid = 'tom'
+  w.uid = 'kev'
+  w.gid = 'kev'
   w.group = 'mongrels'
   w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
   
   # clean pid files before start if necessary
   w.behavior(:clean_pid_file)
+  
+  w.behavior(:notify_when_flapping) do |b|
+    b.failures = 5
+    b.seconds = 60.seconds
+    b.notifier = SimpleNotifier
+  end
   
   # determine the state on startup
   w.transition(:init, { true => :up, false => :start }) do |on|
