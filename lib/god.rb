@@ -7,6 +7,8 @@ require 'god/errors'
 
 require 'god/system/process'
 
+require 'god/dependency_graph'
+
 require 'god/behavior'
 require 'god/behaviors/clean_pid_file'
 require 'god/behaviors/notify_when_flapping'
