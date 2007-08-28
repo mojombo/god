@@ -40,7 +40,7 @@ module God
       private
         
         def check_for_flapping(now)
-          @startup_times = @startup_times.select {|time| time >= now - self.seconds }
+          @startup_times.select! {|time| time >= now - self.seconds }
           if @startup_times.length >= self.failures
             self.notifier.notify("#{self.watch.name} has called start/restart #{@startup_times.length} times in #{self.seconds} seconds")
           end

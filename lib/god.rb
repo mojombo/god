@@ -19,6 +19,8 @@ require 'god/conditions/tries'
 require 'god/conditions/memory_usage'
 require 'god/conditions/cpu_usage'
 require 'god/conditions/always'
+require 'god/conditions/lambda'
+require 'god/conditions/degrading_lambda'
 
 require 'god/reporter'
 require 'god/server'
