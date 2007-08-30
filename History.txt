@@ -1,16 +1,16 @@
-== 0.4.0
+== 0.3.1 / 2007-08-30
 
 * Major Enhancements
   * Add the ability for conditions to override transition state (for exceptional cases)
   * Implement dynamic load of config files while god is running (god load <filename>)
 * New Conditions
   * Tries < PollCondition - triggers after the specified number of tries
-* Bug Fixes
-  * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
-  * Command line group control fixed
   * Add :notify_when_flapping behavior to check for oscillation [kevinclark]
   * Add :degrading_lambda condition. [kevinclark]
     It uses a decaying interval (1/2 rate) for 3 cycles before failing.
+* Bug Fixes
+  * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
+  * Command line group control fixed
 
 == 0.3.0 / 2007-08-17
 

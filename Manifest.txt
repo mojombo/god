@@ -11,15 +11,18 @@ ext/god/netlink_handler.c
 lib/god.rb
 lib/god/behavior.rb
 lib/god/behaviors/clean_pid_file.rb
+lib/god/behaviors/notify_when_flapping.rb
 lib/god/condition.rb
 lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
+lib/god/conditions/degrading_lambda.rb
 lib/god/conditions/lambda.rb
 lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_exits.rb
 lib/god/conditions/process_running.rb
 lib/god/conditions/timeline.rb
 lib/god/conditions/tries.rb
+lib/god/dependency_graph.rb
 lib/god/errors.rb
 lib/god/event_handler.rb
 lib/god/event_handlers/dummy_handler.rb
@@ -43,6 +46,8 @@ test/configs/daemon_events/daemon_events.god
 test/configs/daemon_events/simple_server.rb
 test/configs/daemon_polls/daemon_polls.god
 test/configs/daemon_polls/simple_server.rb
+test/configs/degrading_lambda/degrading_lambda.god
+test/configs/degrading_lambda/tcp_server.rb
 test/configs/real.rb
 test/configs/running_load/running_load.god
 test/configs/test.rb
@@ -51,6 +56,7 @@ test/suite.rb
 test/test_behavior.rb
 test/test_condition.rb
 test/test_conditions_process_running.rb
+test/test_dependency_graph.rb
 test/test_event_handler.rb
 test/test_god.rb
 test/test_handlers_kqueue_handler.rb
