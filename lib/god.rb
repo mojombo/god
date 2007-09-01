@@ -1,5 +1,6 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 
+# stdlib
 require 'syslog'
 
 # internal requires
@@ -49,7 +50,7 @@ end
 God::EventHandler.load
 
 module God
-  VERSION = '0.3.0'
+  VERSION = '0.3.2'
   
   class << self
     attr_accessor :inited, :running, :pending_watches, :host, :port
@@ -62,6 +63,14 @@ module God
   end
   
   def self.init
+    if self.inited
+      abort "God.init must be called before any Watches"
+    end
+    
+    self.internal_init
+  end
+  
+  def self.internal_init
     # only do this once
     return if self.inited
     
@@ -96,7 +105,7 @@ module God
   # block. The attributes of the watch will be set by the configuration
   # file.
   def self.watch
-    self.init
+    self.internal_init
     
     w = Watch.new
     yield(w)
@@ -112,6 +121,9 @@ module God
     if self.watches[w.name] || self.groups[w.name]
       abort "Watch name '#{w.name}' already used for a Watch or Group"
     end
+    
+    # ensure watch is internally valid
+    w.valid? || abort("Watch '#{w.name}' is not valid (see above)")
     
     # add to list of watches
     self.watches[w.name] = w

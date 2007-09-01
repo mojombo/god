@@ -51,7 +51,7 @@ module God
           
           # it's possible that the timer will trigger an event before it can be cleared
           # by an exiting metric, in which case it should be ignored
-          return if metric.nil?
+          exit if metric.nil?
           
           watch = metric.watch
         

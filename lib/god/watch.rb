@@ -17,7 +17,7 @@ module God
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart,
                               :name=, :uid=, :gid=, :start=, :stop=, :restart=,
-                              :pid_file, :pid_file=
+                              :pid_file, :pid_file=, :log, :log=
     
     # api
     attr_accessor :behaviors, :metrics
@@ -45,6 +45,16 @@ module God
       # mutex
       self.mutex = Mutex.new
     end
+    
+    def valid?
+      @process.valid?
+    end
+    
+    ###########################################################################
+    #
+    # Behavior
+    #
+    ###########################################################################
     
     def behavior(kind)
       # create the behavior
@@ -167,14 +177,16 @@ module God
     def action(a, c = nil)
       case a
       when :start
-        Syslog.debug(self.start.to_s)
-        puts self.start.to_s
+        msg = "#{self.name} start: #{self.start.to_s}"
+        Syslog.debug(msg)
+        puts msg
         call_action(c, :start)
         sleep(self.start_grace + self.grace)
       when :restart
         if self.restart
-          Syslog.debug(self.restart.to_s)
-          puts self.restart
+          msg = "#{self.name} restart: #{self.restart.to_s}"
+          Syslog.debug(msg)
+          puts msg
           call_action(c, :restart)
         else
           action(:stop, c)
@@ -182,8 +194,11 @@ module God
         end
         sleep(self.restart_grace + self.grace)
       when :stop
-        Syslog.debug(self.stop.to_s)
-        puts self.stop.to_s
+        if self.stop
+          msg = "#{self.name} stop: #{self.stop.to_s}"
+          Syslog.debug(msg)
+          puts msg
+        end
         call_action(c, :stop)
         sleep(self.stop_grace + self.grace)
       end      

@@ -1,9 +1,7 @@
-# -*- ruby -*-
-
 require 'rubygems'
 require 'hoe'
 
-Hoe.new('god', '0.3.1') do |p|
+Hoe.new('god', '0.3.2') do |p|
   p.rubyforge_name = 'god'
   p.author = 'Tom Preston-Werner'
   p.email = 'tom@rubyisawesome.com'
@@ -11,7 +9,6 @@ Hoe.new('god', '0.3.1') do |p|
   p.summary = 'Like monit, only awesome'
   p.description = "God is an easy to configure, easy to extend monitoring framework written in Ruby."
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
-  # p.extra_deps << ['daemons', '>=1.0.7']
   p.spec_extras = {:extensions => ['ext/god/extconf.rb']}
 end
 
@@ -29,5 +26,3 @@ desc "Upload site to Rubyforge"
 task :site_edge do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
 end
-
-# vim: syntax=Ruby

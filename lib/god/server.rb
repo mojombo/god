@@ -10,6 +10,7 @@ module God
     def initialize(host = nil, port = nil)
       @host = host
       @port = port || 17165
+      puts "Starting on #{@host}:#{@port}"
       start
     end
 

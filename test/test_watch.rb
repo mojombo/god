@@ -41,6 +41,13 @@ class TestWatch < Test::Unit::TestCase
     assert_equal @watch.mutex, @watch.mutex
   end
   
+  # valid?
+  
+  def test_valid?
+    God::Process.any_instance.expects(:valid?)
+    @watch.valid?
+  end
+  
   # behavior
   
   def test_behavior_should_record_behavior

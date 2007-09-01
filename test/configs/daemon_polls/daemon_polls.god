@@ -5,6 +5,7 @@ God.watch do |w|
   w.stop = 'ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' stop'
   w.pid_file = '/var/run/daemon-polls.pid'
   w.start_grace = 2.seconds
+  w.log = File.join(File.dirname(__FILE__), *%w[out.log])
   
   w.behavior(:clean_pid_file)
   

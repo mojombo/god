@@ -22,6 +22,14 @@ class TestGod < Test::Unit::TestCase
     God.init
   end
   
+  def test_init_should_abort_if_called_after_watch
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
+    
+    assert_abort do
+      God.init { }
+    end
+  end
+  
   # pid_file_directory
   
   def test_pid_file_directory_should_return_default_if_not_set_explicitly
@@ -37,7 +45,11 @@ class TestGod < Test::Unit::TestCase
   
   def test_watch_should_get_stored
     watch = nil
-    God.watch { |w| watch = w }
+    God.watch do |w|
+      w.name = 'foo'
+      w.start = 'bar'
+      watch = w
+    end
     
     assert_equal 1, God.watches.size
     assert_equal watch, God.watches.values.first
@@ -47,7 +59,11 @@ class TestGod < Test::Unit::TestCase
   
   def test_watch_should_get_stored_in_pending_watches
     watch = nil
-    God.watch { |w| watch = w }
+    God.watch do |w|
+      w.name = 'foo'
+      w.start = 'bar'
+      watch = w
+    end
     
     assert_equal 1, God.pending_watches.size
     assert_equal watch, God.pending_watches.first
@@ -55,7 +71,10 @@ class TestGod < Test::Unit::TestCase
   
   def test_watch_should_register_processes
     assert_nil God.registry['foo']
-    God.watch { |w| w.name = 'foo' }
+    God.watch do |w|
+      w.name = 'foo'
+      w.start = 'bar'
+    end
     assert_kind_of God::Process, God.registry['foo']
   end
   
@@ -65,6 +84,7 @@ class TestGod < Test::Unit::TestCase
     God.watch do |w|
       a = w
       w.name = 'foo'
+      w.start = 'bar'
       w.group = 'test'
     end
     
@@ -78,12 +98,14 @@ class TestGod < Test::Unit::TestCase
     God.watch do |w|
       a = w
       w.name = 'foo'
+      w.start = 'bar'
       w.group = 'test'
     end
     
     God.watch do |w|
       b = w
       w.name = 'bar'
+      w.start = 'baz'
       w.group = 'test'
     end
     
@@ -91,44 +113,44 @@ class TestGod < Test::Unit::TestCase
   end
       
   def test_watch_should_allow_multiple_watches
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     assert_nothing_raised do
-      God.watch { |w| w.name = 'bar' }
+      God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     end
   end
   
   def test_watch_should_disallow_duplicate_watch_names
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     assert_abort do
-      God.watch { |w| w.name = 'foo' }
+      God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     end
   end
   
   def test_watch_should_disallow_identical_watch_and_group_names
-    God.watch { |w| w.name = 'foo'; w.group = 'bar' }
+    God.watch { |w| w.name = 'foo'; w.group = 'bar'; w.start = 'bar' }
     
     assert_abort do
-      God.watch { |w| w.name = 'bar' }
+      God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     end
   end
   
   def test_watch_should_disallow_identical_watch_and_group_names_other_way
-    God.watch { |w| w.name = 'bar' }
+    God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     
     assert_abort do
-      God.watch { |w| w.name = 'foo'; w.group = 'bar' }
+      God.watch { |w| w.name = 'foo'; w.group = 'bar'; w.start = 'bar' }
     end
   end
   
   def test_watch_should_unwatch_new_watch_if_running_and_duplicate_watch
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     God.running = true
     
     assert_nothing_raised do
       no_stdout do
-        God.watch { |w| w.name = 'foo' }
+        God.watch { |w| w.name = 'foo'; w.start = 'bar' }
       end
     end
   end
@@ -136,14 +158,14 @@ class TestGod < Test::Unit::TestCase
   # unwatch
   
   def test_unwatch_should_unmonitor_watch
-    God.watch { |w| w.name = 'bar' }
+    God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     w = God.watches['bar']
     w.expects(:unmonitor)
     God.unwatch(w)
   end
   
   def test_unwatch_should_unregister_watch
-    God.watch { |w| w.name = 'bar' }
+    God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     w = God.watches['bar']
     w.expects(:unregister!)
     no_stdout do
@@ -152,7 +174,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_unwatch_should_remove_same_name_watches
-    God.watch { |w| w.name = 'bar' }
+    God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     w = God.watches['bar']
     no_stdout do
       God.unwatch(w)
@@ -163,6 +185,7 @@ class TestGod < Test::Unit::TestCase
   def test_unwatch_should_remove_from_group
     God.watch do |w|
       w.name = 'bar'
+      w.start = 'baz'
       w.group = 'test'
     end
     w = God.watches['bar']
@@ -175,7 +198,7 @@ class TestGod < Test::Unit::TestCase
   # control
   
   def test_control_should_monitor_on_start
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
     w.expects(:monitor)
@@ -183,7 +206,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_control_should_move_to_restart_on_restart
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
     w.expects(:move).with(:restart)
@@ -191,7 +214,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_control_should_unmonitor_and_stop_on_stop
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
     w.expects(:unmonitor).returns(w)
@@ -200,7 +223,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_control_should_unmonitor_on_unmonitor
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
     w.expects(:unmonitor).returns(w)
@@ -208,7 +231,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_control_should_raise_on_invalid_command
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     assert_raise InvalidCommandError do
       God.control('foo', 'invalid')
@@ -218,11 +241,13 @@ class TestGod < Test::Unit::TestCase
   def test_control_should_operate_on_each_watch_in_group
     God.watch do |w|
       w.name = 'foo1'
+      w.start = 'go'
       w.group = 'bar'
     end
     
     God.watch do |w|
       w.name = 'foo2'
+      w.start = 'go'
       w.group = 'bar'
     end
     
@@ -238,6 +263,7 @@ class TestGod < Test::Unit::TestCase
     code = <<-EOF
       God.watch do |w|
         w.name = 'foo'
+        w.start = 'go'
       end
     EOF
     
@@ -252,6 +278,7 @@ class TestGod < Test::Unit::TestCase
     code = <<-EOF
       God.watch do |w|
         w.name = 'foo'
+        w.start = 'go'
       end
     EOF
     
@@ -265,6 +292,7 @@ class TestGod < Test::Unit::TestCase
     code = <<-EOF
       God.watch do |w|
         w.name = 'foo'
+        w.start = 'go'
         w.autostart = false
       end
     EOF
@@ -279,6 +307,7 @@ class TestGod < Test::Unit::TestCase
     code = <<-EOF
       God.watch do |w|
         w.name = 'foo'
+        w.start = 'go'
       end
     EOF
     
@@ -294,6 +323,7 @@ class TestGod < Test::Unit::TestCase
     code = <<-EOF
       God.watch do |w|
         w.name = 'foo'
+        w.start = 'go'
       end
     EOF
     
@@ -321,7 +351,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_start_should_start_event_handler
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     Timer.any_instance.expects(:join)
     EventHandler.expects(:start).once
     no_stdout do
@@ -332,6 +362,7 @@ class TestGod < Test::Unit::TestCase
   def test_start_should_begin_monitoring_autostart_watches
     God.watch do |w|
       w.name = 'foo'
+      w.start = 'go'
     end
     
     Timer.any_instance.expects(:join)
@@ -342,6 +373,7 @@ class TestGod < Test::Unit::TestCase
   def test_start_should_not_begin_monitoring_non_autostart_watches
     God.watch do |w|
       w.name = 'foo'
+      w.start = 'go'
       w.autostart = false
     end
     
@@ -351,7 +383,7 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_start_should_get_and_join_timer
-    God.watch { |w| w.name = 'foo' }
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     Timer.any_instance.expects(:join)
     no_stdout do
       God.start

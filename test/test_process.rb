@@ -12,14 +12,107 @@ module God
   end
 end
 
-class TestProcess < Test::Unit::TestCase
+class TestProcessChild < Test::Unit::TestCase
+  def setup
+    @p = God::Process.new(:name => 'foo')
+    @p.stubs(:test).returns true # so we don't try to mkdir_p
+    Process.stubs(:detach) # because we stub fork
+  end
+  
+  # valid?
+  
+  def test_valid_should_return_true_if_auto_daemonized_and_log
+    @p.start = 'qux'
+    @p.log = 'bar'
+    
+    assert @p.valid?
+  end
+  
+  def test_valid_should_return_true_if_auto_daemonized_and_no_stop
+    @p.start = 'qux'
+    @p.log = 'bar'
+    
+    assert @p.valid?
+  end
+  
+  def test_valid_should_return_true_if_uid_exists
+    @p.start = 'qux'
+    @p.log = 'bar'
+    @p.uid = 'root'
+    
+    assert @p.valid?
+  end
+  
+  def test_valid_should_return_true_if_uid_does_not_exists
+    @p.start = 'qux'
+    @p.log = 'bar'
+    @p.uid = 'foobarbaz'
+    
+    no_stdout do
+      assert !@p.valid?
+    end
+  end
+  
+  def test_valid_should_return_true_if_gid_exists
+    @p.start = 'qux'
+    @p.log = 'bar'
+    @p.gid = 'wheel'
+    
+    assert @p.valid?
+  end
+  
+  def test_valid_should_return_true_if_gid_does_not_exists
+    @p.start = 'qux'
+    @p.log = 'bar'
+    @p.gid = 'foobarbaz'
+    
+    no_stdout do
+      assert !@p.valid?
+    end
+  end
+end
+
+class TestProcessDaemon < Test::Unit::TestCase
   def setup
     @p = God::Process.new(:name => 'foo', :pid_file => 'blah.pid')
     @p.stubs(:test).returns true # so we don't try to mkdir_p
     Process.stubs(:detach) # because we stub fork
   end
   
+  # valid?
+  
+  def test_valid_should_return_false_if_no_start
+    no_stdout do
+      assert !@p.valid?
+    end
+  end
+  
+  def test_valid_should_return_false_if_self_daemonized_and_no_stop
+    @p.pid_file = 'foo'
+    
+    no_stdout do
+      assert !@p.valid?
+    end
+  end
+  
+  def test_valid_should_return_false_if_self_daemonized_and_log
+    @p.pid_file = 'foo'
+    @p.log = 'bar'
+    
+    no_stdout do
+      assert !@p.valid?
+    end
+  end
+  
+  # defaul_pid_file
+  
+  def test_default_pid_file
+    assert_equal File.join(God.pid_file_directory, 'foo.pid'), @p.default_pid_file
+  end
+  
+  # call_action
   # These actually excercise call_action in the back at this point - Kev
+  
   def test_call_action_with_string_should_fork_exec 
     @p.start = "do something"
     IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
@@ -33,10 +126,6 @@ class TestProcess < Test::Unit::TestCase
     cmd.expects(:call)
     @p.start = cmd
     @p.call_action(:start)
-  end
-
-  def test_default_pid_file
-    assert_equal File.join(God.pid_file_directory, 'foo.pid'), @p.default_pid_file
   end
   
   def test_call_action_without_pid_should_write_pid
@@ -74,6 +163,8 @@ class TestProcess < Test::Unit::TestCase
     @p.start = "starting"
     @p.call_action(:start)
   end
+  
+  # start!/stop!/restart!
   
   def test_start_stop_restart_bang
     [:start, :stop, :restart].each do |x|

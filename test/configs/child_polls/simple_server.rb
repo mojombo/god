@@ -1,3 +1,3 @@
 #! /usr/bin/env ruby
 
-loop { puts 'server'; sleep 1 }
+loop { STDOUT.puts('server'); STDOUT.flush; sleep 1 }

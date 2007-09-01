@@ -7,6 +7,7 @@ class TestHub < Test::Unit::TestCase
     
     God.watch do |w|
       w.name = 'foo'
+      w.start = 'bar'
       w.interval = 10
     end
     

@@ -1,3 +1,14 @@
+== 0.3.2
+
+* Major Enhancements
+  * Add ability to save auto-daemonized process output to a log file
+  * Add robust default stop lambda command for auto-daemonized processes (inspired by _eric)
+* Minor Enhancements
+  * Enforce validity of Watches
+  * Enforce that God.init is not called after a Watch
+* Bug Fixes
+  * Fix cross-thread return problem (use exit instead)
+
 == 0.3.1 / 2007-08-30
 
 * Major Enhancements

@@ -115,6 +115,11 @@ else
   # start god
   if !options[:daemonize]
     require 'god'
+    
+    if options[:port]
+      God.port = options[:port]
+    end
+        
     load File.expand_path(options[:config])
   else
     pid = fork do
@@ -143,11 +148,17 @@ else
         puts "Resetting file descriptors"
         
         puts "Loading config"
+        
+        if options[:port]
+          God.port = options[:port]
+        end
       
         load File.expand_path(options[:config])
+        
+        Signal.trap('HUP') {}
       rescue => e
         File.open('god.log', 'a') { |f| f.puts e.message + "\n" + e.backtrace }
-        abort "!!! ERROR !!!"
+        abort "!!! ERROR - See god.log !!!"
       end
     end
   
