@@ -9,16 +9,23 @@ class TestServer < Test::Unit::TestCase
 
   def test_should_start_a_drb_server
     DRb.expects(:start_service)
-    Server.new
+    no_stdout do
+      Server.new
+    end
   end
 
   def test_should_use_supplied_port_and_host
     DRb.expects(:start_service).with { |uri, object| uri == "druby://host:port" && object.is_a?(Server) }
-    server = Server.new('host', 'port')
+    no_stdout do
+      server = Server.new('host', 'port')
+    end
   end
 
   def test_should_forward_foreign_method_calls_to_meddle
-    server = Server.new
+    server = nil
+    no_stdout do
+      server = Server.new
+    end
     God.expects(:send).with(:something_random)
     server.something_random
   end

@@ -6,12 +6,14 @@ module God
     
     attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart
     
-    def initialize(options={})
-      options.each do |k,v|
-        send("#{k}=", v)
-      end
-      
+    def initialize
+      @pid_file = nil
       @tracking_pid = false
+    end
+    
+    def alive?
+      pid = File.read(self.pid_file).strip.to_i
+      System::Process.new(pid).exists?
     end
     
     def valid?
@@ -23,25 +25,25 @@ module God
       # a name must be specified
       if self.name.nil?
         valid = false
-        puts "No name was specified"
+        LOG.log(self, :error, "No name was specified")
       end
       
       # a start command must be specified
       if self.start.nil?
         valid = false
-        puts "No start command was specified"
+        LOG.log(self, :error, "No start command was specified")
       end
       
       # self-daemonizing processes must specify a stop command
       if !@tracking_pid && self.stop.nil?
         valid = false
-        puts "No stop command was specified"
+        LOG.log(self, :error, "No stop command was specified")
       end
       
       # self-daemonizing processes cannot specify log
       if !@tracking_pid && self.log
         valid = false
-        puts "Self-daemonizing processes cannot specify a log file"
+        LOG.log(self, :error, "Self-daemonizing processes cannot specify a log file")
       end
       
       # uid must exist if specified
@@ -50,7 +52,7 @@ module God
           Etc.getpwnam(self.uid)
         rescue ArgumentError
           valid = false
-          puts "UID for '#{self.uid}' does not exist"
+          LOG.log(self, :error, "UID for '#{self.uid}' does not exist")
         end
       end
       
@@ -60,7 +62,7 @@ module God
           Etc.getgrnam(self.gid)
         rescue ArgumentError
           valid = false
-          puts "GID for '#{self.gid}' does not exist"
+          LOG.log(self, :error, "GID for '#{self.gid}' does not exist")
         end
       end
       
@@ -98,50 +100,30 @@ module God
       command = send(action)
       
       if action == :stop && command.nil?
-        # command = "kill -9 `cat #{self.pid_file}`"
         pid = File.read(self.pid_file).strip.to_i
         name = self.name
-        # log_file = self.log
         command = lambda do
-          # File.open(log_file, 'a') do |logger|
-          #   logger.puts "god stop [" + Time.now.strftime("%Y-%m-%d %H:%M:%S") + "] lambda killer"
-          #   logger.flush
-            
-            puts "#{self.name} stop: default lambda killer"
-            
-            ::Process.kill('HUP', pid) rescue nil
+          LOG.log(self, :info, "#{self.name} stop: default lambda killer")
+          
+          ::Process.kill('HUP', pid) rescue nil
 
-            # Poll to see if it's dead
-            5.times do
-              begin
-                ::Process.kill(0, pid)
-              rescue Errno::ESRCH
-                # It died. Good.
-                return
-              end
-
-              sleep 1
+          # Poll to see if it's dead
+          5.times do
+            begin
+              ::Process.kill(0, pid)
+            rescue Errno::ESRCH
+              # It died. Good.
+              return
             end
 
-            ::Process.kill('KILL', pid) rescue nil
-          # end
+            sleep 1
+          end
+
+          ::Process.kill('KILL', pid) rescue nil
         end
       end
             
       if command.kind_of?(String)
-        # Make pid directory
-        unless test(?d, God.pid_file_directory)
-          begin
-            FileUtils.mkdir_p(God.pid_file_directory)
-          rescue Errno::EACCES => e
-            abort "Failed to create pid file directory: #{e.message}"
-          end
-        end
-        
-        unless test(?w, God.pid_file_directory)
-          abort "The pid file directory (#{God.pid_file_directory}) is not writable by #{Etc.getlogin}"
-        end
-        
         # string command
         # fork/exec to setuid/gid
         r, w = IO.pipe
@@ -161,10 +143,7 @@ module God
               STDOUT.reopen "/dev/null", "a"
             end
             STDERR.reopen STDOUT
-            
-            # STDOUT.puts "god #{action} [" + Time.now.strftime("%Y-%m-%d %H:%M:%S") + "] " + command
-            # STDOUT.flush
-            
+                        
             exec command unless command.empty?
           end
           puts pid.to_s

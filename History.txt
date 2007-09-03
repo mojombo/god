@@ -1,19 +1,19 @@
-== 0.3.2
-
-* Major Enhancements
-  * Add ability to save auto-daemonized process output to a log file
-  * Add robust default stop lambda command for auto-daemonized processes (inspired by _eric)
-* Minor Enhancements
-  * Enforce validity of Watches
-  * Enforce that God.init is not called after a Watch
-* Bug Fixes
-  * Fix cross-thread return problem (use exit instead)
-
-== 0.3.1 / 2007-08-30
+== 0.4.0
 
 * Major Enhancements
   * Add the ability for conditions to override transition state (for exceptional cases)
   * Implement dynamic load of config files while god is running (god load <filename>)
+  * Add ability to save auto-daemonized process output to a log file
+  * Add robust default stop lambda command for auto-daemonized processes (inspired by _eric)
+  * Add status command for god binary (shows status of each watch)
+  * Create proper logger with timestamps
+  * Add log command to god binary to get real time logs for a specific watch from a running god instance
+  * Add terminate command for god binary (stop god and all watches)
+* Minor Enhancements
+  * Enforce validity of Watches
+  * Enforce that God.init is not called after a Watch
+  * Move pid_file_directory creation and validation to God.start
+  * Remove check for at least one Watch during startup (now that dynamic loading exists)
 * New Conditions
   * Tries < PollCondition - triggers after the specified number of tries
   * Add :notify_when_flapping behavior to check for oscillation [kevinclark]
@@ -22,6 +22,7 @@
 * Bug Fixes
   * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
   * Command line group control fixed
+  * Fix cross-thread return problem (use exit instead)  
 
 == 0.3.0 / 2007-08-17
 

@@ -1,5 +1,4 @@
 module God
-  module Conditions
     
     class Timeline < Array
       def initialize(max_size)
@@ -8,10 +7,13 @@ module God
       end
       
       def push(val)
-        unshift(val)
-        pop if size > @max_size
+        super(val)
+        shift if size > @max_size
+      end
+      
+      def <<(val)
+        push(val)
       end
     end
     
-  end
 end

@@ -11,10 +11,6 @@ module God
         system("kill -0 #{@pid} &> /dev/null")
       end
       
-      def kill
-        system("kill -9 `cat #{@pid}`")
-      end
-      
       # Memory usage in kilobytes (resident set size)
       def memory
         ps_int('rss')

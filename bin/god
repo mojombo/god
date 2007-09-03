@@ -18,6 +18,9 @@ Usage: god [command] [options]
     monitor <watch or group name>
     unmonitor <watch or group name>
     load <file>
+    log <watch name>
+    status
+    terminate
 
   Options:
 EOF
@@ -90,6 +93,42 @@ elsif command = ARGV[0]
     end
     
     puts "Done"
+  elsif command == 'status'
+    puts server.status
+  elsif command == 'log'
+    begin
+      Signal.trap('INT') { exit!(0) }
+      name = ARGV[1]
+      t = Time.at(0)
+      loop do
+        print server.running_log(name, t)
+        t = Time.now
+        sleep 1
+      end
+    rescue God::NoSuchWatchError
+      puts "No such watch"
+    rescue DRb::DRbConnError
+      puts "The server went away"
+    rescue => e
+      puts e.message
+      puts e.backtrace.join("\n")
+    ensure
+      exit!(0)
+    end
+  elsif command == 'terminate'
+    if server.stop_all
+      puts 'Stopped all watches'
+    else
+      puts 'Could not stop all watches within 10 seconds'
+    end
+    
+    begin
+      server.terminate
+      abort 'Could not stop god'
+    rescue DRb::DRbConnError
+      puts 'Stopped god'
+      exit!(0)
+    end
   else
     # get the name of the watch/group
     name = ARGV[1]

@@ -17,7 +17,7 @@ module God
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart,
                               :name=, :uid=, :gid=, :start=, :stop=, :restart=,
-                              :pid_file, :pid_file=, :log, :log=
+                              :pid_file, :pid_file=, :log, :log=, :alive?
     
     # api
     attr_accessor :behaviors, :metrics
@@ -146,7 +146,7 @@ module God
     def move(to_state)
       msg = "#{self.name} move '#{self.state}' to '#{to_state}'"
       Syslog.debug(msg)
-      puts msg
+      LOG.log(self, :info, msg)
        
       # cleanup from current state
       from_state = self.state
@@ -179,14 +179,14 @@ module God
       when :start
         msg = "#{self.name} start: #{self.start.to_s}"
         Syslog.debug(msg)
-        puts msg
+        LOG.log(self, :info, msg)
         call_action(c, :start)
         sleep(self.start_grace + self.grace)
       when :restart
         if self.restart
           msg = "#{self.name} restart: #{self.restart.to_s}"
           Syslog.debug(msg)
-          puts msg
+          LOG.log(self, :info, msg)
           call_action(c, :restart)
         else
           action(:stop, c)
@@ -197,7 +197,7 @@ module God
         if self.stop
           msg = "#{self.name} stop: #{self.stop.to_s}"
           Syslog.debug(msg)
-          puts msg
+          LOG.log(self, :info, msg)
         end
         call_action(c, :stop)
         sleep(self.stop_grace + self.grace)

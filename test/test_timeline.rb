@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestTimeline < Test::Unit::TestCase
   def setup
-    @timeline = Conditions::Timeline.new(5)
+    @timeline = Timeline.new(5)
   end
   
   def test_new_should_be_empty
@@ -14,7 +14,7 @@ class TestTimeline < Test::Unit::TestCase
       @timeline.push(i)
     end
     
-    assert_equal [10, 9, 8, 7, 6], @timeline
+    assert_equal [6, 7, 8, 9, 10], @timeline
   end
   
   def test_clear_should_clear_array

@@ -1,21 +1,23 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 
+# core
+require 'logger'
+
 # stdlib
 require 'syslog'
 
 # internal requires
 require 'god/errors'
-
+require 'god/logger'
 require 'god/system/process'
-
 require 'god/dependency_graph'
+require 'god/timeline'
 
 require 'god/behavior'
 require 'god/behaviors/clean_pid_file'
 require 'god/behaviors/notify_when_flapping'
 
 require 'god/condition'
-require 'god/conditions/timeline'
 require 'god/conditions/process_running'
 require 'god/conditions/process_exits'
 require 'god/conditions/tries'
@@ -52,14 +54,25 @@ God::EventHandler.load
 module God
   VERSION = '0.3.2'
   
+  LOG = Logger.new
+    
+  LOG_BUFFER_SIZE_DEFAULT = 100
+  PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
+  
   class << self
-    attr_accessor :inited, :running, :pending_watches, :host, :port
+    # user configurable
+    attr_accessor :host,
+                  :port,
+                  :log_buffer_size,
+                  :pid_file_directory
     
-    # drb
-    attr_accessor :server
-    
-    # api
-    attr_accessor :watches, :groups
+    # internal
+    attr_accessor :inited,
+                  :running,
+                  :pending_watches,
+                  :server,
+                  :watches,
+                  :groups
   end
   
   def self.init
@@ -79,11 +92,12 @@ module God
     self.groups = {}
     self.pending_watches = []
     
+    # set defaults
+    self.log_buffer_size = LOG_BUFFER_SIZE_DEFAULT
+    self.pid_file_directory = PID_FILE_DIRECTORY_DEFAULT
+    
     # yield to the config file
     yield self if block_given?
-    
-    # instantiate server
-    self.server = Server.new(self.host, self.port)
     
     # init has been executed
     self.inited = true
@@ -92,15 +106,6 @@ module God
     self.running = false
   end
     
-  # Where pid files created by god will go by default
-  def self.pid_file_directory
-    @pid_file_directory ||= '/var/run/god'
-  end
-  
-  def self.pid_file_directory=(value)
-    @pid_file_directory = value
-  end
-  
   # Instantiate a new, empty Watch object and pass it to the mandatory
   # block. The attributes of the watch will be set by the configuration
   # file.
@@ -183,6 +188,39 @@ module God
     watches
   end
   
+  def self.stop_all
+    self.watches.each do |name, w|
+      w.unmonitor if w.state
+      w.action(:stop) if w.alive?
+    end
+    
+    10.times do
+      return true unless self.watches.map { |name, w| w.alive? }.any?
+      sleep 1
+    end
+    
+    return false
+  end
+  
+  def self.terminate
+    exit!(0)
+  end
+  
+  def self.status
+    self.watches.map do |name, w|
+      status = w.state || :unmonitored
+      "#{name}: #{status}"
+    end.join("\n")
+  end
+  
+  def self.running_log(watch_name, since)
+    unless self.watches[watch_name]
+      raise NoSuchWatchError.new
+    end
+    
+    LOG.watch_log_since(watch_name, since)
+  end
+  
   def self.running_load(code)
     eval(code)
     self.pending_watches.each { |w| w.monitor if w.autostart? }
@@ -197,11 +235,30 @@ module God
     end
   end
   
-  def self.start
-    # make sure there's something to do
-    if self.watches.nil? || self.watches.empty?
-      abort "You must specify at least one watch!"
+  def self.setup
+    # Make pid directory
+    unless test(?d, self.pid_file_directory)
+      begin
+        FileUtils.mkdir_p(self.pid_file_directory)
+      rescue Errno::EACCES => e
+        abort "Failed to create pid file directory: #{e.message}"
+      end
     end
+  end
+    
+  def self.validate
+    unless test(?w, self.pid_file_directory)
+      abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"
+    end
+  end
+  
+  def self.start
+    self.internal_init
+    self.setup
+    self.validate
+    
+    # instantiate server
+    self.server = Server.new(self.host, self.port)
     
     # start event handler system
     EventHandler.start if EventHandler.loaded?

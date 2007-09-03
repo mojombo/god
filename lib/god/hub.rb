@@ -62,7 +62,7 @@ module God
             # log
             msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
             Syslog.debug(msg)
-            puts msg
+            LOG.log(watch, :info, msg)
           
             # after-condition
             condition.after
@@ -103,7 +103,7 @@ module God
         watch.mutex.synchronize do
           msg = watch.name + ' ' + condition.class.name + " [true] " + metric.destination.inspect
           Syslog.debug(msg)
-          puts msg
+          LOG.log(watch, :info, msg)
           
           dest = metric.destination[true]
           watch.move(dest)

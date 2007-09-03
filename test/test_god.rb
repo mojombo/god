@@ -3,6 +3,8 @@ require File.dirname(__FILE__) + '/helper'
 class TestGod < Test::Unit::TestCase
   def setup
     Server.stubs(:new).returns(true)
+    God.stubs(:setup).returns(true)
+    God.stubs(:validate).returns(true)
     God.reset
   end
   
@@ -17,11 +19,6 @@ class TestGod < Test::Unit::TestCase
     assert_equal Hash.new, God.watches
   end
   
-  def test_init_should_kick_off_a_server_instance
-    Server.expects(:new).returns(true)
-    God.init
-  end
-  
   def test_init_should_abort_if_called_after_watch
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
@@ -33,10 +30,12 @@ class TestGod < Test::Unit::TestCase
   # pid_file_directory
   
   def test_pid_file_directory_should_return_default_if_not_set_explicitly
+    God.init
     assert_equal '/var/run/god', God.pid_file_directory
   end
   
   def test_pid_file_directory_equals_should_set
+    God.init
     God.pid_file_directory = '/foo'
     assert_equal '/foo', God.pid_file_directory
   end
@@ -257,6 +256,32 @@ class TestGod < Test::Unit::TestCase
     God.control('bar', 'start')
   end
   
+  # stop_all
+  
+  # terminate
+  
+  def test_terminate_should_exit
+    God.expects(:exit!).with(0)
+    God.terminate
+  end
+  
+  # status
+  
+  def test_status_should_show_state
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
+    
+    w = God.watches['foo']
+    w.state = :up
+    assert_equal "foo: up", God.status
+  end
+  
+  def test_status_should_show_unmonitored_for_nil_state
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
+    
+    w = God.watches['foo']
+    assert_equal "foo: unmonitored", God.status
+  end
+  
   # running_load
   
   def test_running_load_should_eval_code
@@ -344,12 +369,11 @@ class TestGod < Test::Unit::TestCase
   
   # start
   
-  def test_start_should_check_for_at_least_one_watch
-    assert_abort do
-      God.start
-    end
+  def test_start_should_kick_off_a_server_instance
+    Server.expects(:new).returns(true)
+    God.start
   end
-  
+    
   def test_start_should_start_event_handler
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     Timer.any_instance.expects(:join)
@@ -395,5 +419,35 @@ class TestGod < Test::Unit::TestCase
   def test_at_exit_should_call_start
     God.expects(:start).once
     God.at_exit_orig
+  end
+end
+
+
+class TestGodOther < Test::Unit::TestCase
+  def setup
+    Server.stubs(:new).returns(true)
+    God.internal_init
+    God.reset
+  end
+  
+  def teardown
+    Timer.get.timer.kill
+  end
+  
+  # setup
+  
+  def test_setup_should_create_pid_file_directory_if_it_doesnt_exist
+    God.expects(:test).returns(false)
+    FileUtils.expects(:mkdir_p).with(God.pid_file_directory)
+    God.setup
+  end
+  
+  def test_setup_should_raise_if_no_permissions_to_create_pid_file_directory
+    God.expects(:test).returns(false)
+    FileUtils.expects(:mkdir_p).raises(Errno::EACCES)
+    
+    assert_abort do
+      God.setup
+    end
   end
 end

@@ -14,7 +14,9 @@ end
 
 class TestProcessChild < Test::Unit::TestCase
   def setup
-    @p = God::Process.new(:name => 'foo')
+    God.internal_init
+    @p = God::Process.new
+    @p.name = 'foo'
     @p.stubs(:test).returns true # so we don't try to mkdir_p
     Process.stubs(:detach) # because we stub fork
   end
@@ -74,20 +76,43 @@ end
 
 class TestProcessDaemon < Test::Unit::TestCase
   def setup
-    @p = God::Process.new(:name => 'foo', :pid_file => 'blah.pid')
+    God.internal_init
+    @p = God::Process.new
+    @p.name = 'foo'
+    @p.pid_file = 'blah.pid'
     @p.stubs(:test).returns true # so we don't try to mkdir_p
     Process.stubs(:detach) # because we stub fork
   end
   
+  # alive?
+  
+  def test_alive_should_call_system_process_exists
+    File.expects(:read).with('blah.pid').returns('1234')
+    System::Process.any_instance.expects(:exists?).returns(false)
+    assert !@p.alive?
+  end
+  
   # valid?
   
+  def test_valid_should_return_false_if_no_name
+    @p.name = nil
+    @p.start = 'bar'
+    @p.stop = 'baz'
+    no_stdout do
+      assert !@p.valid?
+    end
+  end
+  
   def test_valid_should_return_false_if_no_start
+    @p.name = 'foo'
+    @p.stop = 'baz'
     no_stdout do
       assert !@p.valid?
     end
   end
   
   def test_valid_should_return_false_if_self_daemonized_and_no_stop
+    @p.start = 'bar'
     @p.pid_file = 'foo'
     
     no_stdout do
@@ -97,6 +122,8 @@ class TestProcessDaemon < Test::Unit::TestCase
   
   def test_valid_should_return_false_if_self_daemonized_and_log
     @p.pid_file = 'foo'
+    @p.start = 'baz'
+    @p.stop = 'qux'
     @p.log = 'bar'
     
     no_stdout do
@@ -131,7 +158,8 @@ class TestProcessDaemon < Test::Unit::TestCase
   def test_call_action_without_pid_should_write_pid
     # Only for start, restart
     [:start, :restart].each do |action|
-      @p = God::Process.new(:name => 'foo')
+      @p = God::Process.new
+      @p.name = 'foo'
       @p.stubs(:test).returns true
       IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
       @p.expects(:fork)
@@ -152,16 +180,15 @@ class TestProcessDaemon < Test::Unit::TestCase
     @p.call_action(:stop)
   end
   
-  def test_call_action_should_mkdir_p_if_pid_file_dir_existence_test_fails
-    @p.pid_file = nil
-    IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
-    @p.expects(:fork)
-    Process.expects(:waitpid)
-    @p.expects(:test).returns(false, true)
-    FileUtils.expects(:mkdir_p).with(God.pid_file_directory)
-    File.expects(:open)
-    @p.start = "starting"
-    @p.call_action(:start)
+  def test_call_action_with_invalid_command_class_should_raise
+    @p.start = 5
+    @p.stop = 'baz'
+    
+    assert @p.valid?
+    
+    assert_raise NotImplementedError do
+      @p.call_action(:start)
+    end
   end
   
   # start!/stop!/restart!

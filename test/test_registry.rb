@@ -6,7 +6,8 @@ class TestRegistry < Test::Unit::TestCase
   end
   
   def test_add
-    foo = God::Process.new(:name => 'foo')
+    foo = God::Process.new
+    foo.name = 'foo'
     God.registry.add(foo)
     assert_equal 1, God.registry.size
     assert_equal foo, God.registry['foo']
