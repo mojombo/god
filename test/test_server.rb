@@ -21,12 +21,26 @@ class TestServer < Test::Unit::TestCase
     end
   end
 
-  def test_should_forward_foreign_method_calls_to_meddle
+  def test_should_forward_foreign_method_calls_to_god
     server = nil
     no_stdout do
       server = Server.new
     end
     God.expects(:send).with(:something_random)
     server.something_random
+  end
+  
+  def test_should_install_deny_all_by_default
+    ACL.expects(:new).with(%w{deny all})
+    no_stdout do
+      Server.new
+    end
+  end
+  
+  def test_should_install_pass_through_acl
+    ACL.expects(:new).with(%w{deny all allow localhost allow 0.0.0.0})
+    no_stdout do
+      Server.new(nil, 17165, %w{localhost 0.0.0.0})
+    end
   end
 end

@@ -74,8 +74,15 @@ elsif command = ARGV[0]
   # a command was specified
   
   # connect to remote drb
-    DRb.start_service
-    server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
+  DRb.start_service
+  server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
+  
+  begin
+    server.ping
+  rescue DRb::DRbConnError
+    puts "The server is not available (or you do not have permissions to access it)"
+    exit!
+  end
   
   if command == 'load'
     file = ARGV[1]

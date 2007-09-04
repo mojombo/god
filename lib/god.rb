@@ -58,11 +58,14 @@ module God
     
   LOG_BUFFER_SIZE_DEFAULT = 100
   PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
+  DRB_PORT_DEFAULT = 17165
+  DRB_ALLOW_DEFAULT = ['localhost']
   
   class << self
     # user configurable
     attr_accessor :host,
                   :port,
+                  :allow,
                   :log_buffer_size,
                   :pid_file_directory
     
@@ -95,6 +98,8 @@ module God
     # set defaults
     self.log_buffer_size = LOG_BUFFER_SIZE_DEFAULT
     self.pid_file_directory = PID_FILE_DIRECTORY_DEFAULT
+    self.port = DRB_PORT_DEFAULT
+    self.allow = DRB_ALLOW_DEFAULT
     
     # yield to the config file
     yield self if block_given?
@@ -165,6 +170,10 @@ module God
     if watch.group
       self.groups[watch.group].delete(watch)
     end
+  end
+  
+  def self.ping
+    true
   end
   
   def self.control(name, command)
@@ -246,7 +255,7 @@ module God
     end
   end
     
-  def self.validate
+  def self.validater
     unless test(?w, self.pid_file_directory)
       abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"
     end
@@ -255,10 +264,10 @@ module God
   def self.start
     self.internal_init
     self.setup
-    self.validate
+    self.validater
     
     # instantiate server
-    self.server = Server.new(self.host, self.port)
+    self.server = Server.new(self.host, self.port, self.allow)
     
     # start event handler system
     EventHandler.start if EventHandler.loaded?

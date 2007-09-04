@@ -4,7 +4,7 @@ class TestGod < Test::Unit::TestCase
   def setup
     Server.stubs(:new).returns(true)
     God.stubs(:setup).returns(true)
-    God.stubs(:validate).returns(true)
+    God.stubs(:validater).returns(true)
     God.reset
   end
   
@@ -192,6 +192,12 @@ class TestGod < Test::Unit::TestCase
       God.unwatch(w)
     end
     assert !God.groups[w.group].include?(w)
+  end
+  
+  # ping
+  
+  def test_ping_should_return_true
+    assert God.ping
   end
   
   # control
@@ -448,6 +454,22 @@ class TestGodOther < Test::Unit::TestCase
     
     assert_abort do
       God.setup
+    end
+  end
+  
+  # validate
+    
+  def test_validate_should_abort_if_pid_file_directory_is_unwriteable
+    God.expects(:test).returns(false)
+    assert_abort do
+      God.validater
+    end
+  end
+  
+  def test_validate_should_not_abort_if_pid_file_directory_is_writeable
+    God.expects(:test).returns(true)
+    assert_nothing_raised do
+      God.validater
     end
   end
 end
