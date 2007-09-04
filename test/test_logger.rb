@@ -16,7 +16,7 @@ class TestLogger < Test::Unit::TestCase
     
     assert_equal 1, @log.logs.size
     assert_instance_of Time, @log.logs['foo'][0][0]
-    assert_match /qux/, @log.logs['foo'][0][1]
+    assert_match(/qux/, @log.logs['foo'][0][1])
   end
   
   # watch_log_since
@@ -29,7 +29,7 @@ class TestLogger < Test::Unit::TestCase
       @log.log(stub(:name => 'foo'), :info, "two")
     end
     
-    assert_match /one.*two/m, @log.watch_log_since('foo', t1)
+    assert_match(/one.*two/m, @log.watch_log_since('foo', t1))
     
     t2 = Time.now
     
@@ -39,9 +39,9 @@ class TestLogger < Test::Unit::TestCase
     
     out = @log.watch_log_since('foo', t2)
     
-    assert_no_match /one/, out
-    assert_no_match /two/, out
-    assert_match /three/, out
+    assert_no_match(/one/, out)
+    assert_no_match(/two/, out)
+    assert_match(/three/, out)
   end
   
   # regular methods

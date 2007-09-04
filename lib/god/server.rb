@@ -16,6 +16,10 @@ module God
       start
     end
 
+    def ping
+      true
+    end
+    
     def method_missing(*args, &block)
       God.send(*args, &block)
     end

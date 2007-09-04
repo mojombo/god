@@ -171,11 +171,7 @@ module God
       self.groups[watch.group].delete(watch)
     end
   end
-  
-  def self.ping
-    true
-  end
-  
+    
   def self.control(name, command)
     # get the list of watches
     watches = Array(self.watches[name] || self.groups[name])

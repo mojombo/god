@@ -82,6 +82,10 @@ elsif command = ARGV[0]
   rescue DRb::DRbConnError
     puts "The server is not available (or you do not have permissions to access it)"
     exit!
+  rescue => e
+    puts e.message
+    puts e.backtrace.join("\n")
+    exit!
   end
   
   if command == 'load'

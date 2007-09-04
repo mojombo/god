@@ -194,12 +194,6 @@ class TestGod < Test::Unit::TestCase
     assert !God.groups[w.group].include?(w)
   end
   
-  # ping
-  
-  def test_ping_should_return_true
-    assert God.ping
-  end
-  
   # control
   
   def test_control_should_monitor_on_start

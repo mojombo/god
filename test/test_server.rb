@@ -43,4 +43,14 @@ class TestServer < Test::Unit::TestCase
       Server.new(nil, 17165, %w{localhost 0.0.0.0})
     end
   end
+  
+  # ping
+  
+  def test_ping_should_return_true
+    server = nil
+    no_stdout do
+      server = Server.new
+    end
+    assert server.ping
+  end
 end
