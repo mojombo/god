@@ -15,7 +15,7 @@ God.watch do |w|
   end
   
   # determine when process has finished starting
-  w.transition(:start, :up) do |on|
+  w.transition([:start, :restart], :up) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end

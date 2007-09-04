@@ -75,7 +75,7 @@ elsif command = ARGV[0]
   
   # connect to remote drb
   DRb.start_service
-  server = DRbObject.new nil, "druby://localhost:#{options[:port]}"
+  server = DRbObject.new nil, "druby://127.0.0.1:#{options[:port]}"
   
   begin
     server.ping

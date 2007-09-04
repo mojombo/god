@@ -59,7 +59,7 @@ module God
   LOG_BUFFER_SIZE_DEFAULT = 100
   PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
   DRB_PORT_DEFAULT = 17165
-  DRB_ALLOW_DEFAULT = ['localhost']
+  DRB_ALLOW_DEFAULT = ['127.0.0.1']
   
   class << self
     # user configurable

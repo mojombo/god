@@ -38,9 +38,9 @@ class TestServer < Test::Unit::TestCase
   end
   
   def test_should_install_pass_through_acl
-    ACL.expects(:new).with(%w{deny all allow localhost allow 0.0.0.0})
+    ACL.expects(:new).with(%w{deny all allow 127.0.0.1 allow 0.0.0.0})
     no_stdout do
-      Server.new(nil, 17165, %w{localhost 0.0.0.0})
+      Server.new(nil, 17165, %w{127.0.0.1 0.0.0.0})
     end
   end
   
