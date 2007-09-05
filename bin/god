@@ -14,6 +14,7 @@ Usage: god [command] [options]
 
   Commands:
     start <watch or group name>
+    restart <watch or group name>
     stop <watch or group name>
     monitor <watch or group name>
     unmonitor <watch or group name>
@@ -146,6 +147,7 @@ elsif command = ARGV[0]
   
     begin
       puts "Sending '#{command}' command"
+      puts "This may take a few seconds depending on the grace periods assigned to your watches"
     
       # send command
       watches = server.control(name, command)

@@ -21,4 +21,16 @@ class TestTimeline < Test::Unit::TestCase
     @timeline.push(1)
     assert_equal [], @timeline.clear
   end
+  
+  # def test_benchmark
+  #   require 'benchmark'
+  # 
+  #   count = 1_000_000
+  # 
+  #   t = Timeline.new(10)
+  # 
+  #   Benchmark.bmbm do |x|
+  #     x.report("go") { count.times { t.push(5) } }
+  #   end
+  # end
 end
