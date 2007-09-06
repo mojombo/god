@@ -176,19 +176,23 @@ module God
     # get the list of watches
     watches = Array(self.watches[name] || self.groups[name])
   
+    jobs = []
+    
     # do the command
     case command
       when "start", "monitor"
-        watches.each { |w| w.monitor }
+        watches.each { |w| jobs << Thread.new { w.monitor } }
       when "restart"
-        watches.each { |w| w.move(:restart) }
+        watches.each { |w| jobs << Thread.new { w.move(:restart) } }
       when "stop"
-        watches.each { |w| w.unmonitor.action(:stop) }
+        watches.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) } }
       when "unmonitor"
-        watches.each { |w| w.unmonitor }
+        watches.each { |w| jobs << Thread.new { w.unmonitor } }
       else
         raise InvalidCommandError.new
     end
+    
+    jobs.each { |j| j.join }
     
     watches
   end

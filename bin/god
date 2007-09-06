@@ -154,12 +154,14 @@ elsif command = ARGV[0]
   
     begin
       puts "Sending '#{command}' command"
-      puts "This may take a few seconds depending on the grace periods assigned to your watches"
+      
+      t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
     
       # send command
       watches = server.control(name, command)
     
       # output response
+      t.kill; STDOUT.puts
       puts 'The following watches were affected:'
       watches.each do |w|
         puts '  ' + w.name
