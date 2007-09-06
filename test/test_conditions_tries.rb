@@ -40,7 +40,7 @@ class TestConditionsTriesWithin < Test::Unit::TestCase
   def test_test_should_return_false_if_called_three_times_within_two_seconds
     assert !@c.test
     assert !@c.test
-    assert sleep(1)
+    assert sleep(1.1)
     assert !@c.test
   end
 end
