@@ -3,6 +3,18 @@ require File.join(File.dirname(__FILE__), *%w[.. lib god])
 require 'test/unit'
 require 'set'
 
+include God
+
+if RUBY_PLATFORM =~ /linux/i && Process.uid != 0
+  abort <<-EOF
+*********************************************************************
+*                                                                   *
+*    You need to run these tests as root (netlink requires it)      *
+*                                                                   *
+*********************************************************************
+EOF
+end
+
 begin
   require 'mocha'
 rescue LoadError
@@ -14,8 +26,6 @@ rescue LoadError
     abort "=> You need the Mocha gem to run these tests."
   end
 end
-
-include God
 
 module God
   module Conditions
