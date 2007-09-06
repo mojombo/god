@@ -2,14 +2,10 @@ module God
   module Conditions
     
     class Tries < PollCondition
-      attr_accessor :times
+      attr_accessor :times, :within
       
       def prepare
-        if self.times.kind_of?(Integer)
-          self.times = [self.times, self.times]
-        end
-        
-        @timeline = Timeline.new(self.times[1])
+        @timeline = Timeline.new(self.times)
       end
     
       def valid?
@@ -19,9 +15,13 @@ module God
       end
     
       def test
-        @timeline.push(true)
-        if @timeline.select { |x| x }.size >= self.times.first
-          @timeline.clear
+        @timeline << Time.now
+        
+        concensus = (@timeline.size == self.times)
+        duration = within.nil? || (@timeline.last - @timeline.first) < self.within
+        
+        if concensus && duration
+          @timeline.clear if within.nil?
           return true
         else
           return false

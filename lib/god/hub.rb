@@ -80,7 +80,16 @@ module God
             # transition or reschedule
             if dest
               # transition
-              watch.move(dest)
+              begin
+                watch.move(dest)
+              rescue EventRegistrationFailedError
+                msg = watch.name + ' Event registration failed, moving back to previous state'
+                Syslog.debug(msg)
+                LOG.log(watch, :info, msg)
+                
+                dest = watch.state
+                retry
+              end
             else
               # reschedule
               Timer.get.schedule(condition)

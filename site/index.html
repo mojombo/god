@@ -326,7 +326,7 @@ end</code></pre>
     end</code></pre>
       
 <p>Watches contain conditions grouped by the action to execute should they return <code>true</code>. I start with a <code>start_if</code> block that contains a single condition. Conditions are specified by calling <code>condition</code> with an identifier, in this case 
-<code>:process_not_running</code>. Each condition can specify a poll interval that will override the default watch interval. In this case, I want to check that the process is still running every 5 seconds instead of the 30 second interval that other conditions will inherit. The ability to set condition specific poll intervals makes it possible to run costly tests less often then cheap tests.</p>
+<code>:process_running</code>. Each condition can specify a poll interval that will override the default watch interval. In this case, I want to check that the process is still running every 5 seconds instead of the 30 second interval that other conditions will inherit. The ability to set condition specific poll intervals makes it possible to run costly tests less often then cheap tests.</p>
 
 <pre><code class="ruby">    w.restart_if do |restart|
       restart.condition(:memory_usage) do |c|
@@ -450,6 +450,12 @@ God.watch do |w|
     on.condition(:process_running) do |c|
       c.running = true
     end
+    
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 3
+      c.transition = :start
+    end
   end
 
   # start if process is not running
@@ -496,9 +502,24 @@ end
     on.condition(:process_running) do |c|
       c.running = true
     end
+    
+    ...
   end</code></pre>
 
 <p>If god has determined that my process isn't running, the Watch will be put into the <code>start</code> state. Upon entering this state, the <code>start</code> command that I specified on the Watch will be called. In addition, the above transition specifies a condition that should be enabled when in either the <code>start</code> or <code>restart</code> states. The condition is another <code>process_running</code>, however this time I'm only interested in moving to another state once it returns <code>true</code>. A <code>true</code> return from this condition means that the process is running and it's ok to transition to the <code>up</code> state (second argument to <code>transition</code>).</p>
+
+<pre><code class="ruby">  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    ...
+    
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 3
+      c.transition = :start
+    end
+  end</code></pre>
+
+<p>The other half of this transition uses the <code>tries</code> condition to ensure that god doesn't get stuck in this state. It's possible that the process could go down while the transition is being made, in which case god would end up polling forever to see if the process is up. Here I've specified that if this condition is called three times, god should override the normal transition destination and move to the <code>start</code> state instead. If you specify a <code>transition</code> attribute on any condition, that state will be transferred to instead of the normal transfer destination.</p>
 
 <pre><code class="ruby">  # start if process is not running
   w.transition(:up, :start) do |on|

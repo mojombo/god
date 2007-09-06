@@ -16,9 +16,7 @@ module God
             Hub.trigger(self)
           end
         rescue StandardError
-          # Rapid consecutive kills of a process using ProcessExits can cause
-          # the registration to fail. Capturing the exception and having the
-          # start->up transition recover is the best current solution - Tom
+          raise EventRegistrationFailedError.new
         end
       end
       

@@ -15,4 +15,7 @@ module God
   class InvalidCommandError < StandardError
   end
   
+  class EventRegistrationFailedError < StandardError
+  end
+  
 end
