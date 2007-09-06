@@ -272,14 +272,14 @@ class TestGod < Test::Unit::TestCase
     
     w = God.watches['foo']
     w.state = :up
-    assert_equal "foo: up", God.status
+    assert_equal({'foo' => {:state => :up}}, God.status)
   end
   
   def test_status_should_show_unmonitored_for_nil_state
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
-    assert_equal "foo: unmonitored", God.status
+    assert_equal({'foo' => {:state => :unmonitored}}, God.status)
   end
   
   # running_load

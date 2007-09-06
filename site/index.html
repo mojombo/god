@@ -591,6 +591,16 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
+<h1>Getting Logs for a Single Watch</h1>
+
+<p>Sifting through the god logs for statements specific to a specific Watch can be frustrating when you have many of them. You can get the realtime logs for a single Watch via the command line:</p>
+
+<pre>$ sudo god log 'local-3000'</pre>
+
+<p>This will display the last 100 lines of log for the 'local-3000' Watch and update every second with new log messages.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
 <h1>Extend God with your own Conditions</h1>
 
 <p>God was designed from the start to allow you to easily write your own custom conditions, making it simple to add tests that are application specific.</p>

@@ -212,10 +212,12 @@ module God
   end
   
   def self.status
+    info = {}
     self.watches.map do |name, w|
       status = w.state || :unmonitored
-      "#{name}: #{status}"
-    end.join("\n")
+      info[name] = {:state => status}
+    end
+    info
   end
   
   def self.running_log(watch_name, since)

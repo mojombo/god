@@ -2,7 +2,6 @@
   God.watch do |w|
     w.name = "stress-#{i}"
     w.start = 'ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb])
-    w.stop = ''
     w.interval = 1
     w.grace = 2
     w.group = 'test'

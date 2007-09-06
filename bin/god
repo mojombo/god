@@ -106,7 +106,11 @@ elsif command = ARGV[0]
     
     puts "Done"
   elsif command == 'status'
-    puts server.status
+    watches = server.status
+    watches.keys.sort.each do |name|
+      state = watches[name][:state]
+      puts "#{name}: #{state}"
+    end
   elsif command == 'log'
     begin
       Signal.trap('INT') { exit!(0) }
