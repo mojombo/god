@@ -51,48 +51,48 @@ module God
           
           # it's possible that the timer will trigger an event before it can be cleared
           # by an exiting metric, in which case it should be ignored
-          exit if metric.nil?
-          
-          watch = metric.watch
-        
-          watch.mutex.synchronize do
-            # run the test
-            result = condition.test
-          
-            # log
-            msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
-            Syslog.debug(msg)
-            LOG.log(watch, :info, msg)
-          
-            # after-condition
-            condition.after
-          
-            # get the destination
-            dest = 
-            if result && condition.transition
-              # condition override
-              condition.transition
-            else
-              # regular
-              metric.destination[result]
-            end
+          unless metric.nil?
+            watch = metric.watch
             
-            # transition or reschedule
-            if dest
-              # transition
-              begin
-                watch.move(dest)
-              rescue EventRegistrationFailedError
-                msg = watch.name + ' Event registration failed, moving back to previous state'
-                Syslog.debug(msg)
-                LOG.log(watch, :info, msg)
-                
-                dest = watch.state
-                retry
+            watch.mutex.synchronize do
+              # run the test
+              result = condition.test
+              
+              # log
+              msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
+              Syslog.debug(msg)
+              LOG.log(watch, :info, msg)
+              
+              # after-condition
+              condition.after
+              
+              # get the destination
+              dest = 
+              if result && condition.transition
+                # condition override
+                condition.transition
+              else
+                # regular
+                metric.destination[result]
               end
-            else
-              # reschedule
-              Timer.get.schedule(condition)
+              
+              # transition or reschedule
+              if dest
+                # transition
+                begin
+                  watch.move(dest)
+                rescue EventRegistrationFailedError
+                  msg = watch.name + ' Event registration failed, moving back to previous state'
+                  Syslog.debug(msg)
+                  LOG.log(watch, :info, msg)
+                  
+                  dest = watch.state
+                  retry
+                end
+              else
+                # reschedule
+                Timer.get.schedule(condition)
+              end
             end
           end
         rescue => e

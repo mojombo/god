@@ -1,7 +1,7 @@
-(1..20).each do |i|
+('01'..'20').each do |i|
   God.watch do |w|
     w.name = "stress-#{i}"
-    w.start = 'ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb])
+    w.start = "ruby " + File.join(File.dirname(__FILE__), *%w[simple_server.rb])
     w.interval = 1
     w.grace = 2
     w.group = 'test'

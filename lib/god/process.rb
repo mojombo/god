@@ -143,7 +143,7 @@ module God
               STDOUT.reopen "/dev/null", "a"
             end
             STDERR.reopen STDOUT
-                        
+            
             exec command unless command.empty?
           end
           puts pid.to_s

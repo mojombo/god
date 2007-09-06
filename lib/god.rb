@@ -194,9 +194,11 @@ module God
   end
   
   def self.stop_all
-    self.watches.each do |name, w|
-      w.unmonitor if w.state
-      w.action(:stop) if w.alive?
+    self.watches.sort.each do |name, w|
+      Thread.new do
+        w.unmonitor if w.state
+        w.action(:stop) if w.alive?
+      end
     end
     
     10.times do

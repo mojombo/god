@@ -132,9 +132,12 @@ elsif command = ARGV[0]
       exit!(0)
     end
   elsif command == 'terminate'
+    t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
     if server.stop_all
+      t.kill; STDOUT.puts
       puts 'Stopped all watches'
     else
+      t.kill; STDOUT.puts
       puts 'Could not stop all watches within 10 seconds'
     end
     
