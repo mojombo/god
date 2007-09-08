@@ -220,8 +220,7 @@ module God
   def self.status
     info = {}
     self.watches.map do |name, w|
-      status = w.state || :unmonitored
-      info[name] = {:state => status}
+      info[name] = {:state => w.state}
     end
     info
   end

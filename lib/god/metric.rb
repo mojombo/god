@@ -3,7 +3,7 @@ module God
   class Metric
     attr_accessor :watch, :destination, :conditions
     
-    def initialize(watch, destination)
+    def initialize(watch, destination = nil)
       self.watch = watch
       self.destination = destination
       self.conditions = []

@@ -58,8 +58,20 @@ module God
               # run the test
               result = condition.test
               
+              # construct destination description
+              dest_desc = 
+              if metric.destination
+                metric.destination.inspect
+              else
+                if condition.transition
+                  {true => condition.transition}.inspect
+                else
+                  'none'
+                end
+              end
+              
               # log
-              msg = watch.name + ' ' + condition.class.name + " [#{result}] " + metric.destination.inspect
+              msg = watch.name + ' ' + condition.class.name + " [#{result}] " + dest_desc
               Syslog.debug(msg)
               LOG.log(watch, :info, msg)
               
@@ -73,7 +85,7 @@ module God
                 condition.transition
               else
                 # regular
-                metric.destination[result]
+                metric.destination && metric.destination[result]
               end
               
               # transition or reschedule

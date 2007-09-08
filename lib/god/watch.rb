@@ -9,7 +9,7 @@ module God
     # config
     attr_accessor :state, :interval, :group,
                   :grace, :start_grace, :stop_grace, :restart_grace
-                  
+    
     
     attr_writer   :autostart
     def autostart?; @autostart; end
@@ -29,7 +29,10 @@ module God
     def initialize
       @autostart ||= true
       @process = God::Process.new
-            
+      
+      # initial state is unmonitored
+      self.state = :unmonitored
+      
       # no grace period by default
       self.grace = self.start_grace = self.stop_grace = self.restart_grace = 0
       
@@ -37,11 +40,13 @@ module God
       self.behaviors = []
       
       # the list of conditions for each action
-      self.metrics = {:init => [],
+      self.metrics = {nil => [],
+                      :unmonitored => [],
+                      :init => [],
                       :start => [],
                       :restart => [],
                       :up => []}
-                         
+      
       # mutex
       self.mutex = Mutex.new
     end
@@ -82,10 +87,9 @@ module God
     
     # Define a transition handler which consists of a set of conditions
     def transition(start_states, end_states)
-      # convert to into canonical hash form
+      # convert end_states into canonical hash form
       canonical_end_states = canonical_hash_form(end_states)
       
-      # for each start state do
       Array(start_states).each do |start_state|
         # validate start state
         unless VALID_STATES.include?(start_state)
@@ -101,6 +105,17 @@ module God
         # record the metric
         self.metrics[start_state] << m
       end
+    end
+    
+    def lifecycle
+      # create a new metric to hold the watch and conditions
+      m = Metric.new(self)
+      
+      # let the config file define some conditions on the metric
+      yield(m)
+      
+      # record the metric
+      self.metrics[nil] << m
     end
     
     ###########################################################################
@@ -139,19 +154,24 @@ module God
     
     # Disable monitoring
     def unmonitor
-      self.move(nil)
+      self.move(:unmonitored)
     end
     
     # Move from one state to another
     def move(to_state)
-      msg = "#{self.name} move '#{self.state}' to '#{to_state}'"
+      from_state = self.state
+      
+      msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
       Syslog.debug(msg)
       LOG.log(self, :info, msg)
-       
+      
       # cleanup from current state
-      from_state = self.state
-      if from_state
+      if from_state != :unmonitored
         self.metrics[from_state].each { |m| m.disable }
+      end
+      
+      if to_state == :unmonitored
+        self.metrics[nil].each { |m| m.disable }
       end
       
       # perform action
@@ -163,8 +183,13 @@ module God
       end
       
       # move to new state
-      if to_state
+      if to_state != :unmonitored
         self.metrics[to_state].each { |m| m.enable }
+      end
+      
+      # if no from state, enable lifecycle metric
+      if from_state == :unmonitored
+        self.metrics[nil].each { |m| m.enable }
       end
       
       # set state

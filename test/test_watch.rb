@@ -31,8 +31,8 @@ class TestWatch < Test::Unit::TestCase
     end
   end
   
-  def test_new_should_have_nil_state
-    assert_equal nil, @watch.state
+  def test_new_should_have_unmonitored_state
+    assert_equal :unmonitored, @watch.state
   end
   
   # mutex
@@ -84,6 +84,13 @@ class TestWatch < Test::Unit::TestCase
     assert_equal 1, @watch.metrics[:init].size
   end
   
+  # lifecycle
+  
+  def test_lifecycle_should_create_and_record_a_metric_for_nil_start_state
+    @watch.lifecycle { }
+    assert_equal 1, @watch.metrics[nil].size
+  end
+  
   # start_if
   
   def test_start_if_should_place_a_metric_on_up_state
@@ -116,7 +123,7 @@ class TestWatch < Test::Unit::TestCase
   # unmonitor
   
   def test_unmonitor_should_move_to_nil
-    @watch.expects(:move).with(nil)
+    @watch.expects(:move).with(:unmonitored)
     @watch.unmonitor
   end
   
