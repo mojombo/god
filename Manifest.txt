@@ -16,6 +16,7 @@ lib/god/condition.rb
 lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
 lib/god/conditions/degrading_lambda.rb
+lib/god/conditions/flapping.rb
 lib/god/conditions/lambda.rb
 lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_exits.rb
@@ -38,6 +39,7 @@ lib/god/sugar.rb
 lib/god/system/process.rb
 lib/god/timeline.rb
 lib/god/timer.rb
+lib/god/trigger.rb
 lib/god/watch.rb
 test/configs/child_events/child_events.god
 test/configs/child_events/simple_server.rb
@@ -59,6 +61,7 @@ test/suite.rb
 test/test_behavior.rb
 test/test_condition.rb
 test/test_conditions_process_running.rb
+test/test_conditions_tries.rb
 test/test_dependency_graph.rb
 test/test_event_handler.rb
 test/test_god.rb

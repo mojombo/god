@@ -18,7 +18,7 @@ module God
         @timeline << Time.now
         
         concensus = (@timeline.size == self.times)
-        duration = within.nil? || (@timeline.last - @timeline.first) < self.within
+        duration = self.within.nil? || (@timeline.last - @timeline.first) < self.within
         
         if concensus && duration
           @timeline.clear if within.nil?

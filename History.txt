@@ -1,4 +1,14 @@
-== 0.4.0
+== 0.5.0
+
+* Major Enhancements
+  * Implement lifecycle scoped metric to allow for cross-state conditions
+  * Add TriggerCondition for conditions that need info about state changes
+* Minor Enchancements
+  * Allow EventConditions to do transition overloading
+* New Conditions
+  * Flapping < TriggerCondition - trigger on state change
+
+== 0.4.0 / 2007-09-13
 
 * Major Enhancements
   * Add the ability for conditions to override transition state (for exceptional cases)

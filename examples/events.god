@@ -4,11 +4,11 @@
 # Run with:
 # god -c /path/to/events.god
 
-RAILS_ROOT = "/Users/tom/dev/helloworld"
+RAILS_ROOT = "/Users/tom/dev/git/helloworld"
 
 God.watch do |w|
   w.name = "local-3000"
-  w.interval = 5 # seconds
+  w.interval = 5.seconds
   w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
   w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
   w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
@@ -28,6 +28,12 @@ God.watch do |w|
     on.condition(:process_running) do |c|
       c.running = true
     end
+    
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 3
+      c.transition = :start
+    end
   end
 
   # start if process is not running
@@ -39,14 +45,27 @@ God.watch do |w|
   w.transition(:up, :restart) do |on|
     on.condition(:memory_usage) do |c|
       c.interval = 20
-      c.above = (50 * 1024) # 50mb
+      c.above = 50.megabytes
       c.times = [3, 5]
     end
     
     on.condition(:cpu_usage) do |c|
       c.interval = 10
-      c.above = 10 # percent
+      c.above = 10.percent
       c.times = [3, 5]
+    end
+  end
+  
+  # lifecycle
+  w.lifecycle do |on|
+    on.condition(:flapping) do |c|
+      c.to_state = [:start, :restart]
+      c.times = 5
+      c.within = 1.minute
+      c.transition = :unmonitored
+      c.retry_in = 10.minutes
+      c.retry_times = 5
+      c.retry_within = 2.hours
     end
   end
 end

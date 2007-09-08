@@ -3,44 +3,40 @@ module God
   class Hub
     class << self
       # directory to hold conditions and their corresponding metric
-      #   key: condition
-      #   val: metric
+      # {condition => metric}
       attr_accessor :directory
     end
     
     self.directory = {}
     
     def self.attach(condition, metric)
-      # add the condition to the directory
       self.directory[condition] = metric
       
-      # schedule poll condition
-      # register event condition
-      if condition.kind_of?(PollCondition)
-        Timer.get.schedule(condition, 0)
-      else
-        condition.register
+      case condition
+        when PollCondition
+          Timer.get.schedule(condition, 0)
+        when EventCondition, TriggerCondition
+          condition.register
       end
     end
     
     def self.detach(condition)
-      # remove the condition from the directory
       self.directory.delete(condition)
       
-      # unschedule any pending polls
-      Timer.get.unschedule(condition)
-      
-      # deregister event condition
-      if condition.kind_of?(EventCondition)
-        condition.deregister
+      case condition
+        when PollCondition
+          Timer.get.unschedule(condition)
+        when EventCondition, TriggerCondition
+          condition.deregister
       end
     end
     
     def self.trigger(condition)
-      if condition.kind_of?(PollCondition)
-        self.handle_poll(condition)
-      elsif condition.kind_of?(EventCondition)
-        self.handle_event(condition)
+      case condition
+        when PollCondition
+          self.handle_poll(condition)
+        when EventCondition, TriggerCondition
+          self.handle_event(condition)
       end
     end
     
@@ -58,20 +54,8 @@ module God
               # run the test
               result = condition.test
               
-              # construct destination description
-              dest_desc = 
-              if metric.destination
-                metric.destination.inspect
-              else
-                if condition.transition
-                  {true => condition.transition}.inspect
-                else
-                  'none'
-                end
-              end
-              
               # log
-              msg = watch.name + ' ' + condition.class.name + " [#{result}] " + dest_desc
+              msg = watch.name + ' ' + condition.class.name + " [#{result}] " + self.dest_desc(metric, condition)
               Syslog.debug(msg)
               LOG.log(watch, :info, msg)
               
@@ -119,15 +103,43 @@ module God
     def self.handle_event(condition)
       Thread.new do
         metric = self.directory[condition]
-        watch = metric.watch
         
-        watch.mutex.synchronize do
-          msg = watch.name + ' ' + condition.class.name + " [true] " + metric.destination.inspect
-          Syslog.debug(msg)
-          LOG.log(watch, :info, msg)
+        unless metric.nil?
+          watch = metric.watch
+        
+          watch.mutex.synchronize do              
+            msg = watch.name + ' ' + condition.class.name + " [true] " + self.dest_desc(metric, condition)
+            Syslog.debug(msg)
+            LOG.log(watch, :info, msg)
           
-          dest = metric.destination[true]
-          watch.move(dest)
+            # get the destination
+            dest = 
+            if condition.transition
+              # condition override
+              condition.transition
+            else
+              # regular
+              metric.destination && metric.destination[true]
+            end
+            
+            if dest
+              watch.move(dest)
+            end
+          end
+        end
+      end
+    end
+    
+    # helpers
+  
+    def self.dest_desc(metric, condition)
+      if metric.destination
+        metric.destination.inspect
+      else
+        if condition.transition
+          {true => condition.transition}.inspect
+        else
+          'none'
         end
       end
     end

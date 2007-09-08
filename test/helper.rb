@@ -42,8 +42,9 @@ module God
     end
   
     class FakeEventCondition < EventCondition
-      def test
-        true
+      def register
+      end
+      def deregister
       end
     end
   end

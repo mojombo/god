@@ -1,6 +1,8 @@
 module God
   
   class Condition < Behavior
+    attr_accessor :transition
+    
     # Generate a Condition of the given kind. The proper class if found by camel casing the
     # kind (which is given as an underscored symbol).
     #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Conditions::FooBar)
@@ -8,7 +10,7 @@ module God
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
       c = God::Conditions.const_get(sym).new
       
-      unless c.kind_of?(PollCondition) || c.kind_of?(EventCondition)
+      unless c.kind_of?(PollCondition) || c.kind_of?(EventCondition) || c.kind_of?(TriggerCondition)
         abort "Condition '#{c.class.name}' must subclass either God::PollCondition or God::EventCondition" 
       end
       
@@ -22,7 +24,6 @@ module God
   class PollCondition < Condition
     # all poll conditions can specify a poll interval 
     attr_accessor :interval
-    attr_accessor :transition
     
     # Override this method in your Conditions (optional)
     def before
@@ -33,7 +34,7 @@ module God
     # Return true if the test passes (everything is ok)
     # Return false otherwise
     def test
-      raise AbstractMethodNotOverriddenError.new("Condition#test must be overridden in subclasses")
+      raise AbstractMethodNotOverriddenError.new("PollCondition#test must be overridden in subclasses")
     end
     
     # Override this method in your Conditions (optional)
@@ -43,7 +44,29 @@ module God
   
   class EventCondition < Condition
     def register
-      
+      raise AbstractMethodNotOverriddenError.new("EventCondition#register must be overridden in subclasses")
+    end
+    
+    def deregister
+      raise AbstractMethodNotOverriddenError.new("EventCondition#deregister must be overridden in subclasses")
+    end
+  end
+  
+  class TriggerCondition < Condition
+    def process(event, payload)
+      raise AbstractMethodNotOverriddenError.new("TriggerCondition#process must be overridden in subclasses")
+    end
+    
+    def trigger
+      Hub.trigger(self)
+    end
+    
+    def register
+      Trigger.register(self)
+    end
+    
+    def deregister
+      Trigger.deregister(self)
     end
   end
   

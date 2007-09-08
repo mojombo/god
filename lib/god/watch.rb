@@ -166,9 +166,7 @@ module God
       LOG.log(self, :info, msg)
       
       # cleanup from current state
-      if from_state != :unmonitored
-        self.metrics[from_state].each { |m| m.disable }
-      end
+      self.metrics[from_state].each { |m| m.disable }
       
       if to_state == :unmonitored
         self.metrics[nil].each { |m| m.disable }
@@ -183,9 +181,7 @@ module God
       end
       
       # move to new state
-      if to_state != :unmonitored
-        self.metrics[to_state].each { |m| m.enable }
-      end
+      self.metrics[to_state].each { |m| m.enable }
       
       # if no from state, enable lifecycle metric
       if from_state == :unmonitored
@@ -194,6 +190,9 @@ module God
       
       # set state
       self.state = to_state
+      
+      # trigger
+      Trigger.broadcast(:state_change, [from_state, to_state])
       
       # return self
       self
