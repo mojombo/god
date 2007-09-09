@@ -32,6 +32,7 @@ module God
               duration = (@timeline.last - @timeline.first) < self.within
               
               if concensus && duration
+                @timeline.clear
                 trigger
                 retry_mechanism
               end

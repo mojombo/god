@@ -6,7 +6,8 @@ module God
       attr_accessor :triggers
     end
     
-    @triggers = []
+    # init
+    self.triggers = []
     @mutex = Mutex.new
     
     def self.register(condition)
@@ -27,6 +28,10 @@ module God
           t.process(message, payload)
         end
       end
+    end
+    
+    def self.reset
+      self.triggers.clear
     end
     
   end

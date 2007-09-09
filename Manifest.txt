@@ -77,4 +77,5 @@ test/test_sugar.rb
 test/test_system_process.rb
 test/test_timeline.rb
 test/test_timer.rb
+test/test_trigger.rb
 test/test_watch.rb

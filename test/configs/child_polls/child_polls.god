@@ -15,11 +15,16 @@ God.watch do |w|
     on.condition(:flapping) do |c|
       c.to_state = [:start, :restart]
       c.times = 3
-      c.within = 20.seconds
+      c.within = 60.seconds
       c.transition = :unmonitored
       c.retry_in = 10.seconds
       c.retry_times = 2
       c.retry_within = 5.minutes
+    end
+    
+    on.condition(:cpu_usage) do |c|
+      c.above = 10.percent
+      c.times = [3, 5]
     end
   end
 end

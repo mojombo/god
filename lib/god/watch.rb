@@ -159,6 +159,7 @@ module God
     
     # Move from one state to another
     def move(to_state)
+      orig_to_state = to_state
       from_state = self.state
       
       msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
@@ -192,7 +193,7 @@ module God
       self.state = to_state
       
       # trigger
-      Trigger.broadcast(:state_change, [from_state, to_state])
+      Trigger.broadcast(:state_change, [from_state, orig_to_state])
       
       # return self
       self
