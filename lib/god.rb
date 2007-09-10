@@ -1,6 +1,7 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 
 # core
+require 'stringio'
 require 'logger'
 
 # stdlib
