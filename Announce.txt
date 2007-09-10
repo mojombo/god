@@ -1,18 +1,19 @@
-Subject: [ANN] god 0.3.0 released
+Subject: [ANN] god 0.4.0 released
 
-Plenty of big changes and improvements in this release of god. Most noticeable is a simplification of the config file. Sadly, we must say goodbye to the much loved God.meddle and promote God.watch to top level. This change allows you to easily load in other god config files and have them work as expected. There's even a God.load that takes a glob-style file path string and expands it to load multiple files.
+Progress on god is moving along as quick as ever. This release adds a bunch of new features and bug fixes. Most interestingly you'll find several useful new command line functions:
 
-PID file support is now baked in so you don't have to set the pid_file attribute on conditions anymore. This also allows god to support processes that aren't already daemons. If you don't specify a PID file for the watch, god will auto-daemonize and keep track of your process for you! To use this feature, you must either run as root (pid files will be stored by default in /var/run/god) or set the pid_file_directory attribute in a God.init block (see docs).
+  * `god status` prints out the status of each Watch
+  * `god log` shows realtime logs for a specific Watch (even if you don't have god logging to file)
+  * `god load` loads or reloads a config file into a running god instance
+  * `god terminate` stops all Watches and then stops god (useful when testing your setup)
+  
+The logging system has been beefed up with proper timestamps and criticality levels. Log messages are more complete overall. You can also get the STDOUT/STDERR of a god-daemonized process written to a log file by specify 'w.log = <log file path>' in your Watch config.
 
-For anyone that had problems installing the 0.2.0 release because of the events system not compiling, god 0.3.0 will now allow you to install without event support. Most systems are capable of supporting events, but it requires some dedication to get the headers in place and make sure your kernel is new enough. To determine if your god installation has event support you can run "sudo god -V" (this MUST be run as root on Linux, as netlink connector requires root permissions).
+If you let god daemonize your process for you, there's no need to provide a stop command. A default killing lambda will take care of gracefully (or not so gracefully if necessary) stopping your god-daemonized process.
 
-Using the god binary you can now control your watches from the command line. You can start/stop/restart/monitor/unmonitor watches at your demand.
+The validity of your config file is checked better than previous versions to point you to the problem area of your config.
 
-New watch attributes now available:
-  pid_file: sets the watch process' PID file location
-  uid/gid: start processes as someone else (requires root access)
-  group: assign a watch to a group (to control them all at once)
-  autostart: prevent auto start on god start if false
+The bug that prevented group control from working has been fixed so you can now start/stop/etc groups of Watches.
 
 Updated documentation is now available on the website:
 
@@ -99,29 +100,31 @@ Detailed documentation is available at http://god.rubyforge.org/
 
 CHANGES
 
-== 0.3.0 / 2007-08-17
+== 0.4.0 / 2007-09-13
 
-* Fix netlink header problem on Ubuntu Edgy [Dan Sully]
-* Add uid/gid setting for processes [kevinclark]
-* Add autostart flag for watches so they don't necessarily startup with god [kevinclark]
-* Change command line call options for god binary to accommodate watch start/stop functionality
-* Add individual start/stop/restart grace periods for finer grained control
-* Change default DRb port to 17165 ('god'.to_i(32))
-* Implement command line control to start/restart/stop/monitor/unmonitor watches/groups by name
-* Watches can now belong to a group that can be controlled as a whole
-* Allow god to be installed (sans events) on systems that don't support events
-* Daemonize and handle PID files for non-daemonizing scripts [kevinclark]
-* Fix simple mode lifecycle gap
-* Remove necessity to specify pid_file for conditions
-* Change config file to use God.init and God.watch directly instead of God.meddle block
-* Move god binary command logic to main library
-* Enhance god binary with better reporting
-* Fix synchronization bug in Timer (reported by Srini Panguluri)
-* Add Lambda condition for easy custom conditions [Mike Mintz]
-* Add sugar for numerics (seconds, minutes, kilobytes, megabytes, percent, etc)
-* Add optional PID and log file generation to god binary for daemon mode
-* Add God.load to do glob enabled loading
-* Add -V option to god binary for detailed version/build info
+* Major Enhancements
+  * Add the ability for conditions to override transition state (for exceptional cases)
+  * Implement dynamic load of config files while god is running (god load <filename>)
+  * Add ability to save auto-daemonized process output to a log file
+  * Add robust default stop lambda command for auto-daemonized processes (inspired by _eric)
+  * Add status command for god binary (shows status of each watch)
+  * Create proper logger with timestamps
+  * Add log command to god binary to get real time logs for a specific watch from a running god instance
+  * Add terminate command for god binary (stop god and all watches)
+* Minor Enhancements
+  * Enforce validity of Watches
+  * Enforce that God.init is not called after a Watch
+  * Move pid_file_directory creation and validation to God.start
+  * Remove check for at least one Watch during startup (now that dynamic loading exists)
+* New Conditions
+  * Tries < PollCondition - triggers after the specified number of tries
+  * Add :notify_when_flapping behavior to check for oscillation [kevinclark]
+  * Add :degrading_lambda condition. [kevinclark]
+    It uses a decaying interval (1/2 rate) for 3 cycles before failing.
+* Bug Fixes
+  * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
+  * Command line group control fixed
+  * Fix cross-thread return problem
 
 
 AUTHORS
