@@ -59,6 +59,11 @@ module God
               Syslog.debug(msg)
               LOG.log(watch, :info, msg)
               
+              # notify
+              if condition.notify
+                self.notify(condition, msg)
+              end
+              
               # after-condition
               condition.after
               
@@ -106,12 +111,17 @@ module God
         
         unless metric.nil?
           watch = metric.watch
-        
-          watch.mutex.synchronize do              
+          
+          watch.mutex.synchronize do
             msg = watch.name + ' ' + condition.class.name + " [true] " + self.dest_desc(metric, condition)
             Syslog.debug(msg)
             LOG.log(watch, :info, msg)
-          
+            
+            # notify
+            if condition.notify
+              self.notify(condition, msg)
+            end
+            
             # get the destination
             dest = 
             if condition.transition
@@ -131,7 +141,7 @@ module God
     end
     
     # helpers
-  
+    
     def self.dest_desc(metric, condition)
       if metric.destination
         metric.destination.inspect
@@ -141,6 +151,28 @@ module God
         else
           'none'
         end
+      end
+    end
+    
+    def self.notify(condition, message)
+      begin
+        spec = Contact.normalize(condition.notify)
+      
+        # resolve contacts
+        resolved_contacts =
+        spec[:contacts].inject([]) do |acc, contact_name_or_group|
+          acc += Array(God.contacts[contact_name_or_group] || God.contact_groups[contact_name_or_group])
+          acc
+        end
+        
+        p resolved_contacts
+        
+        resolved_contacts.each do |c|
+          c.notify(message, Time.now, spec[:priority], spec[:category])
+        end
+      rescue => e
+        puts e.message
+        puts e.backtrace.join("\n")
       end
     end
   end

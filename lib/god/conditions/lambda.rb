@@ -6,7 +6,7 @@ module God
 
       def valid?
         valid = true
-        valid &= complain("You must specify the 'lambda' attribute for :lambda") if self.lambda.nil?
+        valid &= complain("Attribute 'lambda' must be specified", self) if self.lambda.nil?
         valid
       end
 

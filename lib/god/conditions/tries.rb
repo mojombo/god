@@ -10,7 +10,7 @@ module God
     
       def valid?
         valid = true
-        valid &= complain("You must specify the 'times' attribute for :tries") if self.times.nil?
+        valid &= complain("Attribute 'times' must be specified", self) if self.times.nil?
         valid
       end
     

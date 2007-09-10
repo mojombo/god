@@ -4,7 +4,7 @@ module God
     class ProcessExits < EventCondition
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute on the Watch for :process_exits") if self.watch.pid_file.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
         valid
       end
     

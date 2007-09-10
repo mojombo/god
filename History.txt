@@ -3,10 +3,15 @@
 * Major Enhancements
   * Implement lifecycle scoped metric to allow for cross-state conditions
   * Add TriggerCondition for conditions that need info about state changes
+  * Implement notification system
 * Minor Enchancements
   * Allow EventConditions to do transition overloading
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
+* New Contacts
+  * Email < Contact - notify via email (smtp, sendmail)
+* Bug Fixes
+  * Fix abort not aborting problem
 
 == 0.4.0 / 2007-09-13
 

@@ -12,6 +12,7 @@ require 'god/logger'
 require 'god/system/process'
 require 'god/dependency_graph'
 require 'god/timeline'
+require 'god/configurable'
 
 require 'god/behavior'
 require 'god/behaviors/clean_pid_file'
@@ -27,6 +28,9 @@ require 'god/conditions/always'
 require 'god/conditions/lambda'
 require 'god/conditions/degrading_lambda'
 require 'god/conditions/flapping'
+
+require 'god/contact'
+require 'god/contacts/email'
 
 require 'god/reporter'
 require 'god/server'
@@ -53,6 +57,14 @@ end
 
 God::EventHandler.load
 
+module Kernel
+  # Override abort to exit without executing the at_exit hook
+  def abort(text)
+    puts text
+    exit!
+  end
+end
+
 module God
   VERSION = '0.4.0'
   
@@ -77,7 +89,9 @@ module God
                   :pending_watches,
                   :server,
                   :watches,
-                  :groups
+                  :groups,
+                  :contacts,
+                  :contact_groups
   end
   
   def self.init
@@ -86,6 +100,9 @@ module God
     end
     
     self.internal_init
+    
+    # yield to the config file
+    yield self if block_given?
   end
   
   def self.internal_init
@@ -96,15 +113,14 @@ module God
     self.watches = {}
     self.groups = {}
     self.pending_watches = []
+    self.contacts = {}
+    self.contact_groups = {}
     
     # set defaults
     self.log_buffer_size = LOG_BUFFER_SIZE_DEFAULT
     self.pid_file_directory = PID_FILE_DIRECTORY_DEFAULT
     self.port = DRB_PORT_DEFAULT
     self.allow = DRB_ALLOW_DEFAULT
-    
-    # yield to the config file
-    yield self if block_given?
     
     # init has been executed
     self.inited = true
@@ -171,6 +187,48 @@ module God
     # remove from groups
     if watch.group
       self.groups[watch.group].delete(watch)
+    end
+  end
+  
+  def self.contact(kind)
+    self.internal_init
+    
+    # create the condition
+    begin
+      c = Contact.generate(kind)
+    rescue NoSuchContactError => e
+      abort e.message
+    end
+    
+    # send to block so config can set attributes
+    yield(c) if block_given?
+    
+    # call prepare on the contact
+    c.prepare
+    
+    # ensure the new contact has a unique name
+    if self.contacts[c.name] || self.contact_groups[c.name]
+      abort "Contact name '#{c.name}' already used for a Contact or Contact Group"
+    end
+    
+    # abort if the Contact is invalid, the Contact will have printed
+    # out its own error messages by now
+    unless Contact.valid?(c) && c.valid?
+      abort "Exiting on invalid contact"
+    end
+    
+    # add to list of contacts
+    self.contacts[c.name] = c
+    
+    # add to contact group if specified
+    if c.group
+      # ensure group name hasn't been used for a contact already
+      if self.contacts[c.group]
+        abort "Contact Group name '#{c.group}' already used for a Contact"
+      end
+    
+      self.contact_groups[c.group] ||= []
+      self.contact_groups[c.group] << c
     end
   end
     

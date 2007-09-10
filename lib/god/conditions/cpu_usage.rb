@@ -20,8 +20,8 @@ module God
     
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute on the Watch for :memory_usage") if self.watch.pid_file.nil?
-        valid &= complain("You must specify the 'above' attribute for :memory_usage") if self.above.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
+        valid &= complain("Attribute 'above' must be specified", self) if self.above.nil?
         valid
       end
     

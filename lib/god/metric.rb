@@ -25,9 +25,8 @@ module God
       # call prepare on the condition
       c.prepare
       
-      # abort if the Condition is invalid, the Condition will have printed
-      # out its own error messages by now
-      unless c.valid?
+      # test generic and specific validity
+      unless Condition.valid?(c) && c.valid?
         abort "Exiting on invalid condition"
       end
       

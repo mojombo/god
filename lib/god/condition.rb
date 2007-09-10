@@ -1,23 +1,42 @@
 module God
   
   class Condition < Behavior
-    attr_accessor :transition
+    attr_accessor :transition, :notify
     
     # Generate a Condition of the given kind. The proper class if found by camel casing the
     # kind (which is given as an underscored symbol).
-    #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Conditions::FooBar)
+    #   +kind+ is the underscored symbol representing the class (e.g. :foo_bar for God::Conditions::FooBar)
     def self.generate(kind, watch)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern
       c = God::Conditions.const_get(sym).new
       
       unless c.kind_of?(PollCondition) || c.kind_of?(EventCondition) || c.kind_of?(TriggerCondition)
-        abort "Condition '#{c.class.name}' must subclass either God::PollCondition or God::EventCondition" 
+        abort "Condition '#{c.class.name}' must subclass God::PollCondition, God::EventCondition, or God::TriggerCondition" 
       end
       
       c.watch = watch
       c
     rescue NameError
       raise NoSuchConditionError.new("No Condition found with the class name God::Conditions::#{sym}")
+    end
+    
+    def self.valid?(condition)
+      valid = true
+      if condition.notify
+        begin
+          Contact.normalize(condition.notify)
+        rescue ArgumentError => e
+          valid &= Configurable.complain("Attribute 'notify' " + e.message, condition)
+        end
+      end
+      valid
+    end
+    
+    # Construct the friendly name of this Condition, looks like:
+    #
+    # Condition FooBar on Watch 'baz'
+    def friendly_name
+      "Condition #{self.class.name.split('::').last} on Watch '#{self.watch.name}'"
     end
   end
   

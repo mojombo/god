@@ -6,8 +6,8 @@
 
 RAILS_ROOT = "/Users/tom/dev/helloworld"
 
-God::Notifications::Email.system = :smtp
-God::Notifications::Email.host = ""
+God::Contacts::Email.delivery_method = :smtp
+God::Contacts::Email.server_settings = {}
 
 God.contact(:email) do |c|
   c.name = 'tom'

@@ -6,8 +6,8 @@ module God
       
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute on the Watch for :process_running") if self.watch.pid_file.nil?
-        valid &= complain("You must specify the 'running' attribute for :process_running") if self.running.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
+        valid &= complain("Attribute 'running' must be specified", self) if self.running.nil?
         valid
       end
     

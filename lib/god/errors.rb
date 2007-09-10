@@ -12,6 +12,9 @@ module God
   class NoSuchBehaviorError < StandardError
   end
   
+  class NoSuchContactError < StandardError
+  end
+  
   class InvalidCommandError < StandardError
   end
   

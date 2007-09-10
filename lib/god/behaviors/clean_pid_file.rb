@@ -4,7 +4,7 @@ module God
     class CleanPidFile < Behavior
       def valid?
         valid = true
-        valid &= complain("You must specify the 'pid_file' attribute on the Watch for :clean_pid_file") if self.watch.pid_file.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
         valid
       end
   

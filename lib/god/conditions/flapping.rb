@@ -11,9 +11,9 @@ module God
       
       def valid?
         valid = true
-        valid &= complain("You must specify the 'times' attribute for :flapping") if self.times.nil?
-        valid &= complain("You must specify the 'within' attribute for :flapping") if self.within.nil?
-        valid &= complain("You must specify either the 'from_state', 'to_state', or both attributes for :flapping") if self.from_state.nil? && self.to_state.nil?
+        valid &= complain("Attribute 'times' must be specified", self) if self.times.nil?
+        valid &= complain("Attribute 'within' must be specified", self) if self.within.nil?
+        valid &= complain("Attributes 'from_state', 'to_state', or both must be specified", self) if self.from_state.nil? && self.to_state.nil?
         valid
       end
       

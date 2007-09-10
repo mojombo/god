@@ -22,6 +22,9 @@ lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_exits.rb
 lib/god/conditions/process_running.rb
 lib/god/conditions/tries.rb
+lib/god/configurable.rb
+lib/god/contact.rb
+lib/god/contacts/email.rb
 lib/god/dependency_graph.rb
 lib/god/errors.rb
 lib/god/event_handler.rb
@@ -45,6 +48,8 @@ test/configs/child_events/child_events.god
 test/configs/child_events/simple_server.rb
 test/configs/child_polls/child_polls.god
 test/configs/child_polls/simple_server.rb
+test/configs/contact/contact.god
+test/configs/contact/simple_server.rb
 test/configs/daemon_events/daemon_events.god
 test/configs/daemon_events/simple_server.rb
 test/configs/daemon_polls/daemon_polls.god
@@ -62,6 +67,7 @@ test/test_behavior.rb
 test/test_condition.rb
 test/test_conditions_process_running.rb
 test/test_conditions_tries.rb
+test/test_contact.rb
 test/test_dependency_graph.rb
 test/test_event_handler.rb
 test/test_god.rb

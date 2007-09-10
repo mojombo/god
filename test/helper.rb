@@ -95,6 +95,12 @@ def no_stderr
   $stderr.reopen(old_stderr)
 end
 
+module Kernel
+  def abort(text)
+    raise SystemExit
+  end
+end
+
 module Test::Unit::Assertions
   def assert_abort
     assert_raise SystemExit do
