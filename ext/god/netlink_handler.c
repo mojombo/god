@@ -126,8 +126,9 @@ connect_to_netlink()
   msg->id.val = CN_VAL_PROC;
   msg->seq = 0;
   msg->ack = 0;
+  msg->flags = 0;
   msg->len = sizeof(int);
-  msg->data[0] = PROC_CN_MCAST_LISTEN;
+  *(int*)msg->data = PROC_CN_MCAST_LISTEN;
   
   if (-1 == send(nl_sock, hdr, hdr->nlmsg_len, 0)) {
     rb_raise(rb_eStandardError, strerror(errno));
