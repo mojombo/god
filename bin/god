@@ -146,20 +146,21 @@ elsif command = ARGV[0]
       abort 'Could not stop god'
     rescue DRb::DRbConnError
       puts 'Stopped god'
-      exit!(0)
     end
+    
+    exit!(0)
   else
     # get the name of the watch/group
     name = ARGV[1]
-  
+    
     begin
       puts "Sending '#{command}' command"
       
-      t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
-    
+      t = Thread.new { loop { sleep(1); STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+      
       # send command
       watches = server.control(name, command)
-    
+      
       # output response
       t.kill; STDOUT.puts
       puts 'The following watches were affected:'
@@ -167,6 +168,7 @@ elsif command = ARGV[0]
         puts '  ' + w.name
       end
     rescue God::InvalidCommandError
+      t.kill rescue nil; STDOUT.puts
       abort "Command '#{command}' is not valid. Run 'god --help' for usage"
     end
   end
@@ -180,7 +182,7 @@ else
     if options[:port]
       God.port = options[:port]
     end
-        
+    
     load File.expand_path(options[:config])
   else
     pid = fork do
@@ -194,7 +196,7 @@ else
         STDERR.reopen STDOUT
         
         puts "Starting god"
-      
+        
         unless God::EventHandler.loaded?
           puts
           puts "***********************************************************************"
@@ -205,7 +207,7 @@ else
           puts "***********************************************************************"
           puts
         end
-    
+        
         puts "Resetting file descriptors"
         
         puts "Loading config"
@@ -213,22 +215,21 @@ else
         if options[:port]
           God.port = options[:port]
         end
-      
+        
         load File.expand_path(options[:config])
         
         Signal.trap('HUP') {}
       rescue => e
-        File.open('god.log', 'a') { |f| f.puts e.message + "\n" + e.backtrace }
-        abort "!!! ERROR - See god.log !!!"
+        File.open('god.error.log', 'a') { |f| f.write e.message + "\n" + e.backtrace.join("\n") }
       end
     end
-  
+    
     if options[:pid]
       File.open(options[:pid], 'w') { |f| f.write pid }
     end
-  
+    
     ::Process.detach pid
-  
+    
     exit!(0)
   end
 end
