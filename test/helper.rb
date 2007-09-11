@@ -54,6 +54,11 @@ module God
     end
   end
   
+  module Contacts
+    class FakeContact < Contact
+    end
+  end
+  
   class << self
     alias :at_exit_orig :at_exit
   end

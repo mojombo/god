@@ -194,6 +194,63 @@ class TestGod < Test::Unit::TestCase
     assert !God.groups[w.group].include?(w)
   end
   
+  # contact
+  
+  def test_contact_should_ensure_init_is_called
+    God.contact(:fake_contact) { |c| c.name = 'tom' }
+    assert God.inited
+  end
+  
+  def test_contact_should_create_and_store_contact
+    contact = nil
+    God.contact(:fake_contact) { |c| c.name = 'tom'; contact = c }
+    assert [contact], God.contacts
+  end
+  
+  def test_contact_should_add_to_group
+    God.contact(:fake_contact) { |c| c.name = 'tom'; c.group = 'devs' }
+    God.contact(:fake_contact) { |c| c.name = 'chris'; c.group = 'devs' }
+    assert 2, God.contact_groups.size
+  end
+  
+  def test_contact_should_abort_on_no_name
+    no_stdout do
+      assert_abort do
+        God.contact(:fake_contact) { |c| }
+      end
+    end
+  end
+  
+  def test_contact_should_abort_on_duplicate_contact_name
+    God.contact(:fake_contact) { |c| c.name = 'tom' }
+    assert_abort do
+      God.contact(:fake_contact) { |c| c.name = 'tom' }
+    end
+  end
+  
+  def test_contact_should_abort_on_contact_with_same_name_as_group
+    God.contact(:fake_contact) { |c| c.name = 'tom'; c.group = 'devs' }
+    assert_abort do
+      God.contact(:fake_contact) { |c| c.name = 'devs' }
+    end
+  end
+  
+  def test_contact_should_abort_on_contact_with_same_group_as_name
+    God.contact(:fake_contact) { |c| c.name = 'tom' }
+    assert_abort do
+      God.contact(:fake_contact) { |c| c.name = 'chris'; c.group = 'tom' }
+    end
+  end
+  
+  def test_contact_should_abort_if_contact_is_invalid
+    assert_abort do
+      God.contact(:fake_contact) do |c|
+        c.name = 'tom'
+        c.stubs(:valid?).returns(false)
+      end
+    end
+  end
+  
   # control
   
   def test_control_should_monitor_on_start

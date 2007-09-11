@@ -67,7 +67,7 @@ module Kernel
 end
 
 module God
-  VERSION = '0.4.0'
+  VERSION = '0.5.0'
   
   LOG = Logger.new
     

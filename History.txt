@@ -13,19 +13,19 @@
 * Bug Fixes
   * Fix abort not aborting problem
 
-== 0.4.3
+== 0.4.3 / 2007-09-10
 * Bug Fixes
-  * fix Process#alive? to not raise on no such file
+  * fix Process#alive? to not raise on no such file (affects `god terminate`)
 
-== 0.4.2
+== 0.4.2 / 2007-09-10
 * Bug Fixes
-  * fix netlink events [dkresge]
+  * fix netlink buffer issue that prevented events on Linux from working consistently [dkresge]
 
-== 0.4.1
+== 0.4.1 / 2007-09-10
 * Bug Fixes
   * require 'stringio' for ruby 1.8.5
 
-== 0.4.0 / 2007-09-13
+== 0.4.0 / 2007-09-10
 
 * Major Enhancements
   * Add the ability for conditions to override transition state (for exceptional cases)

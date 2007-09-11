@@ -92,6 +92,11 @@ class TestProcessDaemon < Test::Unit::TestCase
     assert !@p.alive?
   end
   
+  def test_alive_should_return_false_if_no_such_file
+    File.expects(:read).with('blah.pid').raises(Errno::ENOENT)
+    assert !@p.alive?
+  end
+  
   # valid?
   
   def test_valid_should_return_false_if_no_name
