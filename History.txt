@@ -13,6 +13,18 @@
 * Bug Fixes
   * Fix abort not aborting problem
 
+== 0.4.3
+* Bug Fixes
+  * fix Process#alive? to not raise on no such file
+
+== 0.4.2
+* Bug Fixes
+  * fix netlink events [dkresge]
+
+== 0.4.1
+* Bug Fixes
+  * require 'stringio' for ruby 1.8.5
+
 == 0.4.0 / 2007-09-13
 
 * Major Enhancements

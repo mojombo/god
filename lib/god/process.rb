@@ -12,8 +12,12 @@ module God
     end
     
     def alive?
-      pid = File.read(self.pid_file).strip.to_i
-      System::Process.new(pid).exists?
+      begin
+        pid = File.read(self.pid_file).strip.to_i
+        System::Process.new(pid).exists?
+      rescue Errno::ENOENT
+        false
+      end
     end
     
     def valid?
