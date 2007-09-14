@@ -183,19 +183,19 @@ else
       God.port = options[:port]
     end
     
-    load File.expand_path(options[:config])
+    begin
+      load File.expand_path(options[:config])
+    rescue => e
+      puts e.message
+      puts e.backtrace.join("\n")
+      abort "There was an error in your configuration file (see above)"
+    end
   else
     pid = fork do
       begin
         require 'god'
         
         log_file = options[:log] || "/dev/null"
-        
-        STDIN.reopen "/dev/null"
-        STDOUT.reopen(log_file, "a")
-        STDERR.reopen STDOUT
-        
-        puts "Starting god"
         
         unless God::EventHandler.loaded?
           puts
@@ -208,19 +208,31 @@ else
           puts
         end
         
-        puts "Resetting file descriptors"
-        
-        puts "Loading config"
-        
+        # set port if requested
         if options[:port]
           God.port = options[:port]
         end
         
-        load File.expand_path(options[:config])
+        # load config
+        begin
+          load File.expand_path(options[:config])
+        rescue => e
+          puts e.message
+          puts e.backtrace.join("\n")
+          abort "There was an error in your configuration file (see above)"
+        end
         
+        # reset file descriptors
+        STDIN.reopen "/dev/null"
+        STDOUT.reopen(log_file, "a")
+        STDERR.reopen STDOUT
+        
+        # trap and ignore SIGHUP
         Signal.trap('HUP') {}
       rescue => e
-        File.open('god.error.log', 'a') { |f| f.write e.message + "\n" + e.backtrace.join("\n") }
+        puts e.message
+        puts e.backtrace.join("\n")
+        abort "There was a fatal system error while starting god (see above)"
       end
     end
     
