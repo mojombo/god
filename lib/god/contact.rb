@@ -80,7 +80,7 @@ module God
           
           spec
         else
-          raise ArgumentError.new("must be a String (contact name) or Hash (contact specification)")
+          raise ArgumentError.new("must be a String (contact name), Array (of contact names), or Hash (contact specification)")
       end
     end
     

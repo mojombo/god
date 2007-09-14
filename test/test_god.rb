@@ -201,6 +201,12 @@ class TestGod < Test::Unit::TestCase
     assert God.inited
   end
   
+  def test_contact_should_abort_on_invalid_contact_kind
+    assert_abort do
+      God.contact(:foo) { |c| c.name = 'tom' }
+    end
+  end
+  
   def test_contact_should_create_and_store_contact
     contact = nil
     God.contact(:fake_contact) { |c| c.name = 'tom'; contact = c }
@@ -337,6 +343,22 @@ class TestGod < Test::Unit::TestCase
     
     w = God.watches['foo']
     assert_equal({'foo' => {:state => :unmonitored}}, God.status)
+  end
+  
+  # running_log
+  
+  def test_running_log_should_call_watch_log_since_on_main_log
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
+    t = Time.now
+    LOG.expects(:watch_log_since).with('foo', t)
+    God.running_log('foo', t)
+  end
+  
+  def test_running_log_should_raise_on_unknown_watch
+    God.internal_init
+    assert_raise(NoSuchWatchError) do
+      God.running_log('foo', Time.now)
+    end
   end
   
   # running_load
