@@ -12,6 +12,7 @@
   * Email < Contact - notify via email (smtp, sendmail)
 * Bug Fixes
   * Fix abort not aborting problem
+  * Fix -p option not working for god binary
 
 == 0.4.3 / 2007-09-10
 * Bug Fixes

@@ -118,10 +118,10 @@ module God
     self.contact_groups = {}
     
     # set defaults
-    self.log_buffer_size = LOG_BUFFER_SIZE_DEFAULT
-    self.pid_file_directory = PID_FILE_DIRECTORY_DEFAULT
-    self.port = DRB_PORT_DEFAULT
-    self.allow = DRB_ALLOW_DEFAULT
+    self.log_buffer_size ||= LOG_BUFFER_SIZE_DEFAULT
+    self.pid_file_directory ||= PID_FILE_DIRECTORY_DEFAULT
+    self.port ||= DRB_PORT_DEFAULT
+    self.allow ||= DRB_ALLOW_DEFAULT
     
     # init has been executed
     self.inited = true
