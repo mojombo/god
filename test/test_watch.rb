@@ -2,10 +2,12 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestWatch < Test::Unit::TestCase
   def setup
+    God.internal_init
     @watch = Watch.new
     @watch.name = 'foo'
     @watch.start = lambda { }
     @watch.stop = lambda { }
+    @watch.prepare
   end
   
   # new

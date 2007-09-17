@@ -5,7 +5,7 @@ module God
     
     attr_accessor :watch
     
-    # Generate a Behavior of the given kind. The proper class if found by camel casing the
+    # Generate a Behavior of the given kind. The proper class is found by camel casing the
     # kind (which is given as an underscored symbol).
     #   +kind+ is the underscored symbol representing the class (e.g. foo_bar for God::Behaviors::FooBar)
     def self.generate(kind, watch)

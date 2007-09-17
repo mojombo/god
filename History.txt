@@ -6,6 +6,7 @@
   * Implement notification system
 * Minor Enchancements
   * Allow EventConditions to do transition overloading
+  * Report errors during god startup instead of failing silently
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
 * New Contacts

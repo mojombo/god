@@ -15,6 +15,8 @@ require 'god/dependency_graph'
 require 'god/timeline'
 require 'god/configurable'
 
+require 'god/task'
+
 require 'god/behavior'
 require 'god/behaviors/clean_pid_file'
 require 'god/behaviors/notify_when_flapping'
@@ -129,15 +131,22 @@ module God
     # not yet running
     self.running = false
   end
-    
+  
   # Instantiate a new, empty Watch object and pass it to the mandatory
   # block. The attributes of the watch will be set by the configuration
   # file.
-  def self.watch
+  def self.watch(&block)
+    self.task(Watch, &block)
+  end
+  
+  def self.task(klass = Task)
     self.internal_init
     
-    w = Watch.new
+    w = klass.new
     yield(w)
+    
+    # do the post-configuration
+    w.prepare
     
     # if running, completely remove the watch (if necessary) to
     # prepare for the reload
