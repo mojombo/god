@@ -139,49 +139,52 @@ module God
     self.task(Watch, &block)
   end
   
+  # Instantiate a new, empty Task object and pass it to the mandatory
+  # block. The attributes of the task will be set by the configuration
+  # file.
   def self.task(klass = Task)
     self.internal_init
     
-    w = klass.new
-    yield(w)
+    t = klass.new
+    yield(t)
     
     # do the post-configuration
-    w.prepare
+    t.prepare
     
     # if running, completely remove the watch (if necessary) to
     # prepare for the reload
-    existing_watch = self.watches[w.name]
+    existing_watch = self.watches[t.name]
     if self.running && existing_watch
       self.unwatch(existing_watch)
     end
     
     # ensure the new watch has a unique name
-    if self.watches[w.name] || self.groups[w.name]
-      abort "Watch name '#{w.name}' already used for a Watch or Group"
+    if self.watches[t.name] || self.groups[t.name]
+      abort "Task name '#{t.name}' already used for a Task or Group"
     end
     
     # ensure watch is internally valid
-    w.valid? || abort("Watch '#{w.name}' is not valid (see above)")
+    t.valid? || abort("Task '#{t.name}' is not valid (see above)")
     
     # add to list of watches
-    self.watches[w.name] = w
+    self.watches[t.name] = t
     
     # add to pending watches
-    self.pending_watches << w
+    self.pending_watches << t
     
     # add to group if specified
-    if w.group
+    if t.group
       # ensure group name hasn't been used for a watch already
-      if self.watches[w.group]
-        abort "Group name '#{w.group}' already used for a Watch"
+      if self.watches[t.group]
+        abort "Group name '#{t.group}' already used for a Task"
       end
     
-      self.groups[w.group] ||= []
-      self.groups[w.group] << w
+      self.groups[t.group] ||= []
+      self.groups[t.group] << t
     end
 
     # register watch
-    w.register!
+    t.register!
   end
   
   def self.unwatch(watch)

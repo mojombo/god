@@ -40,6 +40,7 @@ lib/god/reporter.rb
 lib/god/server.rb
 lib/god/sugar.rb
 lib/god/system/process.rb
+lib/god/task.rb
 lib/god/timeline.rb
 lib/god/timer.rb
 lib/god/trigger.rb
@@ -60,6 +61,7 @@ test/configs/real.rb
 test/configs/running_load/running_load.god
 test/configs/stress/simple_server.rb
 test/configs/stress/stress.god
+test/configs/task/task.god
 test/configs/test.rb
 test/helper.rb
 test/suite.rb

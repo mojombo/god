@@ -4,9 +4,11 @@
   * Implement lifecycle scoped metric to allow for cross-state conditions
   * Add TriggerCondition for conditions that need info about state changes
   * Implement notification system
+  * Add Tasks (a generalization of Watches) to do non-process related tasks
 * Minor Enchancements
   * Allow EventConditions to do transition overloading
   * Report errors during god startup instead of failing silently
+  * Make transition block optional (default to Always condition returning true)
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
 * New Contacts
