@@ -12,7 +12,13 @@ module God
       end
     
       def test
-        return !self.running unless File.exist?(self.watch.pid_file)
+        unless File.exist?(self.watch.pid_file)
+          msg = "#{self.watch.name} #{self.class.name}: no such pid file: #{self.watch.pid_file}"
+          Syslog.debug(msg)
+          LOG.log(self.watch, :info, msg)
+          
+          return !self.running
+        end
         
         pid = File.read(self.watch.pid_file).strip
         active = System::Process.new(pid).exists?

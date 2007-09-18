@@ -30,7 +30,19 @@ module God
       acl = ACL.new(@acl)
       DRb.install_acl(acl)
       
-      @drb ||= DRb.start_service("druby://#{@host}:#{@port}", self) 
+      begin
+        @drb ||= DRb.start_service("druby://#{@host}:#{@port}", self)
+      rescue Errno::EADDRINUSE
+        DRb.start_service
+        server = DRbObject.new nil, "druby://127.0.0.1:#{@port}"
+        
+        begin
+          server.ping
+          abort "Address #{@host}:#{@port} already in use by another instance of god"
+        rescue
+          abort "Address #{@host}:#{@port} already in use by a non-god process"
+        end
+      end
     end
   end
 

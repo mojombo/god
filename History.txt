@@ -9,6 +9,9 @@
   * Allow EventConditions to do transition overloading
   * Report errors during god startup instead of failing silently
   * Make transition block optional (default to Always condition returning true)
+  * Better usage info for `god --help`
+  * Report usage when just `god` is run
+  * Explain what's going on when attempting to rebind to an in-use port
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
 * New Contacts
@@ -16,6 +19,8 @@
 * Bug Fixes
   * Fix abort not aborting problem
   * Fix -p option not working for god binary
+  * Fix God.init not accepting block (thx _eric)
+  * Fix SIGHUP ignore (thx _eric)
 
 == 0.4.3 / 2007-09-10
 * Bug Fixes

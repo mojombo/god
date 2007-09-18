@@ -8,20 +8,28 @@ require 'drb'
 
 options = {:daemonize => true, :port => 17165}
 
-OptionParser.new do |opts|
+opts = OptionParser.new do |opts|
   opts.banner = <<-EOF
-Usage: god [command] [options]
+Usage:
+  Starting:
+    god -c <config file> [-p <port>] [-P <file>] [-l <file>] [-D]
+    
+  Querying:
+    god <command> <argument> [-p <port>]
+    god <command> [-p <port>]
+    god -v
+    god -V (must be run as root to be accurate on Linux)
 
   Commands:
-    start <watch or group name>
-    restart <watch or group name>
-    stop <watch or group name>
-    monitor <watch or group name>
-    unmonitor <watch or group name>
-    load <file>
-    log <watch name>
-    status
-    terminate
+    start <task or group name>         start task or group
+    restart <task or group name>       restart task or group
+    stop <task or group name>          stop task or group
+    monitor <task or group name>       monitor task or group
+    unmonitor <task or group name>     unmonitor task or group
+    load <file>                        load a config into a running god
+    log <task name>                    show realtime log for given task
+    status                             show status of each task
+    terminate                          kill god and all tasks
 
   Options:
 EOF
@@ -53,7 +61,9 @@ EOF
   opts.on("-V", "Print extended version and build information") do
     options[:info] = true
   end
-end.parse!
+end
+
+opts.parse!
 
 if options[:version]
   require 'god'
@@ -103,13 +113,16 @@ elsif command = ARGV[0]
     watches.each do |w|
       puts '  ' + w.name
     end
-    
-    puts "Done"
   elsif command == 'status'
-    watches = server.status
-    watches.keys.sort.each do |name|
-      state = watches[name][:state]
-      puts "#{name}: #{state}"
+    begin
+      watches = server.status
+      watches.keys.sort.each do |name|
+        state = watches[name][:state]
+        puts "#{name}: #{state}"
+      end
+    rescue => e
+      puts e.message
+      puts e.backtrace.join("\n")
     end
   elsif command == 'log'
     begin
@@ -128,17 +141,20 @@ elsif command = ARGV[0]
     rescue => e
       puts e.message
       puts e.backtrace.join("\n")
-    ensure
-      exit!(0)
     end
   elsif command == 'terminate'
-    t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
-    if server.stop_all
-      t.kill; STDOUT.puts
-      puts 'Stopped all watches'
-    else
-      t.kill; STDOUT.puts
-      puts 'Could not stop all watches within 10 seconds'
+    begin
+      t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+      if server.stop_all
+        t.kill; STDOUT.puts
+        puts 'Stopped all watches'
+      else
+        t.kill; STDOUT.puts
+        puts 'Could not stop all watches within 10 seconds'
+      end
+    rescue => e
+      puts e.message
+      puts e.backtrace.join("\n")
     end
     
     begin
@@ -147,8 +163,6 @@ elsif command = ARGV[0]
     rescue DRb::DRbConnError
       puts 'Stopped god'
     end
-    
-    exit!(0)
   else
     # get the name of the watch/group
     name = ARGV[1]
@@ -170,11 +184,14 @@ elsif command = ARGV[0]
     rescue God::InvalidCommandError
       t.kill rescue nil; STDOUT.puts
       abort "Command '#{command}' is not valid. Run 'god --help' for usage"
+    rescue => e
+      puts e.message
+      puts e.backtrace.join("\n")
     end
   end
   
   exit!(0)
-else
+elsif options[:config]
   # start god
   if !options[:daemonize]
     require 'god'
@@ -191,6 +208,9 @@ else
       abort "There was an error in your configuration file (see above)"
     end
   else
+    # trap and ignore SIGHUP
+    Signal.trap('HUP') {}
+        
     pid = fork do
       begin
         require 'god'
@@ -226,9 +246,6 @@ else
         STDIN.reopen "/dev/null"
         STDOUT.reopen(log_file, "a")
         STDERR.reopen STDOUT
-        
-        # trap and ignore SIGHUP
-        Signal.trap('HUP') {}
       rescue => e
         puts e.message
         puts e.backtrace.join("\n")
@@ -244,4 +261,6 @@ else
     
     exit!(0)
   end
+else
+  puts opts.help
 end
