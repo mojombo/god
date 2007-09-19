@@ -12,7 +12,6 @@ module God
       @host = host
       @port = port
       @acl = %w{deny all} + allow.inject([]) { |acc, a| acc + ['allow', a] }
-      puts "Starting on #{@host}:#{@port}"
       start
     end
 
@@ -32,6 +31,7 @@ module God
       
       begin
         @drb ||= DRb.start_service("druby://#{@host}:#{@port}", self)
+        puts "Started on #{DRb.uri}"
       rescue Errno::EADDRINUSE
         DRb.start_service
         server = DRbObject.new nil, "druby://127.0.0.1:#{@port}"

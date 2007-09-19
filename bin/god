@@ -12,7 +12,7 @@ opts = OptionParser.new do |opts|
   opts.banner = <<-EOF
 Usage:
   Starting:
-    god -c <config file> [-p <port>] [-P <file>] [-l <file>] [-D]
+    god -c <config file> [-p <port> | -b] [-P <file>] [-l <file>] [-D]
     
   Querying:
     god <command> <argument> [-p <port>]
@@ -29,7 +29,8 @@ Usage:
     load <file>                        load a config into a running god
     log <task name>                    show realtime log for given task
     status                             show status of each task
-    terminate                          kill god and all tasks
+    quit                               stop god
+    terminate                          stop god and all tasks
 
   Options:
 EOF
@@ -38,8 +39,12 @@ EOF
     options[:config] = x
   end
   
-  opts.on("-pPORT", "--port PORT", "Communications port") do |x|
+  opts.on("-pPORT", "--port PORT", "Communications port (default 17165)") do |x|
     options[:port] = x
+  end
+  
+  opts.on("-b", "--auto-bind", "Auto-bind to an unused port number") do
+    options[:port] = "0"
   end
   
   opts.on("-PFILE", "--pid FILE", "Where to write the PID file") do |x|
@@ -141,6 +146,13 @@ elsif command = ARGV[0]
     rescue => e
       puts e.message
       puts e.backtrace.join("\n")
+    end
+  elsif command == 'quit'
+    begin
+      server.terminate
+      abort 'Could not stop god'
+    rescue DRb::DRbConnError
+      puts 'Stopped god'
     end
   elsif command == 'terminate'
     begin

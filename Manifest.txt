@@ -8,6 +8,7 @@ examples/gravatar.god
 ext/god/extconf.rb
 ext/god/kqueue_handler.c
 ext/god/netlink_handler.c
+init/god
 lib/god.rb
 lib/god/behavior.rb
 lib/god/behaviors/clean_pid_file.rb
