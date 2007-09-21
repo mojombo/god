@@ -18,6 +18,7 @@ lib/god/conditions/always.rb
 lib/god/conditions/cpu_usage.rb
 lib/god/conditions/degrading_lambda.rb
 lib/god/conditions/flapping.rb
+lib/god/conditions/http_response_code.rb
 lib/god/conditions/lambda.rb
 lib/god/conditions/memory_usage.rb
 lib/god/conditions/process_exits.rb
@@ -62,12 +63,14 @@ test/configs/real.rb
 test/configs/running_load/running_load.god
 test/configs/stress/simple_server.rb
 test/configs/stress/stress.god
+test/configs/task/logs/.placeholder
 test/configs/task/task.god
 test/configs/test.rb
 test/helper.rb
 test/suite.rb
 test/test_behavior.rb
 test/test_condition.rb
+test/test_conditions_http_response_code.rb
 test/test_conditions_process_running.rb
 test/test_conditions_tries.rb
 test/test_contact.rb

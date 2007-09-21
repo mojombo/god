@@ -26,8 +26,12 @@ module God
       true
     end
     
-    def friendly_name
+    def base_name
       self.class.name.split('::').last
+    end
+    
+    def friendly_name
+      base_name
     end
     
     def self.complain(text, c = nil)

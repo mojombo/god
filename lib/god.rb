@@ -73,8 +73,9 @@ module God
   VERSION = '0.5.0'
   
   LOG = Logger.new
+  LOG.datetime_format = "%Y-%m-%d %H:%M:%S "
     
-  LOG_BUFFER_SIZE_DEFAULT = 100
+  LOG_BUFFER_SIZE_DEFAULT = 1000
   PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
   DRB_PORT_DEFAULT = 17165
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
@@ -125,6 +126,7 @@ module God
     self.pid_file_directory ||= PID_FILE_DIRECTORY_DEFAULT
     self.port ||= DRB_PORT_DEFAULT
     self.allow ||= DRB_ALLOW_DEFAULT
+    LOG.level = Logger::INFO
     
     # init has been executed
     self.inited = true

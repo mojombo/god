@@ -55,9 +55,7 @@ module God
               result = condition.test
               
               # log
-              msg = watch.name + ' ' + condition.class.name + " [#{result}] " + self.dest_desc(metric, condition)
-              Syslog.debug(msg)
-              LOG.log(watch, :info, msg)
+              self.log(watch, metric, condition, result)
               
               # notify
               if condition.notify
@@ -113,9 +111,8 @@ module God
           watch = metric.watch
           
           watch.mutex.synchronize do
-            msg = watch.name + ' ' + condition.class.name + " [true] " + self.dest_desc(metric, condition)
-            Syslog.debug(msg)
-            LOG.log(watch, :info, msg)
+            # log
+            self.log(watch, metric, condition, true)
             
             # notify
             if condition.notify
@@ -142,12 +139,44 @@ module God
     
     # helpers
     
-    def self.dest_desc(metric, condition)
-      if metric.destination
-        metric.destination.inspect
+    def self.log(watch, metric, condition, result)
+      # log info if available
+      if condition.info
+        begin
+          status = 
+          if (metric.destination && metric.destination.keys.size == 2) || result == true
+            "[trigger]"
+          else
+            "[ok]"
+          end
+          
+          Array(condition.info).each do |condition_info|
+            msg = "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
+            Syslog.debug(msg)
+            LOG.log(watch, :info, msg % [])
+          end
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
       else
-        if condition.transition
-          {true => condition.transition}.inspect
+        msg = "#{watch.name} [unknown] (#{condition.base_name})"
+        Syslog.debug(msg)
+        LOG.log(watch, :info, msg % [])
+      end
+      
+      # log
+      msg = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      Syslog.debug(msg)
+      LOG.log(watch, :debug, msg)
+    end
+    
+    def self.dest_desc(metric, condition)
+      if condition.transition
+        {true => condition.transition}.inspect
+      else
+        if metric.destination
+          metric.destination.inspect
         else
           'none'
         end

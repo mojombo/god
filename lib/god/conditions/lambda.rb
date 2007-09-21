@@ -11,7 +11,13 @@ module God
       end
 
       def test
-        self.lambda.call()
+        if self.lambda.call()
+          self.info = "lambda condition was satisfied"
+          true
+        else
+          self.info = "lambda condition was not satisfied"
+          false
+        end
       end
     end
 

@@ -2,6 +2,10 @@ module God
   module Conditions
     
     class ProcessExits < EventCondition
+      def initialize
+        self.info = "process exited"
+      end
+      
       def valid?
         valid = true
         valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?

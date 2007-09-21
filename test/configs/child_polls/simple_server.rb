@@ -1,3 +1,12 @@
 #! /usr/bin/env ruby
 
-loop { STDOUT.puts('server'); STDOUT.flush; sleep 1 }
+data = ''
+    
+loop do
+  STDOUT.puts('server');
+  STDOUT.flush;
+  
+  100000.times { data << 'x' }
+  
+  sleep 0.1
+end

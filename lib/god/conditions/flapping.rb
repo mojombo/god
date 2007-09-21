@@ -4,6 +4,10 @@ module God
     class Flapping < TriggerCondition
       attr_accessor :times, :within, :from_state, :to_state, :retry_in, :retry_times, :retry_within
       
+      def initialize
+        self.info = "process is flapping"
+      end
+      
       def prepare
         @timeline = Timeline.new(self.times)
         @retry_timeline = Timeline.new(self.retry_times)

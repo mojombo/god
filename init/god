@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# god       Startup script for god (http://god.rubyforge.org)
+#
+# chkconfig: - 85 15
+# description: God is an easy to configure, easy to extend monitoring \
+#              framework written in Ruby.
+#              
+
+CONF_DIR=/etc/god
+
+RETVAL=0
+
+# Go no further if config directory is missing.
+[ -d "$CONF_DIR" ] || exit 0
+
+case "$1" in
+    start)
+      # Create pid directory
+      ruby /usr/bin/god -c $CONF_DIR/master.conf
+      RETVAL=$?
+  ;;
+    stop)
+      ruby /usr/bin/god terminate
+      RETVAL=$?
+  ;;
+    restart)
+      ruby /usr/bin/god terminate
+      ruby /usr/bin/god -c $CONF_DIR/master.conf
+      RETVAL=$?
+  ;;
+    status)
+      ruby /usr/bin/god status
+      RETVAL=$?
+  ;;
+    *)
+      echo "Usage: god {start|stop|restart|status}"
+      exit 1
+  ;;
+esac      
+
+exit $RETVAL

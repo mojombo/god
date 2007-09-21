@@ -4,16 +4,22 @@ module God
   module Conditions
     
     class HttpResponseCode < PollCondition
-      attr_accessor :code_is, :code_is_not, :times, :host, :port, :timeout, :path
-    
+      attr_accessor :code_is,      # e.g. 500 or '500' or [404, 500] or %w{404 500}
+                    :code_is_not,  # e.g. 200 or '200' or [200, 302] or %w{200 302}
+                    :times,        # e.g. 3 or [3, 5]
+                    :host,         # e.g. www.example.com
+                    :port,         # e.g. 8080
+                    :timeout,      # e.g. 60.seconds
+                    :path          # e.g. '/'
+      
       def initialize
         super
         self.times = [1, 1]
       end
       
       def prepare
-        self.code_is = Array(self.code) if self.code_is
-        self.code_is_not = Array(self.code_is_not) if self.code_is_not
+        self.code_is = Array(self.code_is).map { |x| x.to_i } if self.code_is
+        self.code_is_not = Array(self.code_is_not).map { |x| x.to_i } if self.code_is_not
         
         if self.times.kind_of?(Integer)
           self.times = [self.times, self.times]
@@ -21,7 +27,7 @@ module God
         
         @timeline = Timeline.new(self.times[1])
       end
-    
+      
       def valid?
         valid = true
         valid &= complain("Attribute 'host' must be specified", self) if self.host.nil?
@@ -32,7 +38,7 @@ module God
         valid &= complain("Attribute 'timeout' must be specified", self) if self.timeout.nil?
         valid
       end
-    
+      
       def test
         response = nil
         
@@ -41,22 +47,33 @@ module God
           response = http.head(self.path)
         end
         
-        if self.code_is && self.code_is.include?(response.code)
+        actual_response_code = response.code.to_i
+        if self.code_is && self.code_is.include?(actual_response_code)
           pass
-        elsif self.code_is_not && !self.code.include?(response.code)
+        elsif self.code_is_not && !self.code_is_not.include?(actual_response_code)
           pass
         else
-          false
+          fail
         end
       rescue Timeout::Error
-        self.code_is ? false : pass
+        self.code_is ? fail : pass
       end
       
       private
       
       def pass
-        @timeline.clear
-        return true
+        @timeline << true
+        if @timeline.select { |x| x }.size >= self.times.first
+          @timeline.clear
+          true
+        else
+          false
+        end
+      end
+      
+      def fail
+        @timeline << false
+        false
       end
       
     end

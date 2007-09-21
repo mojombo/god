@@ -10,6 +10,18 @@ God.watch do |w|
     end
   end
   
+  w.restart_if do |restart|
+    restart.condition(:cpu_usage) do |c|
+      c.above = 50.percent
+      c.times = [3, 5]
+    end
+    
+    restart.condition(:memory_usage) do |c|
+      c.above = 10.megabytes
+      c.times = [3, 5]
+    end
+  end
+  
   # lifecycle
   w.lifecycle do |on|
     on.condition(:flapping) do |c|
@@ -20,11 +32,6 @@ God.watch do |w|
       c.retry_in = 10.seconds
       c.retry_times = 2
       c.retry_within = 5.minutes
-    end
-    
-    on.condition(:cpu_usage) do |c|
-      c.above = 10.percent
-      c.times = [3, 5]
     end
   end
 end

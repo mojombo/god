@@ -31,10 +31,15 @@ module God
         pid = File.read(self.watch.pid_file).strip
         process = System::Process.new(pid)
         @timeline.push(process.percent_cpu)
+        
+        history = "[" + @timeline.map { |x| "#{x}%%" }.join(", ") + "]"
+        
         if @timeline.select { |x| x > self.above }.size >= self.times.first
           @timeline.clear
+          self.info = "cpu out of bounds #{history}"
           return true
         else
+          self.info = "cpu within bounds #{history}"
           return false
         end
       end

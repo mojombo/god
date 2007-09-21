@@ -1,7 +1,7 @@
 module God
   
   class Condition < Behavior
-    attr_accessor :transition, :notify
+    attr_accessor :transition, :notify, :info
     
     # Generate a Condition of the given kind. The proper class if found by camel casing the
     # kind (which is given as an underscored symbol).
