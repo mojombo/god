@@ -32,7 +32,7 @@ module God
         process = System::Process.new(pid)
         @timeline.push(process.memory)
         
-        history = "[" + @timeline.map { |x| "#{x}kb" }.join(", ") + "]"
+        history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}kb" }.join(", ") + "]"
         
         if @timeline.select { |x| x > self.above }.size >= self.times.first
           @timeline.clear

@@ -12,7 +12,7 @@ God.watch do |w|
   
   w.restart_if do |restart|
     restart.condition(:cpu_usage) do |c|
-      c.above = 50.percent
+      c.above = 30.percent
       c.times = [3, 5]
     end
     

@@ -32,7 +32,7 @@ module God
         process = System::Process.new(pid)
         @timeline.push(process.percent_cpu)
         
-        history = "[" + @timeline.map { |x| "#{x}%%" }.join(", ") + "]"
+        history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}%%" }.join(", ") + "]"
         
         if @timeline.select { |x| x > self.above }.size >= self.times.first
           @timeline.clear
