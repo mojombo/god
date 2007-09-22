@@ -10,7 +10,7 @@ module God
       self.log = '/dev/null'
       
       @pid_file = nil
-      @tracking_pid = false
+      @tracking_pid = true
     end
     
     def alive?
@@ -66,16 +66,18 @@ module God
     # DON'T USE THIS INTERNALLY. Use the instance variable. -- Kev
     # No really, trust me. Use the instance variable.
     def pid_file=(value)
-      @tracking_pid = false
+      # if value is nil, do the right thing
+      if value
+        @tracking_pid = false
+      else
+        @tracking_pid = true
+      end
+      
       @pid_file = value
     end
     
     def pid_file
-      if @pid_file.nil?
-        @tracking_pid = true
-        @pid_file = default_pid_file
-      end
-      @pid_file
+      @pid_file ||= default_pid_file
     end
     
     def start!

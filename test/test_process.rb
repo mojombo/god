@@ -72,7 +72,28 @@ class TestProcessChild < Test::Unit::TestCase
       assert !@p.valid?
     end
   end
+  
+  # call_action
+  
+  def test_call_action_should_write_pid
+    # Only for start, restart
+    [:start, :restart].each do |action|
+      @p.stubs(:test).returns true
+      IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
+      @p.expects(:fork)
+      Process.expects(:waitpid)
+      File.expects(:open).with(@p.default_pid_file, 'w')
+      @p.send("#{action}=", "run")
+      @p.call_action(action)
+    end
+  end
 end
+
+###############################################################################
+#
+# Daemon
+#
+###############################################################################
 
 class TestProcessDaemon < Test::Unit::TestCase
   def setup
@@ -125,11 +146,9 @@ class TestProcessDaemon < Test::Unit::TestCase
   # call_action
   # These actually excercise call_action in the back at this point - Kev
   
-  def test_call_action_with_string_should_fork_exec 
+  def test_call_action_with_string_should_call_system
     @p.start = "do something"
-    IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
-    @p.expects(:fork)
-    Process.expects(:waitpid)
+    @p.expects(:system)
     @p.call_action(:start)
   end
   
@@ -138,31 +157,6 @@ class TestProcessDaemon < Test::Unit::TestCase
     cmd.expects(:call)
     @p.start = cmd
     @p.call_action(:start)
-  end
-  
-  def test_call_action_without_pid_should_write_pid
-    # Only for start, restart
-    [:start, :restart].each do |action|
-      @p = God::Process.new
-      @p.name = 'foo'
-      @p.stubs(:test).returns true
-      IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
-      @p.expects(:fork)
-      Process.expects(:waitpid)
-      File.expects(:open).with(@p.default_pid_file, 'w')
-      @p.send("#{action}=", "run")
-      @p.call_action(action)
-    end
-  end
-  
-  def test_call_action_should_not_write_pid_for_stop
-    @p.pid_file = nil
-    IO.expects(:pipe).returns([StringIO.new('1234'), StringIO.new])
-    @p.expects(:fork)
-    Process.expects(:waitpid)
-    File.expects(:open).times(0)
-    @p.stop = "stopping"
-    @p.call_action(:stop)
   end
   
   def test_call_action_with_invalid_command_class_should_raise
