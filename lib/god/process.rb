@@ -26,12 +26,6 @@ module God
       
       valid = true
       
-      # a name must be specified
-      if self.name.nil?
-        valid = false
-        LOG.log(self, :error, "No name was specified")
-      end
-      
       # a start command must be specified
       if self.start.nil?
         valid = false

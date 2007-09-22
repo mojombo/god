@@ -9,6 +9,8 @@ class TestHttpResponseCode < Test::Unit::TestCase
     c.path = '/'
     c.timeout = 10
     c.code_is = 200
+    c.times = 1
+    yield(c) if block_given?
     c.prepare
     c
   end
@@ -21,43 +23,41 @@ class TestHttpResponseCode < Test::Unit::TestCase
   end
   
   def test_valid_should_return_false_if_both_code_is_and_code_is_not_are_set
-    c = valid_condition
-    c.code_is_not = 500
+    c = valid_condition do |cc|
+      cc.code_is_not = 500
+    end
     no_stdout { assert !c.valid? }
   end
   
   def test_valid_should_return_false_if_no_host_set
-    c = valid_condition
-    c.host = nil
+    c = valid_condition do |cc|
+      cc.host = nil
+    end
     no_stdout { assert !c.valid? }
   end
   
   def test_valid_should_return_false_if_no_port_set
-    c = valid_condition
-    c.port = nil
+    c = valid_condition do |cc|
+      cc.port = nil
+    end
     no_stdout { assert !c.valid? }
   end
   
   def test_valid_should_return_false_if_no_path_set
-    c = valid_condition
-    c.path = nil
+    c = valid_condition do |cc|
+      cc.path = nil
+    end
     no_stdout { assert !c.valid? }
   end
   
   def test_valid_should_return_false_if_no_timeout_set
-    c = valid_condition
-    c.timeout = nil
+    c = valid_condition do |cc|
+      cc.timeout = nil
+    end
     no_stdout { assert !c.valid? }
   end
   
   # test
-  
-  def test_real
-    c = valid_condition
-    c.code_is = [302]
-    c.port = 3000
-    assert_equal true, c.test
-  end
   
   def test_test_should_return_false_if_code_is_is_set_to_200_but_response_is_500
     c = valid_condition
@@ -66,9 +66,10 @@ class TestHttpResponseCode < Test::Unit::TestCase
   end
   
   def test_test_should_return_false_if_code_is_not_is_set_to_200_and_response_is_200
-    c = valid_condition
-    c.code_is = nil
-    c.code_is_not = [200]
+    c = valid_condition do |cc|
+      cc.code_is = nil
+      cc.code_is_not = [200]
+    end
     Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 200)))
     assert_equal false, c.test
   end
@@ -80,31 +81,33 @@ class TestHttpResponseCode < Test::Unit::TestCase
   end
   
   def test_test_should_return_false_if_code_is_not_is_set_to_200_but_response_is_500
-    c = valid_condition
-    c.code_is = nil
-    c.code_is_not = [200]
+    c = valid_condition do |cc|
+      cc.code_is = nil
+      cc.code_is_not = [200]
+    end
     Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 500)))
     assert_equal true, c.test
   end
   
   def test_test_should_return_false_if_code_is_is_set_to_200_but_response_times_out
     c = valid_condition
-    Net::HTTP.expects(:start).raises(Timeout::Error)
+    Net::HTTP.expects(:start).raises(Timeout::Error, '')
     assert_equal false, c.test
   end
   
   def test_test_should_return_true_if_code_is_not_is_set_to_200_and_response_times_out
-    c = valid_condition
-    c.code_is = nil
-    c.code_is_not = [200]
-    Net::HTTP.expects(:start).raises(Timeout::Error)
+    c = valid_condition do |cc|
+      cc.code_is = nil
+      cc.code_is_not = [200]
+    end
+    Net::HTTP.expects(:start).raises(Timeout::Error, '')
     assert_equal true, c.test
   end
   
   def test_test_should_return_true_if_code_is_is_set_to_200_and_response_is_200_twice_for_times_two_of_two
-    c = valid_condition
-    c.times = [2, 2]
-    c.prepare
+    c = valid_condition do |cc|
+      cc.times = [2, 2]
+    end
     Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 200))).times(2)
     assert_equal false, c.test
     assert_equal true, c.test

@@ -99,15 +99,6 @@ class TestProcessDaemon < Test::Unit::TestCase
   
   # valid?
   
-  def test_valid_should_return_false_if_no_name
-    @p.name = nil
-    @p.start = 'bar'
-    @p.stop = 'baz'
-    no_stdout do
-      assert !@p.valid?
-    end
-  end
-  
   def test_valid_should_return_false_if_no_start
     @p.name = 'foo'
     @p.stop = 'baz'

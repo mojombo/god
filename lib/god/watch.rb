@@ -29,7 +29,7 @@ module God
     end
     
     def valid?
-      @process.valid?
+      super && @process.valid?
     end
     
     ###########################################################################
