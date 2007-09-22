@@ -9,7 +9,11 @@ module God
       end
   
       def before_start
-        File.delete(self.watch.pid_file) rescue nil
+        File.delete(self.watch.pid_file)
+        
+        "deleted pid file"
+      rescue
+        "no pid file to delete"
       end
     end
   

@@ -276,7 +276,7 @@ module God
   def self.stop_all
     self.watches.sort.each do |name, w|
       Thread.new do
-        w.unmonitor if w.state
+        w.unmonitor if w.state != :unmonitored
         w.action(:stop) if w.alive?
       end
     end

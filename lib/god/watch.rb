@@ -99,16 +99,10 @@ module God
     def action(a, c = nil)
       case a
       when :start
-        msg = "#{self.name} start: #{self.start.to_s}"
-        Syslog.debug(msg)
-        LOG.log(self, :info, msg)
         call_action(c, :start)
         sleep(self.start_grace + self.grace)
       when :restart
         if self.restart
-          msg = "#{self.name} restart: #{self.restart.to_s}"
-          Syslog.debug(msg)
-          LOG.log(self, :info, msg)
           call_action(c, :restart)
         else
           action(:stop, c)
@@ -116,24 +110,33 @@ module God
         end
         sleep(self.restart_grace + self.grace)
       when :stop
-        if self.stop
-          msg = "#{self.name} stop: #{self.stop.to_s}"
-          Syslog.debug(msg)
-          LOG.log(self, :info, msg)
-        end
         call_action(c, :stop)
         sleep(self.stop_grace + self.grace)
-      end      
+      end
     end
     
     def call_action(condition, action)
       # before
       before_items = self.behaviors
       before_items += [condition] if condition
-      before_items.each { |b| b.send("before_#{action}") }
+      before_items.each do |b|
+        info = b.send("before_#{action}")
+        if info
+          msg = "#{self.name} before_#{action}: #{info} (#{b.base_name})"
+          Syslog.debug(msg)
+          LOG.log(self, :info, msg)
+        end
+      end
+      
+      # log
+      if self.send(action)
+        msg = "#{self.name} #{action}: #{self.send(action).to_s}"
+        Syslog.debug(msg)
+        LOG.log(self, :info, msg)
+      end
       
       @process.call_action(action)
-
+      
       # after
       after_items = self.behaviors
       after_items += [condition] if condition

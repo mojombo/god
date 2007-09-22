@@ -207,7 +207,7 @@ class TestWatch < Test::Unit::TestCase
     c = Conditions::FakePollCondition.new
     [:start, :stop].each do |cmd|
       @watch.expects(:call_action).with(c, cmd)
-      no_stdout { @watch.action(cmd, c) }
+      @watch.action(cmd, c)
     end
   end
   
@@ -215,14 +215,14 @@ class TestWatch < Test::Unit::TestCase
     c = Conditions::FakePollCondition.new
     @watch.expects(:call_action).with(c, :stop)
     @watch.expects(:call_action).with(c, :start)
-    no_stdout { @watch.action(:restart, c) }
+    @watch.action(:restart, c)
   end
   
   def test_action_should_restart_to_call_action_if_present
     @watch.restart = lambda { }
     c = Conditions::FakePollCondition.new
     @watch.expects(:call_action).with(c, :restart)
-    no_stdout { @watch.action(:restart, c) }
+    @watch.action(:restart, c)
   end
   
   # call_action
@@ -230,7 +230,7 @@ class TestWatch < Test::Unit::TestCase
   def test_call_action
     c = Conditions::FakePollCondition.new
     God::Process.any_instance.expects(:call_action).with(:start)
-    @watch.call_action(c, :start)
+    no_stdout { @watch.call_action(c, :start) }
   end
   
   # canonical_hash_form

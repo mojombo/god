@@ -12,6 +12,7 @@ God.watch do |w|
   w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
   w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
   w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
+  w.log = File.join(RAILS_ROOT, "log/commands.log")
   
   # clean pid files before start if necessary
   w.behavior(:clean_pid_file)
@@ -31,7 +32,7 @@ God.watch do |w|
     
     # failsafe
     on.condition(:tries) do |c|
-      c.times = 3
+      c.times = 8
       c.transition = :start
     end
   end
@@ -52,6 +53,15 @@ God.watch do |w|
     on.condition(:cpu_usage) do |c|
       c.interval = 10
       c.above = 10.percent
+      c.times = 5
+    end
+    
+    on.condition(:http_response_code) do |c|
+      c.host = 'localhost'
+      c.port = '3000'
+      c.path = '/'
+      c.code_is_not = 201
+      c.timeout = 10.seconds
       c.times = [3, 5]
     end
   end

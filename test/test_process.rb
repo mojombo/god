@@ -116,17 +116,6 @@ class TestProcessDaemon < Test::Unit::TestCase
     end
   end
   
-  def test_valid_should_return_false_if_self_daemonized_and_log
-    @p.pid_file = 'foo'
-    @p.start = 'baz'
-    @p.stop = 'qux'
-    @p.log = 'bar'
-    
-    no_stdout do
-      assert !@p.valid?
-    end
-  end
-  
   # defaul_pid_file
   
   def test_default_pid_file

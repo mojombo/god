@@ -7,6 +7,8 @@ module God
     attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart
     
     def initialize
+      self.log = '/dev/null'
+      
       @pid_file = nil
       @tracking_pid = false
     end
@@ -36,12 +38,6 @@ module God
       if !@tracking_pid && self.stop.nil?
         valid = false
         LOG.log(self, :error, "No stop command was specified")
-      end
-      
-      # self-daemonizing processes cannot specify log
-      if !@tracking_pid && self.log
-        valid = false
-        LOG.log(self, :error, "Self-daemonizing processes cannot specify a log file")
       end
       
       # uid must exist if specified
@@ -123,43 +119,51 @@ module God
             
       if command.kind_of?(String)
         # string command
-        # fork/exec to setuid/gid
-        r, w = IO.pipe
-        opid = fork do
-          STDOUT.reopen(w)
-          r.close
-          pid = fork do
-            ::Process.setsid
-            ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-            ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
-            Dir.chdir "/"
-            $0 = command
-            STDIN.reopen "/dev/null"
-            if self.log
+        if @tracking_pid
+          # fork/exec to setuid/gid
+          r, w = IO.pipe
+          opid = fork do
+            STDOUT.reopen(w)
+            r.close
+            pid = fork do
+              ::Process.setsid
+              ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
+              ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
+              Dir.chdir "/"
+              $0 = command
+              STDIN.reopen "/dev/null"
               STDOUT.reopen self.log, "a"
-            else
-              STDOUT.reopen "/dev/null", "a"
+              STDERR.reopen STDOUT
+              
+              exec command unless command.empty?
             end
-            STDERR.reopen STDOUT
-            
-            exec command unless command.empty?
-          end
-          puts pid.to_s
-        end
-        
-        ::Process.waitpid(opid, 0)
-        w.close
-        pid = r.gets.chomp
-        
-        if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
-          File.open(default_pid_file, 'w') do |f|
-            f.write pid
+            puts pid.to_s
           end
           
-          @tracking_pid = true
-          @pid_file = default_pid_file
+          ::Process.waitpid(opid, 0)
+          w.close
+          pid = r.gets.chomp
+          
+          if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
+            File.open(default_pid_file, 'w') do |f|
+              f.write pid
+            end
+            
+            @tracking_pid = true
+            @pid_file = default_pid_file
+          end
+        else
+          orig_stdout = STDOUT.dup
+          orig_stderr = STDERR.dup
+          
+          STDOUT.reopen self.log, "a"
+          STDERR.reopen STDOUT
+          
+          system(command)
+          
+          STDOUT.reopen orig_stdout
+          STDERR.reopen orig_stderr
         end
-        
       elsif command.kind_of?(Proc)
         # lambda command
         command.call

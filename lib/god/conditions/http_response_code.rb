@@ -26,6 +26,7 @@ module God
         end
         
         @timeline = Timeline.new(self.times[1])
+        @history = Timeline.new(self.times[1])
       end
       
       def valid?
@@ -49,31 +50,42 @@ module God
         
         actual_response_code = response.code.to_i
         if self.code_is && self.code_is.include?(actual_response_code)
-          pass
+          pass(actual_response_code)
         elsif self.code_is_not && !self.code_is_not.include?(actual_response_code)
-          pass
+          pass(actual_response_code)
         else
-          fail
+          fail(actual_response_code)
         end
       rescue Timeout::Error
-        self.code_is ? fail : pass
+        self.code_is ? fail('Timeout') : pass('Timeout')
       end
       
       private
       
-      def pass
+      def pass(code)
         @timeline << true
         if @timeline.select { |x| x }.size >= self.times.first
+          self.info = "http response abnormal #{history(code, true)}"
           @timeline.clear
+          @history.clear
           true
         else
+          self.info = "http response nominal #{history(code, true)}"
           false
         end
       end
       
-      def fail
+      def fail(code)
         @timeline << false
+        self.info = "http response nominal #{history(code, false)}"
         false
+      end
+      
+      def history(code, passed)
+        entry = code.to_s.dup
+        entry = '*' + entry if passed
+        @history << entry
+        '[' + @history.join(", ") + ']'
       end
       
     end
