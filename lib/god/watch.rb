@@ -140,7 +140,14 @@ module God
       # after
       after_items = self.behaviors
       after_items += [condition] if condition
-      after_items.each { |b| b.send("after_#{action}") }
+      after_items.each do |b|
+        info = b.send("after_#{action}")
+        if info
+          msg = "#{self.name} after_#{action}: #{info} (#{b.base_name})"
+          Syslog.debug(msg)
+          LOG.log(self, :info, msg)
+        end
+      end
     end
     
     ###########################################################################

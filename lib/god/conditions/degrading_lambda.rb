@@ -15,18 +15,23 @@ module God
         valid &= complain("Attribute 'lambda' must be specified", self) if self.lambda.nil?
         valid
       end
-
+      
       def test
         puts "Calling test. Interval at #{self.interval}"
         @original_interval ||= self.interval
         unless pass?
-          return true if @tries == 2
+          if @tries == 2
+            self.info = "lambda condition was satisfied"
+            return true
+          end
           self.interval = self.interval / 2.0
           @tries += 1
         else
           @tries = 0
           self.interval = @original_interval
         end
+        
+        self.info = "lambda condition was not satisfied"
         false
       end
       

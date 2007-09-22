@@ -51,6 +51,12 @@ module God
   
   module Behaviors
     class FakeBehavior < Behavior
+      def before_start
+        'foo'
+      end
+      def after_start
+        'bar'
+      end
     end
   end
   

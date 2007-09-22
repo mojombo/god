@@ -233,6 +233,22 @@ class TestWatch < Test::Unit::TestCase
     no_stdout { @watch.call_action(c, :start) }
   end
   
+  def test_call_action_should_call_before_start_when_behavior_has_that
+    @watch.behavior(:fake_behavior)
+    c = Conditions::FakePollCondition.new
+    God::Process.any_instance.expects(:call_action).with(:start)
+    Behaviors::FakeBehavior.any_instance.expects(:before_start)
+    no_stdout { @watch.call_action(c, :start) }
+  end
+  
+  def test_call_action_should_call_after_start_when_behavior_has_that
+    @watch.behavior(:fake_behavior)
+    c = Conditions::FakePollCondition.new
+    God::Process.any_instance.expects(:call_action).with(:start)
+    Behaviors::FakeBehavior.any_instance.expects(:after_start)
+    no_stdout { @watch.call_action(c, :start) }
+  end
+  
   # canonical_hash_form
   
   def test_canonical_hash_form_should_convert_symbol_to_hash

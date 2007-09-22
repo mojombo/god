@@ -16,6 +16,10 @@ module God
     rescue NameError
       raise NoSuchBehaviorError.new("No Behavior found with the class name God::Behaviors::#{sym}")
     end
+    
+    def valid?
+      true
+    end
         
     #######
     

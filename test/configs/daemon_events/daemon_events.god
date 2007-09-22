@@ -4,6 +4,7 @@ God.watch do |w|
   w.start = '/usr/local/bin/ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' start'
   w.stop = '/usr/local/bin/ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' stop'
   w.pid_file = '/var/run/daemon-events.pid'
+  w.log = File.join(File.dirname(__FILE__), 'daemon_events.log')
   
   w.behavior(:clean_pid_file)
   
