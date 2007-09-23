@@ -25,7 +25,7 @@ module God
       self.metrics = {nil => [], :unmonitored => []}
       
       # mutex
-      self.mutex = Mutex.new
+      self.mutex = Monitor.new
     end
     
     def prepare
@@ -127,44 +127,46 @@ module God
     
     # Move from one state to another
     def move(to_state)
-      orig_to_state = to_state
-      from_state = self.state
-      
-      msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
-      Syslog.debug(msg)
-      LOG.log(self, :info, msg)
-      
-      # cleanup from current state
-      self.metrics[from_state].each { |m| m.disable }
-      
-      if to_state == :unmonitored
-        self.metrics[nil].each { |m| m.disable }
+      self.mutex.synchronize do
+        orig_to_state = to_state
+        from_state = self.state
+        
+        msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
+        Syslog.debug(msg)
+        LOG.log(self, :info, msg)
+        
+        # cleanup from current state
+        self.metrics[from_state].each { |m| m.disable }
+        
+        if to_state == :unmonitored
+          self.metrics[nil].each { |m| m.disable }
+        end
+        
+        # perform action
+        self.action(to_state)
+        
+        # enable simple mode
+        if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
+          to_state = :up
+        end
+        
+        # move to new state
+        self.metrics[to_state].each { |m| m.enable }
+        
+        # if no from state, enable lifecycle metric
+        if from_state == :unmonitored
+          self.metrics[nil].each { |m| m.enable }
+        end
+        
+        # set state
+        self.state = to_state
+        
+        # trigger
+        Trigger.broadcast(:state_change, [from_state, orig_to_state])
+        
+        # return self
+        self
       end
-      
-      # perform action
-      self.action(to_state)
-      
-      # enable simple mode
-      if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
-        to_state = :up
-      end
-      
-      # move to new state
-      self.metrics[to_state].each { |m| m.enable }
-      
-      # if no from state, enable lifecycle metric
-      if from_state == :unmonitored
-        self.metrics[nil].each { |m| m.enable }
-      end
-      
-      # set state
-      self.state = to_state
-      
-      # trigger
-      Trigger.broadcast(:state_change, [from_state, orig_to_state])
-      
-      # return self
-      self
     end
     
     ###########################################################################

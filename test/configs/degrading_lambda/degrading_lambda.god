@@ -1,10 +1,8 @@
 God.watch do |w|
   w.name = 'degrading-lambda'
-  w.start = File.join(File.dirname(__FILE__), *%w[tcp_server.rb])
+  w.start = 'ruby ' + File.join(File.dirname(__FILE__), *%w[tcp_server.rb])
   w.interval = 5
   w.grace = 2
-  w.uid = 'kev'
-  w.gid = 'kev'
   w.group = 'test'
   
   w.start_if do |start|
