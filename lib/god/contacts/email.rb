@@ -13,7 +13,12 @@ module God
       
       self.delivery_method = :smtp
       
-      self.server_settings = {}
+      self.server_settings = {:address => 'localhost',
+                              :port => 25}
+                            # :domain
+                            # :user_name
+                            # :password
+                            # :authentication
       
       self.format = lambda do |name, email, message, time, priority, category|
         <<-EOF
@@ -41,14 +46,24 @@ Category: #{category}
         begin
           body = Email.format.call(self.name, self.email, message, time, priority, category)
           
-          puts body
-          puts
-          # Net::SMTP.start('localhost', 25) do |smtp|
-          #   smtp.send_message body, Email.message_settings[:from], self.email
-          # end
+          args = [Email.server_settings[:address], Email.server_settings[:port]]
+          if Email.server_settings[:authentication]
+            args << Email.server_settings[:domain]
+            args << Email.server_settings[:user_name]
+            args << Email.server_settings[:password]
+            args << Email.server_settings[:authentication] 
+          end
+            
+          Net::SMTP.start(*args) do |smtp|
+            smtp.send_message body, Email.message_settings[:from], self.email
+          end
+          
+          self.info = "sent email to #{self.email}"
         rescue => e
           puts e.message
           puts e.backtrace.join("\n")
+          
+          self.info = "failed to send email to #{self.email}: #{e.message}"
         end
       end
     end

@@ -3,7 +3,7 @@ module God
   class Contact
     include Configurable
     
-    attr_accessor :name, :group, :throttle
+    attr_accessor :name, :group, :info
     
     def self.generate(kind)
       sym = kind.to_s.capitalize.gsub(/_(.)/){$1.upcase}.intern

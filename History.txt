@@ -5,7 +5,7 @@
   * Add TriggerCondition for conditions that need info about state changes
   * Implement notification system
   * Add Tasks (a generalization of Watches) to do non-process related tasks
-  * Add example init.d file in GOD_INSTALL_DIR/init/god
+  * Add example init.d file in GOD_INSTALL_DIR/init/god [scott becker]
   * Add human readable info to conditions (and make low level log lines debug)
 * Minor Enchancements
   * Allow EventConditions to do transition overloading
@@ -22,7 +22,7 @@
   * Flapping < TriggerCondition - trigger on state change
   * HttpResponseCode < PollCondition - trigger on http response code or timeout (thx scott becker)
 * New Contacts
-  * Email < Contact - notify via email (smtp, sendmail)
+  * Email < Contact - notify via email (smtp)
 * Bug Fixes
   * Fix abort not aborting problem
   * Fix -p option not working for god binary

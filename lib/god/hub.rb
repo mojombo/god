@@ -55,11 +55,11 @@ module God
               result = condition.test
               
               # log
-              self.log(watch, metric, condition, result)
+              messages = self.log(watch, metric, condition, result)
               
               # notify
               if condition.notify
-                self.notify(condition, msg)
+                self.notify(condition, messages.last)
               end
               
               # after-condition
@@ -105,34 +105,41 @@ module God
     
     def self.handle_event(condition)
       Thread.new do
-        metric = self.directory[condition]
+        begin
+          metric = self.directory[condition]
         
-        unless metric.nil?
-          watch = metric.watch
+          unless metric.nil?
+            watch = metric.watch
           
-          watch.mutex.synchronize do
-            # log
-            self.log(watch, metric, condition, true)
+            watch.mutex.synchronize do
+              # log
+              messages = self.log(watch, metric, condition, true)
             
-            # notify
-            if condition.notify
-              self.notify(condition, msg)
-            end
+              # notify
+              if condition.notify
+                self.notify(condition, messages.last)
+              end
             
-            # get the destination
-            dest = 
-            if condition.transition
-              # condition override
-              condition.transition
-            else
-              # regular
-              metric.destination && metric.destination[true]
-            end
+              # get the destination
+              dest = 
+              if condition.transition
+                # condition override
+                condition.transition
+              else
+                # regular
+                metric.destination && metric.destination[true]
+              end
             
-            if dest
-              watch.move(dest)
+              if dest
+                watch.move(dest)
+              end
             end
           end
+        rescue => e
+          message = format("Unhandled exception (%s): %s\n%s",
+                           e.class, e.message, e.backtrace.join("\n"))
+          Syslog.crit message
+          abort message
         end
       end
     end
@@ -140,35 +147,34 @@ module God
     # helpers
     
     def self.log(watch, metric, condition, result)
+      status = 
+      if (metric.destination && metric.destination.keys.size == 2) || result == true
+        "[trigger]"
+      else
+        "[ok]"
+      end
+      
+      messages = []
+      
       # log info if available
       if condition.info
-        begin
-          status = 
-          if (metric.destination && metric.destination.keys.size == 2) || result == true
-            "[trigger]"
-          else
-            "[ok]"
-          end
-          
-          Array(condition.info).each do |condition_info|
-            msg = "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
-            Syslog.debug(msg)
-            LOG.log(watch, :info, msg % [])
-          end
-        rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
+        Array(condition.info).each do |condition_info|
+          messages << "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
+          Syslog.debug(messages.last)
+          LOG.log(watch, :info, messages.last % [])
         end
       else
-        msg = "#{watch.name} [unknown] (#{condition.base_name})"
-        Syslog.debug(msg)
-        LOG.log(watch, :info, msg % [])
+        messages << "#{watch.name} #{status} (#{condition.base_name})"
+        Syslog.debug(messages.last)
+        LOG.log(watch, :info, messages.last % [])
       end
       
       # log
-      msg = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
-      Syslog.debug(msg)
-      LOG.log(watch, :debug, msg)
+      debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      Syslog.debug(debug_message)
+      LOG.log(watch, :debug, debug_message)
+      
+      messages
     end
     
     def self.dest_desc(metric, condition)
@@ -184,24 +190,23 @@ module God
     end
     
     def self.notify(condition, message)
-      begin
-        spec = Contact.normalize(condition.notify)
+      spec = Contact.normalize(condition.notify)
       
-        # resolve contacts
-        resolved_contacts =
-        spec[:contacts].inject([]) do |acc, contact_name_or_group|
-          acc += Array(God.contacts[contact_name_or_group] || God.contact_groups[contact_name_or_group])
-          acc
-        end
+      # resolve contacts
+      resolved_contacts =
+      spec[:contacts].inject([]) do |acc, contact_name_or_group|
+        acc += Array(God.contacts[contact_name_or_group] || God.contact_groups[contact_name_or_group])
+        acc
+      end
+      
+      # notify each contact
+      resolved_contacts.each do |c|
+        c.notify(message, Time.now, spec[:priority], spec[:category])
         
-        p resolved_contacts
+        msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
         
-        resolved_contacts.each do |c|
-          c.notify(message, Time.now, spec[:priority], spec[:category])
-        end
-      rescue => e
-        puts e.message
-        puts e.backtrace.join("\n")
+        Syslog.debug(msg)
+        LOG.log(condition.watch, :info, msg % [])
       end
     end
   end

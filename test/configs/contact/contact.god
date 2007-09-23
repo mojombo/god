@@ -1,4 +1,13 @@
-God::Contacts::Email.message_settings = {:from => 'god@powerset.com'}
+God::Contacts::Email.message_settings = {:from => 'support@gravatar.com'}
+
+God::Contacts::Email.server_settings = {
+  :address => "mail.authsmtp.com",
+  :port => 2525,
+  :domain => "gravatar.com",
+  :authentication => :plain,
+  :user_name => "xxx",
+  :password => "yyy"
+}
 
 God.contact(:email) do |c|
   c.name = 'tom'
@@ -46,7 +55,7 @@ God.watch do |w|
   # start if process is not running
   w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
-      c.notify = {:contacts => ['developers', 'kevin'], :priority => 1, :category => 'product'}
+      c.notify = {:contacts => ['tom'], :priority => 1, :category => 'product'}
     end
   end
   
