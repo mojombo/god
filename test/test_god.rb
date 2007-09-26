@@ -372,7 +372,7 @@ class TestGod < Test::Unit::TestCase
     EOF
     
     no_stdout do
-      God.running_load(code)
+      God.running_load(code, '/foo/bar.god')
     end
     
     assert_equal 1, God.watches.size
@@ -388,7 +388,7 @@ class TestGod < Test::Unit::TestCase
     
     Watch.any_instance.expects(:monitor)
     no_stdout do
-      God.running_load(code)
+      God.running_load(code, '/foo/bar.god')
     end
   end
   
@@ -403,7 +403,7 @@ class TestGod < Test::Unit::TestCase
     
     Watch.any_instance.expects(:monitor).never
     no_stdout do
-      God.running_load(code)
+      God.running_load(code, '/foo/bar.god')
     end
   end
   
@@ -417,7 +417,7 @@ class TestGod < Test::Unit::TestCase
     
     w = nil
     no_stdout do
-      w = God.running_load(code)
+      w = God.running_load(code, '/foo/bar.god')
     end
     assert_equal 1, w.size
     assert_equal 'foo', w.first.name
@@ -432,7 +432,7 @@ class TestGod < Test::Unit::TestCase
     EOF
     
     no_stdout do
-      God.running_load(code)
+      God.running_load(code, '/foo/bar.god')
     end
     assert_equal 0, God.pending_watches.size
   end

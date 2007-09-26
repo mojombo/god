@@ -6,246 +6,220 @@ require 'rubygems'
 require 'optparse'
 require 'drb'
 
-options = {:daemonize => true, :port => 17165}
+begin
+  options = {:daemonize => true, :port => 17165}
 
-opts = OptionParser.new do |opts|
-  opts.banner = <<-EOF
-Usage:
-  Starting:
-    god -c <config file> [-p <port> | -b] [-P <file>] [-l <file>] [-D]
+  opts = OptionParser.new do |opts|
+    opts.banner = <<-EOF
+  Usage:
+    Starting:
+      god -c <config file> [-p <port> | -b] [-P <file>] [-l <file>] [-D]
     
-  Querying:
-    god <command> <argument> [-p <port>]
-    god <command> [-p <port>]
-    god -v
-    god -V (must be run as root to be accurate on Linux)
+    Querying:
+      god <command> <argument> [-p <port>]
+      god <command> [-p <port>]
+      god -v
+      god -V (must be run as root to be accurate on Linux)
 
-  Commands:
-    start <task or group name>         start task or group
-    restart <task or group name>       restart task or group
-    stop <task or group name>          stop task or group
-    monitor <task or group name>       monitor task or group
-    unmonitor <task or group name>     unmonitor task or group
-    load <file>                        load a config into a running god
-    log <task name>                    show realtime log for given task
-    status                             show status of each task
-    quit                               stop god
-    terminate                          stop god and all tasks
+    Commands:
+      start <task or group name>         start task or group
+      restart <task or group name>       restart task or group
+      stop <task or group name>          stop task or group
+      monitor <task or group name>       monitor task or group
+      unmonitor <task or group name>     unmonitor task or group
+      load <file>                        load a config into a running god
+      log <task name>                    show realtime log for given task
+      status                             show status of each task
+      quit                               stop god
+      terminate                          stop god and all tasks
 
-  Options:
-EOF
+    Options:
+  EOF
 
-  opts.on("-cCONFIG", "--config-file CONFIG", "Configuration file") do |x|
-    options[:config] = x
-  end
-  
-  opts.on("-pPORT", "--port PORT", "Communications port (default 17165)") do |x|
-    options[:port] = x
-  end
-  
-  opts.on("-b", "--auto-bind", "Auto-bind to an unused port number") do
-    options[:port] = "0"
-  end
-  
-  opts.on("-PFILE", "--pid FILE", "Where to write the PID file") do |x|
-    options[:pid] = x
-  end
-  
-  opts.on("-lFILE", "--log FILE", "Where to write the log file") do |x|
-    options[:log] = x
-  end
-  
-  opts.on("-D", "--no-daemonize", "Don't daemonize") do
-    options[:daemonize] = false
-  end
-  
-  opts.on("-v", "--version", "Print the version number and exit") do
-    options[:version] = true
-  end
-  
-  opts.on("-V", "Print extended version and build information") do
-    options[:info] = true
-  end
-end
-
-opts.parse!
-
-if options[:version]
-  require 'god'
-  
-  # print version
-  puts "Version #{God::VERSION}"
-  exit!(0)
-elsif options[:info]
-  require 'god'
-  
-  puts "Version: #{God::VERSION}"
-  puts "Polls: enabled"
-  puts "Events: " + God::EventHandler.event_system
-  
-  exit!(0)
-elsif command = ARGV[0]
-  require 'god'
-  
-  # a command was specified
-  
-  # connect to remote drb
-  DRb.start_service
-  server = DRbObject.new nil, "druby://127.0.0.1:#{options[:port]}"
-  
-  begin
-    server.ping
-  rescue DRb::DRbConnError
-    puts "The server is not available (or you do not have permissions to access it)"
-    exit!
-  rescue => e
-    puts e.message
-    puts e.backtrace.join("\n")
-    exit!
-  end
-  
-  if command == 'load'
-    file = ARGV[1]
-    
-    puts "Sending '#{command}' command"
-    
-    code = File.read(file)
-    
-    watches = server.running_load(code)
-    
-    # output response
-    puts 'The following watches were affected:'
-    watches.each do |w|
-      puts '  ' + w.name
+    opts.on("-cCONFIG", "--config-file CONFIG", "Configuration file") do |x|
+      options[:config] = x
     end
-  elsif command == 'status'
+  
+    opts.on("-pPORT", "--port PORT", "Communications port (default 17165)") do |x|
+      options[:port] = x
+    end
+  
+    opts.on("-b", "--auto-bind", "Auto-bind to an unused port number") do
+      options[:port] = "0"
+    end
+  
+    opts.on("-PFILE", "--pid FILE", "Where to write the PID file") do |x|
+      options[:pid] = x
+    end
+  
+    opts.on("-lFILE", "--log FILE", "Where to write the log file") do |x|
+      options[:log] = x
+    end
+  
+    opts.on("-D", "--no-daemonize", "Don't daemonize") do
+      options[:daemonize] = false
+    end
+  
+    opts.on("-v", "--version", "Print the version number and exit") do
+      options[:version] = true
+    end
+  
+    opts.on("-V", "Print extended version and build information") do
+      options[:info] = true
+    end
+  end
+
+  opts.parse!
+
+  if options[:version]
+    require 'god'
+  
+    # print version
+    puts "Version #{God::VERSION}"
+    exit!(0)
+  elsif options[:info]
+    require 'god'
+  
+    puts "Version: #{God::VERSION}"
+    puts "Polls: enabled"
+    puts "Events: " + God::EventHandler.event_system
+  
+    exit!(0)
+  elsif command = ARGV[0]
+    require 'god'
+  
+    # a command was specified
+  
+    # connect to remote drb
+    DRb.start_service
+    server = DRbObject.new nil, "druby://127.0.0.1:#{options[:port]}"
+  
     begin
-      watches = server.status
-      watches.keys.sort.each do |name|
-        state = watches[name][:state]
-        puts "#{name}: #{state}"
-      end
+      server.ping
+    rescue DRb::DRbConnError
+      puts "The server is not available (or you do not have permissions to access it)"
+      exit!
     rescue => e
       puts e.message
       puts e.backtrace.join("\n")
-    end
-  elsif command == 'log'
-    begin
-      Signal.trap('INT') { exit!(0) }
-      name = ARGV[1]
-      t = Time.at(0)
-      loop do
-        print server.running_log(name, t)
-        t = Time.now
-        sleep 1
-      end
-    rescue God::NoSuchWatchError
-      puts "No such watch"
-    rescue DRb::DRbConnError
-      puts "The server went away"
-    rescue => e
-      puts e.message
-      puts e.backtrace.join("\n")
-    end
-  elsif command == 'quit'
-    begin
-      server.terminate
-      abort 'Could not stop god'
-    rescue DRb::DRbConnError
-      puts 'Stopped god'
-    end
-  elsif command == 'terminate'
-    begin
-      t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
-      if server.stop_all
-        t.kill; STDOUT.puts
-        puts 'Stopped all watches'
-      else
-        t.kill; STDOUT.puts
-        puts 'Could not stop all watches within 10 seconds'
-      end
-    rescue => e
-      puts e.message
-      puts e.backtrace.join("\n")
+      exit!
     end
     
-    begin
-      server.terminate
-      abort 'Could not stop god'
-    rescue DRb::DRbConnError
-      puts 'Stopped god'
-    end
-  else
-    # get the name of the watch/group
-    name = ARGV[1]
-    
-    begin
+    if command == 'load'
+      file = ARGV[1]
+      
       puts "Sending '#{command}' command"
       
-      t = Thread.new { loop { sleep(1); STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+      unless File.exist?(file)
+        abort "File not found: #{file}"
+      end
       
-      # send command
-      watches = server.control(name, command)
+      watches = server.running_load(File.read(file), File.expand_path(file))
       
       # output response
-      t.kill; STDOUT.puts
       puts 'The following watches were affected:'
       watches.each do |w|
         puts '  ' + w.name
       end
-    rescue God::InvalidCommandError
-      t.kill rescue nil; STDOUT.puts
-      abort "Command '#{command}' is not valid. Run 'god --help' for usage"
-    rescue => e
-      puts e.message
-      puts e.backtrace.join("\n")
-    end
-  end
-  
-  exit!(0)
-elsif options[:config]
-  # start god
-  if !options[:daemonize]
-    require 'god'
-    
-    if options[:port]
-      God.port = options[:port]
-    end
-    
-    begin
-      load File.expand_path(options[:config])
-    rescue => e
-      puts e.message
-      puts e.backtrace.join("\n")
-      abort "There was an error in your configuration file (see above)"
-    end
-  else
-    # trap and ignore SIGHUP
-    Signal.trap('HUP') {}
-        
-    pid = fork do
+    elsif command == 'status'
       begin
-        require 'god'
-        
-        log_file = options[:log] || "/dev/null"
-        
-        unless God::EventHandler.loaded?
-          puts
-          puts "***********************************************************************"
-          puts "*"
-          puts "* Event conditions are not available for your installation of god."
-          puts "* You may still use and write custom conditions using the poll system"
-          puts "*"
-          puts "***********************************************************************"
-          puts
+        watches = server.status
+        watches.keys.sort.each do |name|
+          state = watches[name][:state]
+          puts "#{name}: #{state}"
+        end
+      rescue => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+    elsif command == 'log'
+      begin
+        Signal.trap('INT') { exit!(0) }
+        name = ARGV[1]
+        t = Time.at(0)
+        loop do
+          print server.running_log(name, t)
+          t = Time.now
+          sleep 1
+        end
+      rescue God::NoSuchWatchError
+        puts "No such watch"
+      rescue DRb::DRbConnError
+        puts "The server went away"
+      rescue => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+    elsif command == 'quit'
+      begin
+        server.terminate
+        abort 'Could not stop god'
+      rescue DRb::DRbConnError
+        puts 'Stopped god'
+      end
+    elsif command == 'terminate'
+      begin
+        t = Thread.new { loop { STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+        if server.stop_all
+          t.kill; STDOUT.puts
+          puts 'Stopped all watches'
+        else
+          t.kill; STDOUT.puts
+          puts 'Could not stop all watches within 10 seconds'
+        end
+      rescue => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+    
+      begin
+        server.terminate
+        abort 'Could not stop god'
+      rescue DRb::DRbConnError
+        puts 'Stopped god'
+      end
+    else
+      # get the name of the watch/group
+      name = ARGV[1]
+    
+      begin
+        puts "Sending '#{command}' command"
+      
+        t = Thread.new { loop { sleep(1); STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+      
+        # send command
+        watches = server.control(name, command)
+      
+        # output response
+        t.kill; STDOUT.puts
+        puts 'The following watches were affected:'
+        watches.each do |w|
+          puts '  ' + w.name
+        end
+      rescue God::InvalidCommandError
+        t.kill rescue nil; STDOUT.puts
+        abort "Command '#{command}' is not valid. Run 'god --help' for usage"
+      rescue => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+    end
+  
+    exit!(0)
+  else
+    # start god
+    if !options[:daemonize]
+      require 'god'
+      
+      if options[:port]
+        God.port = options[:port]
+      end
+      
+      if options[:config]
+        unless File.exist?(options[:config])
+          abort "File not found: #{options[:config]}"
         end
         
-        # set port if requested
-        if options[:port]
-          God.port = options[:port]
-        end
-        
-        # load config
         begin
           load File.expand_path(options[:config])
         rescue => e
@@ -253,26 +227,72 @@ elsif options[:config]
           puts e.backtrace.join("\n")
           abort "There was an error in your configuration file (see above)"
         end
-        
-        # reset file descriptors
-        STDIN.reopen "/dev/null"
-        STDOUT.reopen(log_file, "a")
-        STDERR.reopen STDOUT
-      rescue => e
-        puts e.message
-        puts e.backtrace.join("\n")
-        abort "There was a fatal system error while starting god (see above)"
       end
+    else
+      # trap and ignore SIGHUP
+      Signal.trap('HUP') {}
+      
+      pid = fork do
+        begin
+          require 'god'
+          
+          log_file = options[:log] || "/dev/null"
+          
+          unless God::EventHandler.loaded?
+            puts
+            puts "***********************************************************************"
+            puts "*"
+            puts "* Event conditions are not available for your installation of god."
+            puts "* You may still use and write custom conditions using the poll system"
+            puts "*"
+            puts "***********************************************************************"
+            puts
+          end
+          
+          # set port if requested
+          if options[:port]
+            God.port = options[:port]
+          end
+          
+          # load config
+          if options[:config]
+            unless File.exist?(options[:config])
+              abort "File not found: #{options[:config]}"
+            end
+            
+            begin
+              load File.expand_path(options[:config])
+            rescue => e
+              puts e.message
+              puts e.backtrace.join("\n")
+              abort "There was an error in your configuration file (see above)"
+            end
+          end
+          
+          # reset file descriptors
+          STDIN.reopen "/dev/null"
+          STDOUT.reopen(log_file, "a")
+          STDERR.reopen STDOUT
+        rescue => e
+          puts e.message
+          puts e.backtrace.join("\n")
+          abort "There was a fatal system error while starting god (see above)"
+        end
+      end
+      
+      if options[:pid]
+        File.open(options[:pid], 'w') { |f| f.write pid }
+      end
+    
+      ::Process.detach pid
+    
+      exit!(0)
     end
-    
-    if options[:pid]
-      File.open(options[:pid], 'w') { |f| f.write pid }
-    end
-    
-    ::Process.detach pid
-    
-    exit!(0)
+  # else
+  #   puts opts.help
   end
-else
-  puts opts.help
+rescue Exception => e
+  puts e.message
+  puts e.backtrace.join("\n")
+  exit!(1)
 end

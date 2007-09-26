@@ -12,12 +12,12 @@
   * Report errors during god startup instead of failing silently
   * Make transition block optional (default to Always condition returning true)
   * Better usage info for `god --help`
-  * Report usage when just `god` is run
   * Explain what's going on when attempting to rebind to an in-use port
   * Add -b option to god binary to auto-bind to an unused port
   * Add `god quit` to stop god without stopping any tasks
   * Make self-daemonized Watch commands synchronous (as they should be)
   * Allow self-daemonized Watches to specify a log (could be useful)
+  * Check for existence of config file if specified
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
   * HttpResponseCode < PollCondition - trigger on http response code or timeout (thx scott becker)

@@ -113,6 +113,9 @@ module Kernel
   def abort(text)
     raise SystemExit
   end
+  def exit!(code)
+    raise SystemExit
+  end
 end
 
 module Test::Unit::Assertions

@@ -53,6 +53,13 @@ require 'god/sugar'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
+GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
+
+CONFIG_FILE = ''
+def __CONFIG__
+  CONFIG_FILE
+end
+
 begin
   Syslog.open('god')
 rescue RuntimeError
@@ -309,8 +316,9 @@ module God
     LOG.watch_log_since(watch_name, since)
   end
   
-  def self.running_load(code)
-    eval(code)
+  def self.running_load(code, filename)
+    CONFIG_FILE.replace(filename)
+    eval(code, nil, filename)
     self.pending_watches.each { |w| w.monitor if w.autostart? }
     watches = self.pending_watches.dup
     self.pending_watches.clear
