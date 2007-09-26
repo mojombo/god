@@ -13,6 +13,12 @@ class TestContact < Test::Unit::TestCase
     end
   end
   
+  def test_generate_should_abort_on_invalid_contact
+    assert_abort do
+      Contact.generate(:invalid_contact)
+    end
+  end
+  
   # normalize
   
   def test_normalize_should_accept_a_string

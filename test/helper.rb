@@ -63,6 +63,9 @@ module God
   module Contacts
     class FakeContact < Contact
     end
+    
+    class InvalidContact
+    end
   end
   
   class << self
