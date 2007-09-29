@@ -60,7 +60,7 @@ God.watch do |w|
       c.host = 'localhost'
       c.port = '3000'
       c.path = '/'
-      c.code_is_not = 201
+      c.code_is_not = 200
       c.timeout = 10.seconds
       c.times = [3, 5]
     end

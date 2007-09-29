@@ -31,7 +31,7 @@ module God
       
       begin
         @drb ||= DRb.start_service("druby://#{@host}:#{@port}", self)
-        puts "Started on #{DRb.uri}"
+        LOG.log(nil, :info, "Started on #{DRb.uri}")
       rescue Errno::EADDRINUSE
         DRb.start_service
         server = DRbObject.new nil, "druby://127.0.0.1:#{@port}"

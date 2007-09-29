@@ -233,6 +233,13 @@ module God
 
     # register watch
     t.register!
+    
+    # log
+    if God.running
+      LOG.log(t, :info, "#{t.name} Reloaded config")
+    else
+      LOG.log(t, :info, "#{t.name} Loaded config")
+    end
   end
   
   def self.unwatch(watch)
