@@ -18,6 +18,8 @@
   * Make self-daemonized Watch commands synchronous (as they should be)
   * Allow self-daemonized Watches to specify a log (could be useful)
   * Check for existence of config file if specified
+  * Robustify `god load` and report errors back to the command issuer
+  * Warn when `god load` tries to set global options
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
   * HttpResponseCode < PollCondition - trigger on http response code or timeout (thx scott becker)

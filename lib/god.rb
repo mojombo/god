@@ -100,6 +100,29 @@ module Kernel
   end
 end
 
+class Module
+  def safe_attr_accessor(*args)
+    args.each do |arg|
+      define_method((arg.to_s + "=").intern) do |other|
+        if !self.running && self.inited
+          abort "God.#{arg} must be set before any Tasks are defined"
+        end
+        
+        if self.running && self.inited
+          LOG.log(nil, :warn, "God.#{arg} can't be set while god is running")
+          return
+        end
+        
+        instance_variable_set(('@' + arg.to_s).intern, other)
+      end
+      
+      define_method(arg) do
+        instance_variable_get(('@' + arg.to_s).intern)
+      end
+    end
+  end
+end
+
 module God
   VERSION = '0.5.0'
   
@@ -110,11 +133,11 @@ module God
   
   class << self
     # user configurable
-    attr_accessor :host,
-                  :port,
-                  :allow,
-                  :log_buffer_size,
-                  :pid_file_directory
+    safe_attr_accessor :host,
+                       :port,
+                       :allow,
+                       :log_buffer_size,
+                       :pid_file_directory
     
     # internal
     attr_accessor :inited,
@@ -127,14 +150,8 @@ module God
                   :contact_groups
   end
   
+  # deprecated
   def self.init
-    if self.inited
-      abort "God.init must be called before any Watches"
-    end
-    
-    self.internal_init
-    
-    # yield to the config file
     yield self if block_given?
   end
   
@@ -318,7 +335,7 @@ module God
   end
   
   def self.terminate
-    exit
+    exit!(0)
   end
   
   def self.status

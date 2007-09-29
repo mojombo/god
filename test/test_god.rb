@@ -12,25 +12,27 @@ class TestGod < Test::Unit::TestCase
     Timer.get.timer.kill
   end
   
-  # init
+  # internal_init
   
   def test_init_should_initialize_watches_to_empty_array
-    God.init { }
+    God.internal_init { }
     assert_equal Hash.new, God.watches
   end
+  
+  # init
   
   def test_init_should_abort_if_called_after_watch
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     assert_abort do
-      God.init { }
+      God.init { |g| g.pid_file_directory = 'foo' }
     end
   end
   
   # pid_file_directory
   
   def test_pid_file_directory_should_return_default_if_not_set_explicitly
-    God.init
+    God.internal_init
     assert_equal '/var/run/god', God.pid_file_directory
   end
   
@@ -279,6 +281,7 @@ class TestGod < Test::Unit::TestCase
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
+    w.state = :up
     w.expects(:unmonitor).returns(w)
     w.expects(:action).with(:stop)
     God.control('foo', 'stop')
@@ -288,6 +291,7 @@ class TestGod < Test::Unit::TestCase
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
+    w.state = :up
     w.expects(:unmonitor).returns(w)
     God.control('foo', 'unmonitor')
   end
@@ -324,7 +328,7 @@ class TestGod < Test::Unit::TestCase
   # terminate
   
   def test_terminate_should_exit
-    God.expects(:exit)
+    God.expects(:exit!)
     God.terminate
   end
   
