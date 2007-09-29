@@ -86,10 +86,10 @@ God::EventHandler.load
 module Kernel
   alias_method :abort_orig, :abort
   
-  def abort(text = '')
+  def abort(text = nil)
     $run = false
-    LOG.log(nil, :error, text) unless text.empty?
-    abort_orig(text)
+    LOG.log(nil, :error, text) if text
+    text ? abort_orig(text) : exit(1)
   end
   
   alias_method :exit_orig, :exit
@@ -235,9 +235,9 @@ module God
     t.register!
     
     # log
-    if God.running
+    if self.running && existing_watch
       LOG.log(t, :info, "#{t.name} Reloaded config")
-    else
+    elsif self.running
       LOG.log(t, :info, "#{t.name} Loaded config")
     end
   end
