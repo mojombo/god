@@ -68,14 +68,6 @@ module God
     end
   end
   
-  class << self
-    alias :at_exit_orig :at_exit
-  end
-  
-  def self.at_exit
-    # disable at_exit
-  end
-  
   def self.reset
     self.watches = nil
     self.groups = nil
@@ -113,7 +105,7 @@ module Kernel
   def abort(text)
     raise SystemExit
   end
-  def exit!(code)
+  def exit(code)
     raise SystemExit
   end
 end
@@ -121,9 +113,7 @@ end
 module Test::Unit::Assertions
   def assert_abort
     assert_raise SystemExit do
-      no_stderr do
-        yield
-      end
+      yield
     end
   end
 end

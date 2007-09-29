@@ -398,7 +398,7 @@ module God
     
     # start the timer system
     Timer.get
-
+    
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }
     

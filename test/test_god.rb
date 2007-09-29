@@ -324,7 +324,7 @@ class TestGod < Test::Unit::TestCase
   # terminate
   
   def test_terminate_should_exit
-    God.expects(:exit!).with(0)
+    God.expects(:exit)
     God.terminate
   end
   
@@ -417,7 +417,7 @@ class TestGod < Test::Unit::TestCase
     
     w = nil
     no_stdout do
-      w = God.running_load(code, '/foo/bar.god')
+      w, e = *God.running_load(code, '/foo/bar.god')
     end
     assert_equal 1, w.size
     assert_equal 'foo', w.first.name
@@ -497,7 +497,7 @@ class TestGod < Test::Unit::TestCase
   
   def test_at_exit_should_call_start
     God.expects(:start).once
-    God.at_exit_orig
+    God.at_exit
   end
 end
 

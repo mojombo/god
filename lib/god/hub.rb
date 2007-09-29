@@ -58,7 +58,7 @@ module God
               messages = self.log(watch, metric, condition, result)
               
               # notify
-              if condition.notify
+              if condition.notify && self.trigger?(metric, result)
                 self.notify(condition, messages.last)
               end
               
@@ -107,19 +107,19 @@ module God
       Thread.new do
         begin
           metric = self.directory[condition]
-        
+          
           unless metric.nil?
             watch = metric.watch
-          
+            
             watch.mutex.synchronize do
               # log
               messages = self.log(watch, metric, condition, true)
-            
+              
               # notify
-              if condition.notify
+              if condition.notify && self.trigger?(metric, true)
                 self.notify(condition, messages.last)
               end
-            
+              
               # get the destination
               dest = 
               if condition.transition
@@ -129,7 +129,7 @@ module God
                 # regular
                 metric.destination && metric.destination[true]
               end
-            
+              
               if dest
                 watch.move(dest)
               end
@@ -146,9 +146,13 @@ module God
     
     # helpers
     
+    def self.trigger?(metric, result)
+      (metric.destination && metric.destination.keys.size == 2) || result == true
+    end
+    
     def self.log(watch, metric, condition, result)
       status = 
-      if (metric.destination && metric.destination.keys.size == 2) || result == true
+      if self.trigger?(metric, result)
         "[trigger]"
       else
         "[ok]"

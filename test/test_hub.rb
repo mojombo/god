@@ -157,6 +157,40 @@ class TestHub < Test::Unit::TestCase
     end
   end
   
+  def test_handle_poll_should_notify_if_triggering
+    c = Conditions::FakePollCondition.new
+    c.interval = 10
+    c.notify = 'tom'
+    
+    m = Metric.new(@watch, {true => :up})
+    Hub.attach(c, m)
+    
+    c.expects(:test).returns(true)
+    Hub.expects(:notify)
+    
+    no_stdout do
+      t = Hub.handle_poll(c)
+      t.join
+    end
+  end
+  
+  def test_handle_poll_should_not_notify_if_not_triggering
+    c = Conditions::FakePollCondition.new
+    c.interval = 10
+    c.notify = 'tom'
+    
+    m = Metric.new(@watch, {true => :up})
+    Hub.attach(c, m)
+    
+    c.expects(:test).returns(false)
+    Hub.expects(:notify).never
+    
+    no_stdout do
+      t = Hub.handle_poll(c)
+      t.join
+    end
+  end
+  
   # handle_event
   
   def test_handle_event_should_move
@@ -166,6 +200,35 @@ class TestHub < Test::Unit::TestCase
     Hub.attach(c, m)
     
     @watch.expects(:move).with(:up)
+    
+    no_stdout do
+      t = Hub.handle_event(c)
+      t.join
+    end
+  end
+  
+  def test_handle_event_should_notify_if_triggering
+    c = Conditions::FakeEventCondition.new
+    c.notify = 'tom'
+    
+    m = Metric.new(@watch, {true => :up})
+    Hub.attach(c, m)
+    
+    Hub.expects(:notify)
+    
+    no_stdout do
+      t = Hub.handle_event(c)
+      t.join
+    end
+  end
+  
+  def test_handle_event_should_not_notify_if_no_notify_set
+    c = Conditions::FakeEventCondition.new
+    
+    m = Metric.new(@watch, {true => :up})
+    Hub.attach(c, m)
+    
+    Hub.expects(:notify).never
     
     no_stdout do
       t = Hub.handle_event(c)
