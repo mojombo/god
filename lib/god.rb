@@ -53,6 +53,9 @@ require 'god/sugar'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
+LOG = God::Logger.new
+LOG.datetime_format = "%Y-%m-%d %H:%M:%S "
+
 GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
 
 CONFIG_FILE = ''
@@ -66,22 +69,40 @@ rescue RuntimeError
   Syslog.reopen('god')
 end
 
+def with_stdout_captured
+  old_stdout = $stdout
+  out = StringIO.new
+  $stdout = out
+  begin
+    yield
+  ensure
+    $stdout = old_stdout
+  end
+  out.string
+end
+
 God::EventHandler.load
 
 module Kernel
-  # Override abort to exit without executing the at_exit hook
-  def abort(text)
-    puts text
-    exit!
+  alias_method :abort_orig, :abort
+  
+  def abort(text = '')
+    $run = false
+    LOG.log(nil, :error, text) unless text.empty?
+    abort_orig(text)
+  end
+  
+  alias_method :exit_orig, :exit
+  
+  def exit(code = 0)
+    $run = false
+    exit_orig(code)
   end
 end
 
 module God
   VERSION = '0.5.0'
   
-  LOG = Logger.new
-  LOG.datetime_format = "%Y-%m-%d %H:%M:%S "
-    
   LOG_BUFFER_SIZE_DEFAULT = 1000
   PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
   DRB_PORT_DEFAULT = 17165
@@ -297,7 +318,7 @@ module God
   end
   
   def self.terminate
-    exit!(0)
+    exit
   end
   
   def self.status
@@ -317,12 +338,28 @@ module God
   end
   
   def self.running_load(code, filename)
-    CONFIG_FILE.replace(filename)
-    eval(code, nil, filename)
-    self.pending_watches.each { |w| w.monitor if w.autostart? }
-    watches = self.pending_watches.dup
-    self.pending_watches.clear
-    watches
+    errors = ""
+    watches = []
+    
+    begin
+      LOG.start_capture
+      
+      CONFIG_FILE.replace(filename)
+      eval(code, nil, filename)
+      self.pending_watches.each { |w| w.monitor if w.autostart? }
+      watches = self.pending_watches.dup
+      self.pending_watches.clear
+    rescue Exception => e
+      # don't ever let running_load take down god
+      errors << LOG.finish_capture
+      
+      unless e.instance_of?(SystemExit)
+        errors << e.message << "\n"
+        errors << e.backtrace.join("\n")
+      end
+    end
+    
+    [watches, errors]
   end
   
   def self.load(glob)
@@ -381,5 +418,5 @@ module God
 end
 
 at_exit do
-  God.at_exit
+  God.at_exit if $run
 end

@@ -60,6 +60,18 @@ module God
         end
       end
       
+      # pid dir must exist if specified
+      if self.pid_file && !File.exist?(File.dirname(self.pid_file))
+        valid = false
+        LOG.log(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' does not exist")
+      end
+      
+      # log dir must exist if specified
+      if self.log && !File.exist?(File.dirname(self.log))
+        valid = false
+        LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' does not exist")
+      end
+      
       valid
     end
     

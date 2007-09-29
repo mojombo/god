@@ -9,8 +9,8 @@ RAILS_ROOT = "/Users/tom/dev/git/helloworld"
 God.watch do |w|
   w.name = "local-3000"
   w.interval = 5.seconds
-  w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT} -d"
-  w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
+  w.start = "mongrel_rails start -P #{RAILS_ROOT}/log/mongrel.pid -c #{RAILS_ROOT} -d"
+  w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.pid -c #{RAILS_ROOT}"
   w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
   w.log = File.join(RAILS_ROOT, "log/commands.log")
   

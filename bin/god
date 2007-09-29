@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+STDOUT.sync = true
+
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'rubygems'
@@ -76,7 +78,7 @@ begin
   
     # print version
     puts "Version #{God::VERSION}"
-    exit!(0)
+    exit
   elsif options[:info]
     require 'god'
   
@@ -84,7 +86,7 @@ begin
     puts "Polls: enabled"
     puts "Events: " + God::EventHandler.event_system
   
-    exit!(0)
+    exit
   elsif command = ARGV[0]
     require 'god'
   
@@ -98,11 +100,11 @@ begin
       server.ping
     rescue DRb::DRbConnError
       puts "The server is not available (or you do not have permissions to access it)"
-      exit!
+      abort
     rescue => e
       puts e.message
       puts e.backtrace.join("\n")
-      exit!
+      abort
     end
     
     if command == 'load'
@@ -114,13 +116,17 @@ begin
         abort "File not found: #{file}"
       end
       
-      watches = server.running_load(File.read(file), File.expand_path(file))
+      watches, errors = *server.running_load(File.read(file), File.expand_path(file))
       
       # output response
-      puts 'The following watches were affected:'
-      watches.each do |w|
-        puts '  ' + w.name
+      unless watches.empty?
+        puts 'The following watches were affected:'
+        watches.each do |w|
+          puts '  ' + w.name
+        end
       end
+      
+      puts errors unless errors.empty?
     elsif command == 'status'
       begin
         watches = server.status
@@ -134,7 +140,7 @@ begin
       end
     elsif command == 'log'
       begin
-        Signal.trap('INT') { exit!(0) }
+        Signal.trap('INT') { exit }
         name = ARGV[1]
         t = Time.at(0)
         loop do
@@ -205,9 +211,11 @@ begin
       end
     end
   
-    exit!(0)
+    exit
   else
     # start god
+    $run = true
+    
     if !options[:daemonize]
       require 'god'
       
@@ -286,13 +294,15 @@ begin
     
       ::Process.detach pid
     
-      exit!(0)
+      exit
     end
   # else
   #   puts opts.help
   end
 rescue Exception => e
-  puts e.message
-  puts e.backtrace.join("\n")
-  exit!(1)
+  unless e.instance_of?(SystemExit)
+    puts e.message
+    puts e.backtrace.join("\n")
+  end
+  abort
 end

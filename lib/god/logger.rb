@@ -4,21 +4,37 @@ module God
     attr_accessor :logs
     
     def initialize
-      super(STDOUT)
+      super($stdout)
       self.logs = {}
       @mutex = Mutex.new
+      @capture = nil
+    end
+    
+    def start_capture
+      @mutex.synchronize do
+        @capture = StringIO.new
+      end
+    end
+    
+    def finish_capture
+      @mutex.synchronize do
+        cap = @capture.string
+        @capture = nil
+        cap
+      end
     end
     
     def log(watch, level, text)
       # initialize watch log if necessary
-      self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT)
+      self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
       
-      # push onto timeline for the given watch
+      # push onto capture and timeline for the given watch
       buf = StringIO.new
       templog = ::Logger.new(buf)
       templog.send(level, text)
       @mutex.synchronize do
-        self.logs[watch.name] << [Time.now, buf.string]
+        @capture.puts(buf.string) if @capture
+        self.logs[watch.name] << [Time.now, buf.string] if watch
       end
       templog.close
       

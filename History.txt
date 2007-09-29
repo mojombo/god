@@ -28,6 +28,7 @@
   * Fix -p option not working for god binary
   * Fix God.init not accepting block (thx _eric)
   * Fix SIGHUP ignore (thx _eric)
+  * Fix error reporting on `god --help` (don't error report a normal SystemExit)
 
 == 0.4.3 / 2007-09-10
 * Bug Fixes
