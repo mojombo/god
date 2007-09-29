@@ -296,13 +296,10 @@ begin
     
       exit
     end
-  # else
-  #   puts opts.help
   end
 rescue Exception => e
   unless e.instance_of?(SystemExit)
     puts e.message
     puts e.backtrace.join("\n")
   end
-  abort
 end

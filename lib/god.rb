@@ -285,13 +285,13 @@ module God
     # do the command
     case command
       when "start", "monitor"
-        watches.each { |w| jobs << Thread.new { w.monitor } }
+        watches.each { |w| jobs << Thread.new { w.monitor if w.state != :up } }
       when "restart"
         watches.each { |w| jobs << Thread.new { w.move(:restart) } }
       when "stop"
-        watches.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) } }
+        watches.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) if w.state != :unmonitored } }
       when "unmonitor"
-        watches.each { |w| jobs << Thread.new { w.unmonitor } }
+        watches.each { |w| jobs << Thread.new { w.unmonitor if w.state != :unmonitored } }
       else
         raise InvalidCommandError.new
     end
