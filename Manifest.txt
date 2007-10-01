@@ -55,6 +55,7 @@ test/configs/contact/contact.god
 test/configs/contact/simple_server.rb
 test/configs/daemon_events/daemon_events.god
 test/configs/daemon_events/simple_server.rb
+test/configs/daemon_events/simple_server_stop.rb
 test/configs/daemon_polls/daemon_polls.god
 test/configs/daemon_polls/simple_server.rb
 test/configs/degrading_lambda/degrading_lambda.god

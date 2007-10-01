@@ -104,6 +104,21 @@ module God
       call_action(:restart)
     end
     
+    def spawn(command)
+      fork do
+        ::Process.setsid
+        ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
+        ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
+        Dir.chdir "/"
+        $0 = command
+        STDIN.reopen "/dev/null"
+        STDOUT.reopen self.log, "a"
+        STDERR.reopen STDOUT
+        
+        exec command unless command.empty?
+      end
+    end
+    
     def call_action(action)
       command = send(action)
       
@@ -114,7 +129,7 @@ module God
           LOG.log(self, :info, "#{self.name} stop: default lambda killer")
           
           ::Process.kill('HUP', pid) rescue nil
-
+          
           # Poll to see if it's dead
           5.times do
             begin
@@ -123,60 +138,45 @@ module God
               # It died. Good.
               return
             end
-
+            
             sleep 1
           end
-
+          
           ::Process.kill('KILL', pid) rescue nil
         end
       end
             
       if command.kind_of?(String)
-        # string command
+        pid = nil
+        
         if @tracking_pid
-          # fork/exec to setuid/gid
+          # double fork god-daemonized processes
+          # we don't want to wait for them to finish
           r, w = IO.pipe
           opid = fork do
             STDOUT.reopen(w)
             r.close
-            pid = fork do
-              ::Process.setsid
-              ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-              ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
-              Dir.chdir "/"
-              $0 = command
-              STDIN.reopen "/dev/null"
-              STDOUT.reopen self.log, "a"
-              STDERR.reopen STDOUT
-              
-              exec command unless command.empty?
-            end
+            pid = self.spawn(command)
             puts pid.to_s
           end
           
           ::Process.waitpid(opid, 0)
           w.close
           pid = r.gets.chomp
-          
-          if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
-            File.open(default_pid_file, 'w') do |f|
-              f.write pid
-            end
-            
-            @tracking_pid = true
-            @pid_file = default_pid_file
-          end
         else
-          orig_stdout = STDOUT.dup
-          orig_stderr = STDERR.dup
+          # single fork self-daemonizing processes
+          # we want to wait for them to finish
+          pid = self.spawn(command)
+          ::Process.waitpid(pid, 0)
+        end
+        
+        if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
+          File.open(default_pid_file, 'w') do |f|
+            f.write pid
+          end
           
-          STDOUT.reopen self.log, "a"
-          STDERR.reopen STDOUT
-          
-          system(command)
-          
-          STDOUT.reopen orig_stdout
-          STDERR.reopen orig_stderr
+          @tracking_pid = true
+          @pid_file = default_pid_file
         end
       elsif command.kind_of?(Proc)
         # lambda command

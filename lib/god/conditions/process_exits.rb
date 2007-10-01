@@ -25,8 +25,12 @@ module God
       end
       
       def deregister
-        pid = File.read(self.watch.pid_file).strip.to_i
-        EventHandler.deregister(pid, :proc_exit)
+        if File.exist?(self.watch.pid_file)
+          pid = File.read(self.watch.pid_file).strip.to_i
+          EventHandler.deregister(pid, :proc_exit)
+        else
+          LOG.log(self.watch, :error, "#{self.watch.name} could not deregister: no such PID file #{self.watch.pid_file} (#{self.base_name})")
+        end
       end
     end
     
