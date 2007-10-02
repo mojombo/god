@@ -3,28 +3,32 @@ module God
   class Trigger
     
     class << self
-      attr_accessor :triggers
+      attr_accessor :triggers # {task.name => condition}
     end
     
     # init
-    self.triggers = []
+    self.triggers = {}
     @mutex = Mutex.new
     
     def self.register(condition)
       @mutex.synchronize do
-        self.triggers << condition
+        self.triggers[condition.watch.name] ||= []
+        self.triggers[condition.watch.name] << condition
       end
     end
     
     def self.deregister(condition)
       @mutex.synchronize do
-        self.triggers.delete(condition)
+        self.triggers[condition.watch.name].delete(condition)
+        self.triggers.delete(condition.watch.name) if self.triggers[condition.watch.name].empty?
       end
     end
     
-    def self.broadcast(message, payload)
+    def self.broadcast(task, message, payload)
+      return unless self.triggers[task.name]
+      
       @mutex.synchronize do
-        self.triggers.each do |t|
+        self.triggers[task.name].each do |t|
           t.process(message, payload)
         end
       end

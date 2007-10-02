@@ -161,6 +161,7 @@ class TestGod < Test::Unit::TestCase
   def test_unwatch_should_unmonitor_watch
     God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     w = God.watches['bar']
+    w.state = :up
     w.expects(:unmonitor)
     God.unwatch(w)
   end
@@ -424,7 +425,7 @@ class TestGod < Test::Unit::TestCase
       w, e = *God.running_load(code, '/foo/bar.god')
     end
     assert_equal 1, w.size
-    assert_equal 'foo', w.first.name
+    assert_equal 'foo', w.first
   end
   
   def test_running_load_should_clear_pending_watches

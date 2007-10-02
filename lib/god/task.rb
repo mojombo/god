@@ -162,7 +162,7 @@ module God
         self.state = to_state
         
         # trigger
-        Trigger.broadcast(:state_change, [from_state, orig_to_state])
+        Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
         
         # return self
         self
