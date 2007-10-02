@@ -4,7 +4,7 @@
 # Run with:
 # god -c /path/to/events.god
 
-RAILS_ROOT = "/Users/tom/dev/git/helloworld"
+RAILS_ROOT = ENV['GOD_TEST_RAILS_ROOT']
 
 God.watch do |w|
   w.name = "local-3000"
@@ -13,6 +13,7 @@ God.watch do |w|
   w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.pid -c #{RAILS_ROOT}"
   w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
   w.log = File.join(RAILS_ROOT, "log/commands.log")
+  w.autostart = false
   
   # clean pid files before start if necessary
   w.behavior(:clean_pid_file)
@@ -60,7 +61,7 @@ God.watch do |w|
       c.host = 'localhost'
       c.port = '3000'
       c.path = '/'
-      c.code_is_not = 200
+      c.code_is = 500
       c.timeout = 10.seconds
       c.times = [3, 5]
     end

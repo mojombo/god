@@ -143,6 +143,7 @@ module God
     attr_accessor :inited,
                   :running,
                   :pending_watches,
+                  :pending_watch_states,
                   :server,
                   :watches,
                   :groups,
@@ -163,6 +164,7 @@ module God
     self.watches = {}
     self.groups = {}
     self.pending_watches = []
+    self.pending_watch_states = {}
     self.contacts = {}
     self.contact_groups = {}
     
@@ -203,6 +205,7 @@ module God
     # prepare for the reload
     existing_watch = self.watches[t.name]
     if self.running && existing_watch
+      self.pending_watch_states[existing_watch.name] = existing_watch.state
       self.unwatch(existing_watch)
     end
     
@@ -244,7 +247,7 @@ module God
   
   def self.unwatch(watch)
     # unmonitor
-    watch.unmonitor
+    watch.unmonitor unless watch.state == :unmonitored
     
     # unregister
     watch.unregister!
@@ -322,7 +325,7 @@ module God
     
     jobs.each { |j| j.join }
     
-    watches
+    watches.map { |x| x.name }
   end
   
   def self.stop_all
@@ -370,9 +373,16 @@ module God
       
       CONFIG_FILE.replace(filename)
       eval(code, nil, filename)
-      self.pending_watches.each { |w| w.monitor if w.autostart? }
+      self.pending_watches.each do |w|
+        if previous_state = self.pending_watch_states[w.name]
+          w.monitor unless previous_state == :unmonitored
+        else
+          w.monitor if w.autostart?
+        end
+      end
       watches = self.pending_watches.dup
       self.pending_watches.clear
+      self.pending_watch_states.clear
     rescue Exception => e
       # don't ever let running_load take down god
       errors << LOG.finish_capture
@@ -383,7 +393,8 @@ module God
       end
     end
     
-    [watches, errors]
+    names = watches.map { |x| x.name }
+    [names, errors]
   end
   
   def self.load(glob)

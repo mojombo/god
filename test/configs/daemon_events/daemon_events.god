@@ -1,10 +1,12 @@
 God.watch do |w|
   w.name = "daemon-events"
   w.interval = 5.seconds
-  w.start = '/usr/local/bin/ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' start'
-  w.stop = '/usr/local/bin/ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server_stop.rb])
+  w.start = 'ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server.rb]) + ' start'
+  w.stop = 'ruby ' + File.join(File.dirname(__FILE__), *%w[simple_server_stop.rb])
   w.pid_file = '/var/run/daemon-events.pid'
   w.log = File.join(File.dirname(__FILE__), 'daemon_events.log')
+  w.uid = 'tom'
+  w.gid = 'tom'
   
   w.behavior(:clean_pid_file)
   

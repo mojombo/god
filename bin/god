@@ -107,18 +107,19 @@ begin
       file = ARGV[1]
       
       puts "Sending '#{command}' command"
+      puts
       
       unless File.exist?(file)
         abort "File not found: #{file}"
       end
       
-      watches, errors = *server.running_load(File.read(file), File.expand_path(file))
+      names, errors = *server.running_load(File.read(file), File.expand_path(file))
       
       # output response
-      unless watches.empty?
-        puts 'The following watches were affected:'
-        watches.each do |w|
-          puts '  ' + w.name
+      unless names.empty?
+        puts 'The following tasks were affected:'
+        names.each do |w|
+          puts '  ' + w
         end
       end
       
@@ -184,9 +185,13 @@ begin
         
         # output response
         t.kill; STDOUT.puts
-        puts 'The following watches were affected:'
-        watches.each do |w|
-          puts '  ' + w.name
+        unless watches.empty?
+          puts 'The following watches were affected:'
+          watches.each do |w|
+            puts '  ' + w
+          end
+        else
+          puts 'No matching task or group'
         end
       rescue God::InvalidCommandError
         t.kill rescue nil; STDOUT.puts
