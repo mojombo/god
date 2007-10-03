@@ -32,8 +32,11 @@ class TestConditionsTries < Test::Unit::TestCase
     assert @c.test
   end
   
+  # reset
+  
   def test_test_should_return_false_on_fourth_call_if_called_three_times_within_one_second
     3.times { @c.test }
+    @c.reset
     assert !@c.test
   end
 end

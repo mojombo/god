@@ -9,6 +9,10 @@ module God
       
     end
     
+    def reset
+      
+    end
+    
     # Override this method in your Configurable (optional)
     #
     # Called once during evaluation of the config file. Return true if valid, false otherwise

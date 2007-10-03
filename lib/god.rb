@@ -277,6 +277,12 @@ module God
     # call prepare on the contact
     c.prepare
     
+    # remove existing contacts of same name
+    existing_contact = self.contacts[c.name]
+    if self.running && existing_contact
+      self.uncontact(existing_contact)
+    end
+    
     # ensure the new contact has a unique name
     if self.contacts[c.name] || self.contact_groups[c.name]
       abort "Contact name '#{c.name}' already used for a Contact or Contact Group"
@@ -300,6 +306,13 @@ module God
     
       self.contact_groups[c.group] ||= []
       self.contact_groups[c.group] << c
+    end
+  end
+  
+  def self.uncontact(contact)
+    self.contacts.delete(contact.name)
+    if contact.group
+      self.contact_groups[contact.group].delete(contact)
     end
   end
     

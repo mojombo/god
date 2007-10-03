@@ -17,14 +17,18 @@ module God
         
         @timeline = Timeline.new(self.times[1])
       end
-    
+      
+      def reset
+        @timeline.clear
+      end
+      
       def valid?
         valid = true
         valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
         valid &= complain("Attribute 'above' must be specified", self) if self.above.nil?
         valid
       end
-    
+      
       def test
         return false unless File.exist?(self.watch.pid_file)
         
@@ -35,7 +39,6 @@ module God
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}kb" }.join(", ") + "]"
         
         if @timeline.select { |x| x > self.above }.size >= self.times.first
-          @timeline.clear
           self.info = "memory out of bounds #{history}"
           return true
         else

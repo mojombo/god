@@ -20,6 +20,7 @@
   * Check for existence of config file if specified
   * Robustify `god load` and report errors back to the command issuer
   * Warn when `god load` tries to set global options
+  * Add Configurable.clear method and make built-in conditions clear on entry
 * New Conditions
   * Flapping < TriggerCondition - trigger on state change
   * HttpResponseCode < PollCondition - trigger on http response code or timeout (thx scott becker)

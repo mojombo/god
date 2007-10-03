@@ -11,6 +11,7 @@ module God
     
     def self.attach(condition, metric)
       self.directory[condition] = metric
+      condition.reset
       
       case condition
         when PollCondition
@@ -195,20 +196,29 @@ module God
     
     def self.notify(condition, message)
       spec = Contact.normalize(condition.notify)
+      unmatched = []
       
       # resolve contacts
       resolved_contacts =
       spec[:contacts].inject([]) do |acc, contact_name_or_group|
-        acc += Array(God.contacts[contact_name_or_group] || God.contact_groups[contact_name_or_group])
+        cons = Array(God.contacts[contact_name_or_group] || God.contact_groups[contact_name_or_group])
+        unmatched << contact_name_or_group if cons.empty?
+        acc += cons
         acc
+      end
+      
+      # warn about unmatched contacts
+      unless unmatched.empty?
+        msg = "#{condition.watch.name} no matching contacts for '#{unmatched.join(", ")}'"
+        LOG.log(condition.watch, :warn, msg)
       end
       
       # notify each contact
       resolved_contacts.each do |c|
         c.notify(message, Time.now, spec[:priority], spec[:category])
-        
+      
         msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
-        
+      
         Syslog.debug(msg)
         LOG.log(condition.watch, :info, msg % [])
       end

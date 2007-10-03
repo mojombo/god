@@ -6,7 +6,7 @@
 
 RAILS_ROOT = ENV['GOD_TEST_RAILS_ROOT']
 
-%w{3000 3001 3002}.each do |port|
+%w{3002}.each do |port|
   God.watch do |w|
     w.name = "local-#{port}"
     w.interval = 5.seconds
@@ -34,6 +34,7 @@ RAILS_ROOT = ENV['GOD_TEST_RAILS_ROOT']
       # failsafe
       on.condition(:tries) do |c|
         c.times = 8
+        c.within = 2.minutes
         c.transition = :start
       end
     end

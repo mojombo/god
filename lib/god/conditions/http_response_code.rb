@@ -29,6 +29,11 @@ module God
         @history = Timeline.new(self.times[1])
       end
       
+      def reset
+        @timeline.clear
+        @history.clear
+      end
+      
       def valid?
         valid = true
         valid &= complain("Attribute 'host' must be specified", self) if self.host.nil?
@@ -66,8 +71,6 @@ module God
         @timeline << true
         if @timeline.select { |x| x }.size >= self.times.first
           self.info = "http response abnormal #{history(code, true)}"
-          @timeline.clear
-          @history.clear
           true
         else
           self.info = "http response nominal #{history(code, true)}"
