@@ -38,8 +38,7 @@ lib/god/logger.rb
 lib/god/metric.rb
 lib/god/process.rb
 lib/god/registry.rb
-lib/god/reporter.rb
-lib/god/server.rb
+lib/god/socket.rb
 lib/god/sugar.rb
 lib/god/system/process.rb
 lib/god/task.rb
@@ -84,8 +83,7 @@ test/test_logger.rb
 test/test_metric.rb
 test/test_process.rb
 test/test_registry.rb
-test/test_reporter.rb
-test/test_server.rb
+test/test_socket.rb
 test/test_sugar.rb
 test/test_system_process.rb
 test/test_task.rb

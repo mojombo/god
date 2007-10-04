@@ -92,9 +92,9 @@ begin
     
     # a command was specified
     
-    # connect to remote drb
+    # connect to drb unix socket
     DRb.start_service
-    server = DRbObject.new nil, "druby://127.0.0.1:#{options[:port]}"
+    server = DRbObject.new(nil, God::Socket.socket(options[:port]))
     
     begin
       server.ping

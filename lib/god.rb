@@ -36,8 +36,7 @@ require 'god/conditions/http_response_code'
 require 'god/contact'
 require 'god/contacts/email'
 
-require 'god/reporter'
-require 'god/server'
+require 'god/socket'
 require 'god/timer'
 require 'god/hub'
 
@@ -103,8 +102,6 @@ end
 class Module
   def safe_attr_accessor(*args)
     args.each do |arg|
-      # instance_variable_set(('@' + arg.to_s).intern, 'foo')
-      
       define_method((arg.to_s + "=").intern) do |other|
         if !self.running && self.inited
           abort "God.#{arg} must be set before any Tasks are defined"
@@ -154,14 +151,10 @@ module God
   end
   
   self.host = nil
+  self.port = nil
   self.allow = nil
   self.log_buffer_size = nil
   self.pid_file_directory = nil
-  
-  # deprecated
-  def self.init
-    yield self if block_given?
-  end
   
   def self.internal_init
     # only do this once
@@ -446,7 +439,7 @@ module God
     self.validater
     
     # instantiate server
-    self.server = Server.new(self.host, self.port, self.allow)
+    self.server = Socket.new(self.port)
     
     # start event handler system
     EventHandler.start if EventHandler.loaded?

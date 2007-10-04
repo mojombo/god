@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestHub < Test::Unit::TestCase
   def setup
-    Server.stubs(:new).returns(true)
+    God::Socket.stubs(:new).returns(true)
     God.reset
     
     God.watch do |w|

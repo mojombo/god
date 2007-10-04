@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestGod < Test::Unit::TestCase
   def setup
-    Server.stubs(:new).returns(true)
+    God::Socket.stubs(:new).returns(true)
     God.stubs(:setup).returns(true)
     God.stubs(:validater).returns(true)
     God.reset
@@ -21,11 +21,11 @@ class TestGod < Test::Unit::TestCase
   
   # init
   
-  def test_init_should_abort_if_called_after_watch
+  def test_pid_file_directory_should_abort_if_called_after_watch
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     assert_abort do
-      God.init { |g| g.pid_file_directory = 'foo' }
+      God.pid_file_directory = 'foo'
     end
   end
   
@@ -37,8 +37,8 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_pid_file_directory_equals_should_set
-    God.init
     God.pid_file_directory = '/foo'
+    God.internal_init
     assert_equal '/foo', God.pid_file_directory
   end
   
@@ -454,7 +454,7 @@ class TestGod < Test::Unit::TestCase
   # start
   
   def test_start_should_kick_off_a_server_instance
-    Server.expects(:new).returns(true)
+    God::Socket.expects(:new).returns(true)
     God.start
   end
     
@@ -509,7 +509,7 @@ end
 
 class TestGodOther < Test::Unit::TestCase
   def setup
-    Server.stubs(:new).returns(true)
+    God::Socket.stubs(:new).returns(true)
     God.internal_init
     God.reset
   end

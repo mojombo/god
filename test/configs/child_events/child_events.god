@@ -1,7 +1,3 @@
-God.init do |god|
-  god.host = '127.0.0.1'
-end
-
 God.watch do |w|
   w.name = "child-events"
   w.interval = 5.seconds

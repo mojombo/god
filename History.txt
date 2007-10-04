@@ -7,6 +7,7 @@
   * Add Tasks (a generalization of Watches) to do non-process related tasks
   * Add example init.d file in GOD_INSTALL_DIR/init/god [scott becker]
   * Add human readable info to conditions (and make low level log lines debug)
+  * Switch DRb to use a unix domain socket for security reasons
 * Minor Enchancements
   * Allow EventConditions to do transition overloading
   * Report errors during god startup instead of failing silently
