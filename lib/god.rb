@@ -103,6 +103,8 @@ end
 class Module
   def safe_attr_accessor(*args)
     args.each do |arg|
+      # instance_variable_set(('@' + arg.to_s).intern, 'foo')
+      
       define_method((arg.to_s + "=").intern) do |other|
         if !self.running && self.inited
           abort "God.#{arg} must be set before any Tasks are defined"
@@ -150,6 +152,11 @@ module God
                   :contacts,
                   :contact_groups
   end
+  
+  self.host = nil
+  self.allow = nil
+  self.log_buffer_size = nil
+  self.pid_file_directory = nil
   
   # deprecated
   def self.init
