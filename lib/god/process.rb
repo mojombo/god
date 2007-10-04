@@ -11,6 +11,7 @@ module God
       
       @pid_file = nil
       @tracking_pid = true
+      @user_log = false
     end
     
     def alive?
@@ -84,16 +85,23 @@ module God
         LOG.log(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' is not writable by #{self.uid || Etc.getlogin}")
       end
       
-      # log dir must exist if specified
-      if self.log && !File.exist?(File.dirname(self.log))
+      # log dir must exist
+      if !File.exist?(File.dirname(self.log))
         valid = false
         LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' does not exist")
       end
       
-      # log dir must be writable if specified
-      if self.log && !file_writable?(File.dirname(self.log))
-        valid = false
-        LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' is not writable by #{self.uid || Etc.getlogin}")
+      # log file or dir must be writable
+      if File.exist?(self.log)
+        unless file_writable?(self.log)
+          valid = false
+          LOG.log(self, :error, "Log file '#{self.log}' exists but is not writable by #{self.uid || Etc.getlogin}")
+        end
+      else
+        unless file_writable?(File.dirname(self.log))
+          valid = false
+          LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' is not writable by #{self.uid || Etc.getlogin}")
+        end
       end
       
       valid
