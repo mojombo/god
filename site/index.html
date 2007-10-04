@@ -219,11 +219,12 @@ code {
 		<li>Easily write your own custom conditions in Ruby</li>
 		<li>Supports both poll and event based conditions</li>
 		<li>Different poll conditions can have different intervals</li>
-		<li>Easily control non-daemonized processes</li>
+		<li>Integrated notification system (write your own too!)</li>
+		<li>Easily control non-daemonizing scripts</li>
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.4.0)</h1>
+	<h1>Installation (v 0.5)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	<p>You can also peruse or clone the code from <a href="http://repo.or.cz/w/god.git">http://repo.or.cz/w/god.git</a></p>
@@ -245,23 +246,23 @@ code {
 	<h1>Finally, a Config File that Makes Sense</h1>
 	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
 	
-<pre><code class="ruby"># file:      gravatar.god
-# run with:  god -c /path/to/gravatar.god
+<pre><code class="ruby"># run with:  god -c /path/to/gravatar.god
 # 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
-RAILS_ROOT = "/var/www/gravatar2/current"
+RAILS_ROOT = "/Users/tom/dev/gravatar2"
 
 %w{8200 8201 8202}.each do |port|
   God.watch do |w|
     w.name = "gravatar2-mongrel-#{port}"
-    w.interval = 30.seconds # default
-    w.start = "mongrel_rails cluster::start --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.stop = "mongrel_rails cluster::stop --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.grace = 10.seconds
+    w.interval = 30.seconds # default      
+    w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
+      -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
+    w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.start_grace = 10.seconds
+    w.restart_grace = 10.seconds
     w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
     
     w.behavior(:clean_pid_file)
@@ -284,6 +285,19 @@ RAILS_ROOT = "/var/www/gravatar2/current"
         c.times = 5
       end
     end
+    
+    # lifecycle
+    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 5
+        c.within = 5.minute
+        c.transition = :unmonitored
+        c.retry_in = 10.minutes
+        c.retry_times = 5
+        c.retry_within = 2.hours
+      end
+    end
   end
 end</code></pre>
 
@@ -301,18 +315,19 @@ end</code></pre>
 
 <pre><code class="ruby">  God.watch do |w|
     w.name = "gravatar2-mongrel-#{port}"
-    w.interval = 30.seconds # default
-    w.start = "mongrel_rails cluster::start --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.stop = "mongrel_rails cluster::stop --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.grace = 10.seconds
-    pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+    w.interval = 30.seconds # default      
+    w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
+      -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
+    w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.start_grace = 10.seconds
+    w.restart_grace = 10.seconds
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
         
     ...
   end</code></pre>
 
-<p>A <code>watch</code> represents a single process that has concrete start, stop, and/or restart operations. You can define as many watches as you like. In the example above, I've got a Rails instance running in a Mongrel that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The <code>interval</code> option sets the default poll interval (this can be overridden in each condition). The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations. If the process you're watches runs as a daemon, you'll need to set the <code>pid_file</code> attribute in order for the behaviors and conditions to function.</p>
+<p>A <code>watch</code> represents a single process that has concrete start, stop, and/or restart operations. You can define as many watches as you like. In the example above, I've got some Rails instances running in Mongrels that I need to keep alive. Every watch must have a unique <code>name</code> so that it can be identified later on. The <code>interval</code> option sets the default poll interval (this can be overridden in each condition). The <code>start</code> and <code>stop</code> attributes specify the commands to start and stop the process. If no <code>restart</code> attribute is set, restart will be represented by a call to stop followed by a call to start. The optional <code>grace</code> attribute sets the amount of time following a start/stop/restart command to wait before resuming normal monitoring operations. To be more specific, I can set just <code>start_grace</code>, <code>stop_grace</code>, and/or <code>restart_grace</code>. If the process you're watching runs as a daemon (as mine does), you'll need to set the <code>pid_file</code> attribute.</p>
 
 <pre><code class="ruby">    w.behavior(:clean_pid_file)</code></pre>
       
@@ -326,7 +341,7 @@ end</code></pre>
     end</code></pre>
       
 <p>Watches contain conditions grouped by the action to execute should they return <code>true</code>. I start with a <code>start_if</code> block that contains a single condition. Conditions are specified by calling <code>condition</code> with an identifier, in this case 
-<code>:process_running</code>. Each condition can specify a poll interval that will override the default watch interval. In this case, I want to check that the process is still running every 5 seconds instead of the 30 second interval that other conditions will inherit. The ability to set condition specific poll intervals makes it possible to run costly tests less often then cheap tests.</p>
+<code>:process_running</code>. Each condition can specify a poll interval that will override the default watch interval. In this case, I want to check that the process is still running every 5 seconds instead of the 30 second interval that other conditions will inherit. The ability to set condition specific poll intervals makes it possible to run critical tests (such as :process_running) more often than less critical tests (such as :memory_usage and :cpu_usage).</p>
 
 <pre><code class="ruby">    w.restart_if do |restart|
       restart.condition(:memory_usage) do |c|
@@ -349,6 +364,22 @@ end</code></pre>
     end</code></pre>
       
 <p>To keep an eye on CPU usage, I've employed the <code>cpu_usage</code> condition. When CPU usage for a Mongrel process is over 50% for 5 consecutive intervals, it will be restarted.</p>
+
+<pre><code class="ruby">    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 5
+        c.within = 5.minute
+        c.transition = :unmonitored
+        c.retry_in = 10.minutes
+        c.retry_times = 5
+        c.retry_within = 2.hours
+      end
+    end</code></pre>
+    
+<p>Conditions inside a <code>lifecycle</code> section are active as long as the process is being monitored (they live across state changes). 
+  
+<p>The <code>:flapping</code> condition guards against the edge case wherein god rapidly starts or restarts your application. Things like server configuration changes or the unavailability of external services could make it impossible for my process to start. In that case, god will try to start my process over and over to no avail. The <code>:flapping</code> condition provides two levels of giving up on flapping processes. If I were to translate the options of the code above, it would be something like: If this watch is started or restarted five times withing 5 minutes, then unmonitor it...then after ten minutes, monitor it again to see if it was just a temporary problem; if the process is seen to be flapping five times within two hours, then give up completely.</p>
 
 <p>That's it! Simple, huh?</p>
 
@@ -398,7 +429,7 @@ end</code></pre>
 
 <p>You can start/restart/stop/monitor/unmonitor your Watches with the same utility like so:</p>
 
-<pre>$ sudo god stop 'gravatar2-mongrel-8200'</pre>
+<pre>$ sudo god stop gravatar2-mongrel-8200</pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -416,7 +447,7 @@ end</code></pre>
     
 <p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
 
-<pre>$ sudo god stop 'mongrels'</pre>
+<pre>$ sudo god stop mongrels</pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -426,13 +457,14 @@ end</code></pre>
 
 <p>While the configuration syntax you saw in the previous example is very simple, it lacks the power that we need to deal with event based monitoring. In fact, the <code>start_if</code> and <code>restart_if</code> methods are really just calling out to a lower-level API. If we use the low-level API directly, we can harness the full power of god's event based lifecycle system. Let's look at another example config file.</p>
 
-<pre><code class="ruby">RAILS_ROOT = "/Users/tom/dev/git/helloworld"
+<pre><code class="ruby">RAILS_ROOT = "/Users/tom/dev/gravatar2"
 
 God.watch do |w|
   w.name = "local-3000"
   w.interval = 5.seconds # default
-  w.start = "mongrel_rails start -P ./log/mongrel.pid -c #{RAILS_ROOT}"
-  w.stop = "mongrel_rails stop -P ./log/mongrel.pid -c #{RAILS_ROOT}"
+  w.start = "mongrel_rails start -c #{RAILS_ROOT} -P #{RAILS_ROOT}/log/mongrel.pid -p 3000 -d"
+  w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.pid"
+  w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.pid"
   w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
   
   # clean pid files before start if necessary
@@ -453,7 +485,7 @@ God.watch do |w|
     
     # failsafe
     on.condition(:tries) do |c|
-      c.times = 3
+      c.times = 5
       c.transition = :start
     end
   end
@@ -475,6 +507,19 @@ God.watch do |w|
       c.interval = 10
       c.above = 10.percent
       c.times = [3, 5]
+    end
+  end
+  
+  # lifecycle
+  w.lifecycle do |on|
+    on.condition(:flapping) do |c|
+      c.to_state = [:start, :restart]
+      c.times = 5
+      c.within = 5.minute
+      c.transition = :unmonitored
+      c.retry_in = 10.minutes
+      c.retry_times = 5
+      c.retry_within = 2.hours
     end
   end
 end
@@ -514,12 +559,12 @@ end
     
     # failsafe
     on.condition(:tries) do |c|
-      c.times = 3
+      c.times = 5
       c.transition = :start
     end
   end</code></pre>
 
-<p>The other half of this transition uses the <code>tries</code> condition to ensure that god doesn't get stuck in this state. It's possible that the process could go down while the transition is being made, in which case god would end up polling forever to see if the process is up. Here I've specified that if this condition is called three times, god should override the normal transition destination and move to the <code>start</code> state instead. If you specify a <code>transition</code> attribute on any condition, that state will be transferred to instead of the normal transfer destination.</p>
+<p>The other half of this transition uses the <code>tries</code> condition to ensure that god doesn't get stuck in this state. It's possible that the process could go down while the transition is being made, in which case god would end up polling forever to see if the process is up. Here I've specified that if this condition is called five times, god should override the normal transition destination and move to the <code>start</code> state instead. If you specify a <code>transition</code> attribute on any condition, that state will be transferred to instead of the normal transfer destination.</p>
 
 <pre><code class="ruby">  # start if process is not running
   w.transition(:up, :start) do |on|
@@ -549,11 +594,9 @@ end
 
 <h1>Watching Non-Daemon Processes</h1>
 
-<p>Need to watch a script that doesn't have built in daemonization? No problem! God will daemonize and keep track of your process for you. If you don't specify a <code>pid_file</code> attribute for a watch, it will be auto-daemonized and a PID file will be stored for it in <code>/var/run/god</code>. If you'd rather have the PID file stored in a different location, you can set it in a <code>God.init</code> block at the top of your config:</p>
+<p>Need to watch a script that doesn't have built in daemonization? No problem! God will daemonize and keep track of your process for you. If you don't specify a <code>pid_file</code> attribute for a watch, it will be auto-daemonized and a PID file will be stored for it in <code>/var/run/god</code>. If you'd rather have the PID file stored in a different location, you can set it at the top of your config:</p>
 
-<pre><code class="ruby">God.init do |god|
-  god.pid_file_directory = '/home/tom/pids'
-end
+<pre><code class="ruby">God.pid_file_directory = '/home/tom/pids'
 
 God.watch do |w|
   # watch with no pid_file attribute set
@@ -570,7 +613,7 @@ end</code></pre>
 <pre><code class="ruby"># load in all god configs
 God.load "/usr/local/conf/*.god"</code></pre>
 
-<p>God won't start it's monitoring operations until all configurations have been loaded.</p>
+<p>God won't start its monitoring operations until all configurations have been loaded.</p>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -587,7 +630,7 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <pre>$ sudo god load path/to/config.god</pre>
 
-<p>Config files that are loaded dynamically can contain anything that a normal config file contains, however, <code>God.init</code> blocks will be ignored.</p>
+<p>Config files that are loaded dynamically can contain anything that a normal config file contains, however, global options such as <code>God.pid_file_directory</code> blocks will be ignored (and produce a warning in the logs).</p>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -595,9 +638,78 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <p>Sifting through the god logs for statements specific to a specific Watch can be frustrating when you have many of them. You can get the realtime logs for a single Watch via the command line:</p>
 
-<pre>$ sudo god log 'local-3000'</pre>
+<pre>$ sudo god log local-3000</pre>
 
-<p>This will display the last 100 lines of log for the 'local-3000' Watch and update every second with new log messages.</p>
+<p>This will display the last 1000 lines of log for the 'local-3000' Watch and update every second with new log messages.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Notifications</h1>
+
+<p>God has an extensible notification framework built in that makes it easy to have notifications sent when conditions are triggered. There are three steps to enabling notifications.</p>
+
+<p>Step 1: Set the options for the notification subsystem(s) that you'll be using. Let's look at how to setup email notifications.</p>
+
+<pre><code class="ruby">God::Contacts::Email.message_settings = {
+  :from => 'god@example.com'
+}
+
+God::Contacts::Email.server_settings = {
+  :address => "smtp.example.com",
+  :port => 25,
+  :domain => "example.com",
+  :authentication => :plain,
+  :user_name => "john",
+  :password => "s3kr3ts"
+}</code></pre>
+
+<p>Step 2: Configure some contacts.</p>
+
+<pre><code class="ruby">God.contact(:email) do |c|
+  c.name = 'tom'
+  c.email = 'tom@example.com'
+end
+
+God.contact(:email) do |c|
+  c.name = 'vanpelt'
+  c.email = 'vanpelt@example.com'
+  c.group = 'developers'
+end
+
+God.contact(:email) do |c|
+  c.name = 'kevin'
+  c.email = 'kevin@example.com'
+  c.group = 'developers'
+end</code></pre>
+
+<p>Step 3: Attach to a condition:</p>
+
+<pre><code class="ruby">  w.transition(:up, :start) do |on|
+    on.condition(:process_exits) do |c|
+      c.notify = 'tom'
+    end
+  end</code></pre>
+  
+<p>There are two ways to specify that a notification should be sent. The first, easier way is shown above. Every condition can take an optional <code>notify</code> attribute that specifies which contacts should be notified when the condition is triggered. The value can be a contact name or contact group *or* an array of contact names and/or contact groups.</p>
+  
+<pre><code class="ruby">  w.transition(:up, :start) do |on|
+    on.condition(:process_exits) do |c|
+      c.notify = {:contacts => ['tom', 'developers'], :priority => 1, :category => 'product'}
+    end
+  end</code></pre>
+  
+</p>The second way allows you to specify the <code>priority</code> and <code>category</code> in addition to the contacts. The extra attributes can be arbitrary integers or strings and will be passed as-is to the notification subsystem.</p>
+
+<p>The above notification will arrive as an email similar to the following.</p>
+
+<pre><code>From: god &lt;god@example.com&gt;
+To: tom &lt;tom@example.com&gt;
+Subject: [god] mongrel-8600 [trigger] process exited (ProcessExits)
+
+Message: mongre-8600 [trigger] process exited (ProcessExits)
+Host: candymountain.example.com
+Priority: 1
+Category: product</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -605,34 +717,6 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <p>God was designed from the start to allow you to easily write your own custom conditions, making it simple to add tests that are application specific.</p>
 
-<pre><code class="ruby">module God
-  module Conditions
-    
-    class ProcessRunning < PollCondition
-      attr_accessor :running
-      
-      def valid?
-        valid = true
-        valid &= complain("You must specify the 'pid_file' attribute \
-          on the Watch for :process_running") if self.watch.pid_file.nil?
-        valid &= complain("You must specify the 'running' attribute \
-          for :process_running") if self.running.nil?
-        valid
-      end
-    
-      def test
-        return !self.running unless File.exist?(self.watch.pid_file)
-        
-        pid = File.read(self.watch.pid_file).strip
-        active = System::Process.new(pid).exists?
-        
-        (self.running && active) || (!self.running && !active)
-      end
-    end
-    
-  end
-end</code></pre>
-      
 </div>
 <div id="footer">
 	<p>Brought to you by <a href="http://rubyisawesome.com/">Ruby is Awesome</a></p>

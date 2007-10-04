@@ -3,19 +3,19 @@
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
-RAILS_ROOT = "/var/www/gravatar2/current"
+RAILS_ROOT = "/Users/tom/dev/gravatar2"
 
 %w{8200 8201 8202}.each do |port|
   God.watch do |w|
     w.name = "gravatar2-mongrel-#{port}"
-    w.interval = 30.seconds
-    w.start = "mongrel_rails cluster::start --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.stop = "mongrel_rails cluster::stop --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.grace = 10.seconds
-    
-    pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+    w.interval = 30.seconds # default      
+    w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
+      -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
+    w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.start_grace = 10.seconds
+    w.restart_grace = 10.seconds
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
     
     w.behavior(:clean_pid_file)
 
@@ -35,6 +35,19 @@ RAILS_ROOT = "/var/www/gravatar2/current"
       restart.condition(:cpu_usage) do |c|
         c.above = 50.percent
         c.times = 5
+      end
+    end
+    
+    # lifecycle
+    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 5
+        c.within = 5.minute
+        c.transition = :unmonitored
+        c.retry_in = 10.minutes
+        c.retry_times = 5
+        c.retry_within = 2.hours
       end
     end
   end
