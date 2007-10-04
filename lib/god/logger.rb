@@ -31,6 +31,7 @@ module God
       # push onto capture and timeline for the given watch
       buf = StringIO.new
       templog = ::Logger.new(buf)
+      templog.level = Logger::INFO
       templog.send(level, text)
       @mutex.synchronize do
         @capture.puts(buf.string) if @capture

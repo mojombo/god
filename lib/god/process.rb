@@ -22,6 +22,18 @@ module God
       end
     end
     
+    def file_writable?(file)
+      pid = fork do
+        ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
+        ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
+        
+        File.writable?(file) ? exit(0) : exit(1)
+      end
+      
+      wpid, status = ::Process.waitpid2(pid)
+      status.exitstatus == 0 ? true : false
+    end
+    
     def valid?
       # determine if we're tracking pid or not
       self.pid_file
@@ -61,15 +73,27 @@ module God
       end
       
       # pid dir must exist if specified
-      if self.pid_file && !File.exist?(File.dirname(self.pid_file))
+      if !@tracking_pid && !File.exist?(File.dirname(self.pid_file))
         valid = false
         LOG.log(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' does not exist")
+      end
+      
+      # pid dir must be writable if specified
+      if !@tracking_pid && !file_writable?(File.dirname(self.pid_file))
+        valid = false
+        LOG.log(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' is not writable by #{self.uid || Etc.getlogin}")
       end
       
       # log dir must exist if specified
       if self.log && !File.exist?(File.dirname(self.log))
         valid = false
         LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' does not exist")
+      end
+      
+      # log dir must be writable if specified
+      if self.log && !file_writable?(File.dirname(self.log))
+        valid = false
+        LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' is not writable by #{self.uid || Etc.getlogin}")
       end
       
       valid

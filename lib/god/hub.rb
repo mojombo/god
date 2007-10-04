@@ -215,7 +215,8 @@ module God
       
       # notify each contact
       resolved_contacts.each do |c|
-        c.notify(message, Time.now, spec[:priority], spec[:category])
+        host = `hostname`.chomp rescue 'none'
+        c.notify(message, Time.now, spec[:priority], spec[:category], host)
       
         msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
       

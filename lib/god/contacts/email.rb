@@ -20,7 +20,7 @@ module God
                             # :password
                             # :authentication
       
-      self.format = lambda do |name, email, message, time, priority, category|
+      self.format = lambda do |name, email, message, time, priority, category, host|
         <<-EOF
 From: god <#{self.message_settings[:from]}>
 To: #{name} <#{email}>
@@ -29,6 +29,7 @@ Date: #{Time.now.httpdate}
 Message-Id: <unique.message.id.string@example.com>
 
 Message: #{message}
+Host: #{host}
 Priority: #{priority}
 Category: #{category}
         EOF
@@ -42,9 +43,9 @@ Category: #{category}
         valid
       end
       
-      def notify(message, time, priority, category)
+      def notify(message, time, priority, category, host)
         begin
-          body = Email.format.call(self.name, self.email, message, time, priority, category)
+          body = Email.format.call(self.name, self.email, message, time, priority, category, host)
           
           args = [Email.server_settings[:address], Email.server_settings[:port]]
           if Email.server_settings[:authentication]

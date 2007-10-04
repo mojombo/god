@@ -216,10 +216,14 @@ begin
         
         begin
           load File.expand_path(options[:config])
-        rescue => e
-          puts e.message
-          puts e.backtrace.join("\n")
-          abort "There was an error in your configuration file (see above)"
+        rescue Exception => e
+          if e.instance_of?(SystemExit)
+            raise
+          else
+            puts e.message
+            puts e.backtrace.join("\n")
+            abort "There was an error in your configuration file (see above)"
+          end
         end
       end
     else
@@ -256,10 +260,14 @@ begin
             
             begin
               load File.expand_path(options[:config])
-            rescue => e
-              puts e.message
-              puts e.backtrace.join("\n")
-              abort "There was an error in your configuration file (see above)"
+            rescue Exception => e
+              if e.instance_of?(SystemExit)
+                raise
+              else
+                puts e.message
+                puts e.backtrace.join("\n")
+                abort "There was an error in your configuration file (see above)"
+              end
             end
           end
           
@@ -287,6 +295,7 @@ rescue Exception => e
   if e.instance_of?(SystemExit)
     raise
   else
+    puts 'Uncaught exception'
     puts e.message
     puts e.backtrace.join("\n")
   end

@@ -90,7 +90,8 @@ module God
     #   +time+ is the Time at which the notification was made
     #   +priority+ is the arbitrary priority String
     #   +category+ is the arbitrary category String
-    def notify(message, time, priority, category)
+    #   +host+ is the hostname of the server
+    def notify(message, time, priority, category, host)
       raise AbstractMethodNotOverriddenError.new("Contact#notify must be overridden in subclasses")
     end
     

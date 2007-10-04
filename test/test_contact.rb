@@ -103,7 +103,7 @@ class TestContact < Test::Unit::TestCase
   
   def test_notify_should_be_abstract
     assert_raise(AbstractMethodNotOverriddenError) do
-      Contact.new.notify(:a, :b, :c, :d)
+      Contact.new.notify(:a, :b, :c, :d, :e)
     end
   end
 end

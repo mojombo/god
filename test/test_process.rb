@@ -2,9 +2,9 @@ require File.dirname(__FILE__) + '/helper'
 
 module God
   class Process
-    def fork
-      raise "You forgot to stub fork"
-    end
+    # def fork
+    #   raise "You forgot to stub fork"
+    # end
     
     def exec(*args)
       raise "You forgot to stub exec"
@@ -19,6 +19,9 @@ class TestProcessChild < Test::Unit::TestCase
     @p.name = 'foo'
     @p.stubs(:test).returns true # so we don't try to mkdir_p
     Process.stubs(:detach) # because we stub fork
+    
+    ::Process::Sys.stubs(:setuid).returns(true)
+    ::Process::Sys.stubs(:setgid).returns(true)
   end
   
   # valid?
@@ -39,7 +42,7 @@ class TestProcessChild < Test::Unit::TestCase
   
   def test_valid_should_return_true_if_uid_exists
     @p.start = 'qux'
-    @p.log = 'bar'
+    @p.log = '/tmp/foo.log'
     @p.uid = 'root'
     
     assert @p.valid?
@@ -47,17 +50,19 @@ class TestProcessChild < Test::Unit::TestCase
   
   def test_valid_should_return_true_if_uid_does_not_exists
     @p.start = 'qux'
-    @p.log = 'bar'
+    @p.log = '/tmp/foo.log'
     @p.uid = 'foobarbaz'
     
     no_stdout do
-      assert !@p.valid?
+      no_stderr do
+        assert !@p.valid?
+      end
     end
   end
   
   def test_valid_should_return_true_if_gid_exists
     @p.start = 'qux'
-    @p.log = 'bar'
+    @p.log = '/tmp/foo.log'
     @p.gid = 'wheel'
     
     assert @p.valid?
@@ -65,11 +70,13 @@ class TestProcessChild < Test::Unit::TestCase
   
   def test_valid_should_return_true_if_gid_does_not_exists
     @p.start = 'qux'
-    @p.log = 'bar'
+    @p.log = '/tmp/foo.log'
     @p.gid = 'foobarbaz'
     
     no_stdout do
-      assert !@p.valid?
+      no_stderr do
+        assert !@p.valid?
+      end
     end
   end
   
