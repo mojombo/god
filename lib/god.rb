@@ -55,12 +55,13 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 LOG = God::Logger.new
 LOG.datetime_format = "%Y-%m-%d %H:%M:%S "
 
-GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
+# The $run global determines whether god should be started when the
+# program would normally end. This should be set to true if when god
+# should be started (e.g. `god -c <config file>`) and false otherwise
+# (e.g. `god status`)
+$run ||= nil
 
-CONFIG_FILE = ''
-def __CONFIG__
-  CONFIG_FILE
-end
+GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
 
 begin
   Syslog.open('god')
@@ -68,16 +69,9 @@ rescue RuntimeError
   Syslog.reopen('god')
 end
 
-def with_stdout_captured
-  old_stdout = $stdout
-  out = StringIO.new
-  $stdout = out
-  begin
-    yield
-  ensure
-    $stdout = old_stdout
-  end
-  out.string
+# Return the binding of god's root level
+def root_binding
+  binding
 end
 
 God::EventHandler.load
@@ -150,6 +144,7 @@ module God
                   :contact_groups
   end
   
+  # initialize class instance variables
   self.host = nil
   self.port = nil
   self.allow = nil
@@ -384,8 +379,7 @@ module God
     begin
       LOG.start_capture
       
-      CONFIG_FILE.replace(filename)
-      eval(code, nil, filename)
+      eval(code, root_binding, filename)
       self.pending_watches.each do |w|
         if previous_state = self.pending_watch_states[w.name]
           w.monitor unless previous_state == :unmonitored

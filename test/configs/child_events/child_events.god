@@ -1,3 +1,8 @@
+module God
+  module Behaviors
+  end
+end
+
 God.watch do |w|
   w.name = "child-events"
   w.interval = 5.seconds
