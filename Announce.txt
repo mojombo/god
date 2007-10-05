@@ -1,19 +1,20 @@
-Subject: [ANN] god 0.4.0 released
+Subject: [ANN] god 0.5.0 released
 
-Progress on god is moving along as quick as ever. This release adds a bunch of new features and bug fixes. Most interestingly you'll find several useful new command line functions:
+This release brings about a tremendous leap in stability and robustness. A large number of bugs have been discovered and addressed while god is being run in a production environment. We're battle testing god so you don't have to!
 
-  * `god status` prints out the status of each Watch
-  * `god log` shows realtime logs for a specific Watch (even if you don't have god logging to file)
-  * `god load` loads or reloads a config file into a running god instance
-  * `god terminate` stops all Watches and then stops god (useful when testing your setup)
-  
-The logging system has been beefed up with proper timestamps and criticality levels. Log messages are more complete overall. You can also get the STDOUT/STDERR of a god-daemonized process written to a log file by specify 'w.log = <log file path>' in your Watch config.
+There's a number of new features that you'll want to know about:
 
-If you let god daemonize your process for you, there's no need to provide a stop command. A default killing lambda will take care of gracefully (or not so gracefully if necessary) stopping your god-daemonized process.
+* You can now define lifecycle conditions that are active during the full lifetime of a monitored process. This is especially useful for the :flapping condition that can detect when a process is being started over and over.
 
-The validity of your config file is checked better than previous versions to point you to the problem area of your config.
+* A notification framework has been added that allows you to be notified when conditions trigger. Currently there is an :email contact type that can send over SMTP (with optional authentication). Creating your own custom contact types is also extremely simple.
 
-The bug that prevented group control from working has been fixed so you can now start/stop/etc groups of Watches.
+* Watches are now a specialized subclass of Tasks. Tasks don't know anything about processes and allow you to specify arbitrary states and setup a state machine for dealing with non-process monitoring.
+
+* Log output is much more human readable. It's very easy to tell exactly what's going on with your process and what conditions are triggering.
+
+* The CLI tools now use a UNIX domain socket to communicate with god. This means better security by enforcing that only authorized users can interact with god.
+
+* An :http_response_code condition is now included that allows you to poll a website and ensure that a response code is within bounds.
 
 Updated documentation is now available on the website:
 
@@ -29,7 +30,7 @@ Keeping your server processes and tasks running should be a simple part of your 
 
 DISCLAIMER
 
-God is still very young, I'd love to get feedback and bug reports, but I do not yet recommend you use it for mission critical tasks. I personally use it in production but then I'm a daring fellow.
+God is still beta so I do not yet recommend you use it for mission critical tasks. We are using it at Powerset, Inc. to monitor our public facing applications, but then, we're daring fellows.
 
 
 INSTALL
@@ -50,23 +51,23 @@ EXAMPLE
 
 The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at gravatar.com to keep the mongrels running:
 
-# file:      gravatar.god
 # run with:  god -c /path/to/gravatar.god
 # 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
 
-RAILS_ROOT = "/var/www/gravatar2/current"
+RAILS_ROOT = "/Users/tom/dev/gravatar2"
 
 %w{8200 8201 8202}.each do |port|
   God.watch do |w|
     w.name = "gravatar2-mongrel-#{port}"
-    w.interval = 30.seconds # default
-    w.start = "mongrel_rails cluster::start --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.stop = "mongrel_rails cluster::stop --only #{port} \
-      -C #{RAILS_ROOT}/config/mongrel_cluster.yml"
-    w.grace = 10.seconds
+    w.interval = 30.seconds # default      
+    w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
+      -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
+    w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.start_grace = 10.seconds
+    w.restart_grace = 10.seconds
     w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
     
     w.behavior(:clean_pid_file)
@@ -89,6 +90,19 @@ RAILS_ROOT = "/var/www/gravatar2/current"
         c.times = 5
       end
     end
+    
+    # lifecycle
+    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 5
+        c.within = 5.minute
+        c.transition = :unmonitored
+        c.retry_in = 10.minutes
+        c.retry_times = 5
+        c.retry_within = 2.hours
+      end
+    end
   end
 end
 
@@ -100,31 +114,41 @@ Detailed documentation is available at http://god.rubyforge.org/
 
 CHANGES
 
-== 0.4.0 / 2007-09-13
+== 0.5.0 / 2007-10-05
 
 * Major Enhancements
-  * Add the ability for conditions to override transition state (for exceptional cases)
-  * Implement dynamic load of config files while god is running (god load <filename>)
-  * Add ability to save auto-daemonized process output to a log file
-  * Add robust default stop lambda command for auto-daemonized processes (inspired by _eric)
-  * Add status command for god binary (shows status of each watch)
-  * Create proper logger with timestamps
-  * Add log command to god binary to get real time logs for a specific watch from a running god instance
-  * Add terminate command for god binary (stop god and all watches)
-* Minor Enhancements
-  * Enforce validity of Watches
-  * Enforce that God.init is not called after a Watch
-  * Move pid_file_directory creation and validation to God.start
-  * Remove check for at least one Watch during startup (now that dynamic loading exists)
+  * Implement lifecycle scoped metric to allow for cross-state conditions
+  * Add TriggerCondition for conditions that need info about state changes
+  * Implement notification system
+  * Add Tasks (a generalization of Watches) to do non-process related tasks
+  * Add example init.d file in GOD_INSTALL_DIR/init/god [scott becker]
+  * Add human readable info to conditions (and make low level log lines debug)
+  * Switch DRb to use a unix domain socket for security reasons
+* Minor Enchancements
+  * Allow EventConditions to do transition overloading
+  * Report errors during god startup instead of failing silently
+  * Make transition block optional (default to Always condition returning true)
+  * Better usage info for `god --help`
+  * Explain what's going on when attempting to rebind to an in-use port
+  * Add -b option to god binary to auto-bind to an unused port
+  * Add `god quit` to stop god without stopping any tasks
+  * Make self-daemonized Watch commands synchronous (as they should be)
+  * Allow self-daemonized Watches to specify a log (could be useful)
+  * Check for existence of config file if specified
+  * Robustify `god load` and report errors back to the command issuer
+  * Warn when `god load` tries to set global options
+  * Add Configurable.clear method and make built-in conditions clear on entry
 * New Conditions
-  * Tries < PollCondition - triggers after the specified number of tries
-  * Add :notify_when_flapping behavior to check for oscillation [kevinclark]
-  * Add :degrading_lambda condition. [kevinclark]
-    It uses a decaying interval (1/2 rate) for 3 cycles before failing.
+  * Flapping < TriggerCondition - trigger on state change
+  * HttpResponseCode < PollCondition - trigger on http response code or timeout (thx scott becker)
+* New Contacts
+  * Email < Contact - notify via email (smtp)
 * Bug Fixes
-  * Use exit!(0) instead of exit! in god binary to exit with code 0 (instead of default -1)
-  * Command line group control fixed
-  * Fix cross-thread return problem
+  * Fix abort not aborting problem
+  * Fix -p option not working for god binary
+  * Fix God.init not accepting block (thx _eric)
+  * Fix SIGHUP ignore (thx _eric)
+  * Fix error reporting on `god --help` (don't error report a normal SystemExit)
 
 
 AUTHORS

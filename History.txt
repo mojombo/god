@@ -1,4 +1,4 @@
-== 0.5.0
+== 0.5.0 / 2007-10-05
 
 * Major Enhancements
   * Implement lifecycle scoped metric to allow for cross-state conditions
