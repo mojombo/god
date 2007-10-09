@@ -104,6 +104,21 @@ class TestHttpResponseCode < Test::Unit::TestCase
     assert_equal true, c.test
   end
   
+  def test_test_should_return_false_if_code_is_is_set_to_200_but_cant_connect
+    c = valid_condition
+    Net::HTTP.expects(:start).raises(Errno::ECONNREFUSED, '')
+    assert_equal false, c.test
+  end
+  
+  def test_test_should_return_true_if_code_is_not_is_set_to_200_and_cant_connect
+    c = valid_condition do |cc|
+      cc.code_is = nil
+      cc.code_is_not = [200]
+    end
+    Net::HTTP.expects(:start).raises(Errno::ECONNREFUSED, '')
+    assert_equal true, c.test
+  end
+  
   def test_test_should_return_true_if_code_is_is_set_to_200_and_response_is_200_twice_for_times_two_of_two
     c = valid_condition do |cc|
       cc.times = [2, 2]

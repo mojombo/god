@@ -61,6 +61,8 @@ module God
         else
           fail(actual_response_code)
         end
+      rescue Errno::ECONNREFUSED
+        self.code_is ? fail('Refused') : pass('Refused')
       rescue Timeout::Error
         self.code_is ? fail('Timeout') : pass('Timeout')
       end
