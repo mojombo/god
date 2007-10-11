@@ -73,13 +73,13 @@ begin
   
   opts.parse!
   
-  if options[:version]
+  if !options[:config] && options[:version]
     require 'god'
     
     # print version
     puts "Version #{God::VERSION}"
     exit
-  elsif options[:info]
+  elsif !options[:config] && options[:info]
     require 'god'
     
     puts "Version: #{God::VERSION}"
@@ -87,7 +87,7 @@ begin
     puts "Events: " + God::EventHandler.event_system
     
     exit
-  elsif command = ARGV[0]
+  elsif !options[:config] && command = ARGV[0]
     require 'god'
     
     # a command was specified
