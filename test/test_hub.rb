@@ -125,7 +125,7 @@ class TestHub < Test::Unit::TestCase
     end
   end
   
-  def test_handle_poll_should_abort_on_exception
+  def test_handle_poll_should_not_abort_on_exception
     c = Conditions::FakePollCondition.new
     c.interval = 10
     
@@ -134,9 +134,11 @@ class TestHub < Test::Unit::TestCase
     
     c.expects(:test).raises(StandardError.new)
     
-    assert_abort do
-      t = Hub.handle_poll(c)
-      t.join
+    assert_nothing_raised do
+      no_stdout do
+        t = Hub.handle_poll(c)
+        t.join
+      end
     end
   end
   

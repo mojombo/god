@@ -40,19 +40,19 @@ module God
       # a name must be specified
       if self.name.nil?
         valid = false
-        LOG.log(self, :error, "No name was specified")
+        applog(self, :error, "No name was specified")
       end
       
       # valid_states must be specified
       if self.valid_states.nil?
         valid = false
-        LOG.log(self, :error, "No valid_states array was specified")
+        applog(self, :error, "No valid_states array was specified")
       end
       
       # valid_states must be specified
       if self.initial_state.nil?
         valid = false
-        LOG.log(self, :error, "No initial_state was specified")
+        applog(self, :error, "No initial_state was specified")
       end
       
       valid
@@ -132,8 +132,7 @@ module God
         from_state = self.state
         
         msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
-        Syslog.debug(msg)
-        LOG.log(self, :info, msg)
+        applog(self, :info, msg)
         
         # cleanup from current state
         self.metrics[from_state].each { |m| m.disable }
@@ -199,14 +198,12 @@ module God
         case command
           when String
             msg = "#{self.name} #{a}: #{command}"
-            Syslog.debug(msg)
-            LOG.log(self, :info, msg)
+            applog(self, :info, msg)
             
             system(command)
           when Proc
             msg = "#{self.name} #{a}: lambda"
-            Syslog.debug(msg)
-            LOG.log(self, :info, msg)
+            applog(self, :info, msg)
             
             command.call
           else

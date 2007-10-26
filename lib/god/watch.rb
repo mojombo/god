@@ -123,16 +123,14 @@ module God
         info = b.send("before_#{action}")
         if info
           msg = "#{self.name} before_#{action}: #{info} (#{b.base_name})"
-          Syslog.debug(msg)
-          LOG.log(self, :info, msg)
+          applog(self, :info, msg)
         end
       end
       
       # log
       if self.send(action)
         msg = "#{self.name} #{action}: #{self.send(action).to_s}"
-        Syslog.debug(msg)
-        LOG.log(self, :info, msg)
+        applog(self, :info, msg)
       end
       
       @process.call_action(action)
@@ -144,8 +142,7 @@ module God
         info = b.send("after_#{action}")
         if info
           msg = "#{self.name} after_#{action}: #{info} (#{b.base_name})"
-          Syslog.debug(msg)
-          LOG.log(self, :info, msg)
+          applog(self, :info, msg)
         end
       end
     end

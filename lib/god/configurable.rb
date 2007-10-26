@@ -39,10 +39,12 @@ module God
     end
     
     def self.complain(text, c = nil)
-      msg = text
+      watch = c.watch rescue nil
+      msg = ""
+      msg += "#{watch.name}: " if watch
+      msg += text
       msg += " for #{c.friendly_name}" if c
-      Syslog.err(msg)
-      puts msg
+      applog(watch, :error, msg)
       false
     end
     

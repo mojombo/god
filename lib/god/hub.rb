@@ -83,8 +83,7 @@ module God
                   watch.move(dest)
                 rescue EventRegistrationFailedError
                   msg = watch.name + ' Event registration failed, moving back to previous state'
-                  Syslog.debug(msg)
-                  LOG.log(watch, :info, msg)
+                  applog(watch, :info, msg)
                   
                   dest = watch.state
                   retry
@@ -95,11 +94,10 @@ module God
               end
             end
           end
-        rescue => e
+        rescue Exception => e
           message = format("Unhandled exception (%s): %s\n%s",
                            e.class, e.message, e.backtrace.join("\n"))
-          Syslog.crit message
-          abort message
+          applog(nil, :fatal, message)
         end
       end
     end
@@ -136,11 +134,10 @@ module God
               end
             end
           end
-        rescue => e
+        rescue Exception => e
           message = format("Unhandled exception (%s): %s\n%s",
                            e.class, e.message, e.backtrace.join("\n"))
-          Syslog.crit message
-          abort message
+          applog(nil, :fatal, message)
         end
       end
     end
@@ -165,19 +162,16 @@ module God
       if condition.info
         Array(condition.info).each do |condition_info|
           messages << "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
-          Syslog.debug(messages.last)
-          LOG.log(watch, :info, messages.last % [])
+          applog(watch, :info, messages.last % [])
         end
       else
         messages << "#{watch.name} #{status} (#{condition.base_name})"
-        Syslog.debug(messages.last)
-        LOG.log(watch, :info, messages.last % [])
+        applog(watch, :info, messages.last % [])
       end
       
       # log
       debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
-      Syslog.debug(debug_message)
-      LOG.log(watch, :debug, debug_message)
+      applog(watch, :debug, debug_message)
       
       messages
     end
@@ -210,18 +204,17 @@ module God
       # warn about unmatched contacts
       unless unmatched.empty?
         msg = "#{condition.watch.name} no matching contacts for '#{unmatched.join(", ")}'"
-        LOG.log(condition.watch, :warn, msg)
+        applog(condition.watch, :warn, msg)
       end
       
       # notify each contact
       resolved_contacts.each do |c|
         host = `hostname`.chomp rescue 'none'
         c.notify(message, Time.now, spec[:priority], spec[:category], host)
-      
+        
         msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
-      
-        Syslog.debug(msg)
-        LOG.log(condition.watch, :info, msg % [])
+        
+        applog(condition.watch, :info, msg % [])
       end
     end
   end

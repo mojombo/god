@@ -41,7 +41,7 @@ module God
     def start
       begin
         @drb ||= DRb.start_service(self.socket, self)
-        LOG.log(nil, :info, "Started on #{DRb.uri}")
+        applog(nil, :info, "Started on #{DRb.uri}")
       rescue Errno::EADDRINUSE
         DRb.start_service
         server = DRbObject.new(nil, self.socket)

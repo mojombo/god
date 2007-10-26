@@ -19,6 +19,14 @@ class TestLogger < Test::Unit::TestCase
     assert_match(/qux/, @log.logs['foo'][0][1])
   end
   
+  def test_log_should_send_to_syslog
+    Syslog.expects(:crit).with('foo')
+    
+    no_stdout do
+      @log.log(stub(:name => 'foo'), :fatal, "foo")
+    end
+  end
+  
   # watch_log_since
   
   def test_watch_log_since

@@ -31,23 +31,29 @@ module God
       
       @timer = Thread.new do
         loop do
-          # get the current time
-          t = Time.now.to_i
+          begin
+            # get the current time
+            t = Time.now.to_i
           
-          # iterate over each event and trigger any that are due
-          @events.each do |event|
-            if t >= event.at
-              self.trigger(event)
-              @mutex.synchronize do
-                @events.delete(event)
+            # iterate over each event and trigger any that are due
+            @events.each do |event|
+              if t >= event.at
+                self.trigger(event)
+                @mutex.synchronize do
+                  @events.delete(event)
+                end
+              else
+                break
               end
-            else
-              break
             end
-          end
           
-          # sleep until next check
-          sleep INTERVAL
+            # sleep until next check
+            sleep INTERVAL
+          rescue Exception => e
+            message = format("Unhandled exception (%s): %s\n%s",
+                             e.class, e.message, e.backtrace.join("\n"))
+            applog(nil, :fatal, message)
+          end
         end
       end
     end

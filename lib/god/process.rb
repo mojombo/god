@@ -44,13 +44,13 @@ module God
       # a start command must be specified
       if self.start.nil?
         valid = false
-        LOG.log(self, :error, "No start command was specified")
+        applog(self, :error, "No start command was specified")
       end
       
       # self-daemonizing processes must specify a stop command
       if !@tracking_pid && self.stop.nil?
         valid = false
-        LOG.log(self, :error, "No stop command was specified")
+        applog(self, :error, "No stop command was specified")
       end
       
       # uid must exist if specified
@@ -59,7 +59,7 @@ module God
           Etc.getpwnam(self.uid)
         rescue ArgumentError
           valid = false
-          LOG.log(self, :error, "UID for '#{self.uid}' does not exist")
+          applog(self, :error, "UID for '#{self.uid}' does not exist")
         end
       end
       
@@ -69,38 +69,38 @@ module God
           Etc.getgrnam(self.gid)
         rescue ArgumentError
           valid = false
-          LOG.log(self, :error, "GID for '#{self.gid}' does not exist")
+          applog(self, :error, "GID for '#{self.gid}' does not exist")
         end
       end
       
       # pid dir must exist if specified
       if !@tracking_pid && !File.exist?(File.dirname(self.pid_file))
         valid = false
-        LOG.log(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' does not exist")
+        applog(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' does not exist")
       end
       
       # pid dir must be writable if specified
       if !@tracking_pid && !file_writable?(File.dirname(self.pid_file))
         valid = false
-        LOG.log(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' is not writable by #{self.uid || Etc.getlogin}")
+        applog(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' is not writable by #{self.uid || Etc.getlogin}")
       end
       
       # log dir must exist
       if !File.exist?(File.dirname(self.log))
         valid = false
-        LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' does not exist")
+        applog(self, :error, "Log directory '#{File.dirname(self.log)}' does not exist")
       end
       
       # log file or dir must be writable
       if File.exist?(self.log)
         unless file_writable?(self.log)
           valid = false
-          LOG.log(self, :error, "Log file '#{self.log}' exists but is not writable by #{self.uid || Etc.getlogin}")
+          applog(self, :error, "Log file '#{self.log}' exists but is not writable by #{self.uid || Etc.getlogin}")
         end
       else
         unless file_writable?(File.dirname(self.log))
           valid = false
-          LOG.log(self, :error, "Log directory '#{File.dirname(self.log)}' is not writable by #{self.uid || Etc.getlogin}")
+          applog(self, :error, "Log directory '#{File.dirname(self.log)}' is not writable by #{self.uid || Etc.getlogin}")
         end
       end
       
@@ -158,7 +158,7 @@ module God
         pid = File.read(self.pid_file).strip.to_i
         name = self.name
         command = lambda do
-          LOG.log(self, :info, "#{self.name} stop: default lambda killer")
+          applog(self, :info, "#{self.name} stop: default lambda killer")
           
           ::Process.kill('HUP', pid) rescue nil
           

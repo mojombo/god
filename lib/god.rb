@@ -52,8 +52,13 @@ require 'god/sugar'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
+# App wide logging system
 LOG = God::Logger.new
 LOG.datetime_format = "%Y-%m-%d %H:%M:%S "
+
+def applog(watch, level, text)
+  LOG.log(watch, level, text)
+end
 
 # The $run global determines whether god should be started when the
 # program would normally end. This should be set to true if when god
@@ -63,6 +68,7 @@ $run ||= nil
 
 GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
 
+# Ensure that Syslog is open
 begin
   Syslog.open('god')
 rescue RuntimeError
@@ -74,6 +80,7 @@ def root_binding
   binding
 end
 
+# Load the event handler system
 God::EventHandler.load
 
 module Kernel
@@ -81,7 +88,7 @@ module Kernel
   
   def abort(text = nil)
     $run = false
-    LOG.log(nil, :error, text) if text
+    applog(nil, :error, text) if text
     text ? abort_orig(text) : exit(1)
   end
   
@@ -102,7 +109,7 @@ class Module
         end
         
         if self.running && self.inited
-          LOG.log(nil, :warn, "God.#{arg} can't be set while god is running")
+          applog(nil, :warn, "God.#{arg} can't be set while god is running")
           return
         end
         
@@ -224,19 +231,19 @@ module God
       if self.watches[t.group]
         abort "Group name '#{t.group}' already used for a Task"
       end
-    
+      
       self.groups[t.group] ||= []
       self.groups[t.group] << t
     end
-
+    
     # register watch
     t.register!
     
     # log
     if self.running && existing_watch
-      LOG.log(t, :info, "#{t.name} Reloaded config")
+      applog(t, :info, "#{t.name} Reloaded config")
     elsif self.running
-      LOG.log(t, :info, "#{t.name} Loaded config")
+      applog(t, :info, "#{t.name} Loaded config")
     end
   end
   
@@ -298,7 +305,7 @@ module God
       if self.contacts[c.group]
         abort "Contact Group name '#{c.group}' already used for a Contact"
       end
-    
+      
       self.contact_groups[c.group] ||= []
       self.contact_groups[c.group] << c
     end
@@ -314,7 +321,7 @@ module God
   def self.control(name, command)
     # get the list of watches
     watches = Array(self.watches[name] || self.groups[name])
-  
+    
     jobs = []
     
     # do the command
@@ -420,7 +427,7 @@ module God
       end
     end
   end
-    
+  
   def self.validater
     unless test(?w, self.pid_file_directory)
       abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"

@@ -12,6 +12,13 @@ class TestGod < Test::Unit::TestCase
     Timer.get.timer.kill
   end
   
+  # applog
+  
+  def test_applog
+    LOG.expects(:log).with(nil, :debug, 'foo')
+    applog(nil, :debug, 'foo')
+  end
+  
   # internal_init
   
   def test_init_should_initialize_watches_to_empty_array

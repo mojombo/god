@@ -1,6 +1,12 @@
 module God
   
   class Logger < ::Logger
+    SYSLOG_EQUIVALENTS = {:fatal => :crit,
+                          :error => :err,
+                          :warn => :debug,
+                          :info => :debug,
+                          :debug => :debug}
+    
     attr_accessor :logs
     
     def initialize
@@ -41,6 +47,9 @@ module God
       
       # send to regular logger
       self.send(level, text)
+      
+      # send to syslog
+      Syslog.send(SYSLOG_EQUIVALENTS[level], text)
     end
     
     def watch_log_since(watch_name, since)
