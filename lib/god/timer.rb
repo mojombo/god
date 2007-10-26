@@ -53,6 +53,7 @@ module God
             message = format("Unhandled exception (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
             applog(nil, :fatal, message)
+            sleep INTERVAL
           end
         end
       end

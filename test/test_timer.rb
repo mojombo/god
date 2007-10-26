@@ -51,6 +51,15 @@ class TestTimer < Test::Unit::TestCase
     assert_equal 1, @t.events.size
   end
   
+  def test_time_should_recover_from_exceptions
+    @t.expects(:trigger).raises(Exception.new)
+    no_stdout do
+      @t.schedule(stub(:interval => 0))
+      sleep(0.3)
+      @t.schedule(stub(:interval => 0))
+    end
+  end
+  
   # join
   
   def test_join_should_join

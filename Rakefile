@@ -26,3 +26,10 @@ desc "Upload site to Rubyforge"
 task :site_edge do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
 end
+
+desc "Run rcov"
+task :coverage do
+  `rm -fr coverage`
+  `rcov test/test_*.rb`
+  `open coverage/index.html`
+end

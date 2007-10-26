@@ -89,7 +89,8 @@ module Kernel
   def abort(text = nil)
     $run = false
     applog(nil, :error, text) if text
-    text ? abort_orig(text) : exit(1)
+    # text ? abort_orig(text) : exit(1)
+    exit(1)
   end
   
   alias_method :exit_orig, :exit
