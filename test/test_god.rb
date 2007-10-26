@@ -336,6 +336,15 @@ class TestGod < Test::Unit::TestCase
   # terminate
   
   def test_terminate_should_exit
+    God.pid = nil
+    FileUtils.expects(:rm_f).never
+    God.expects(:exit!)
+    God.terminate
+  end
+  
+  def test_terminate_should_delete_pid
+    God.pid = '/foo/bar'
+    FileUtils.expects(:rm_f).with("/foo/bar")
     God.expects(:exit!)
     God.terminate
   end

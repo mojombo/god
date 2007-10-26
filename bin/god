@@ -252,6 +252,11 @@ begin
             God.port = options[:port]
           end
           
+          # set pid if requested
+          if options[:pid]
+            God.pid = options[:pid] 
+          end
+          
           # load config
           if options[:config]
             unless File.exist?(options[:config])

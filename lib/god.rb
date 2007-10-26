@@ -134,7 +134,8 @@ module God
   
   class << self
     # user configurable
-    safe_attr_accessor :host,
+    safe_attr_accessor :pid,
+                       :host,
                        :port,
                        :allow,
                        :log_buffer_size,
@@ -153,6 +154,7 @@ module God
   end
   
   # initialize class instance variables
+  self.pid = nil
   self.host = nil
   self.port = nil
   self.allow = nil
@@ -361,6 +363,7 @@ module God
   end
   
   def self.terminate
+    FileUtils.rm_f(self.pid) if self.pid
     exit!(0)
   end
   

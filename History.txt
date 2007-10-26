@@ -1,3 +1,19 @@
+== 0.6.0 / 
+
+* Minor Enhancement
+  * Move Syslog calls into God::Logger and clean up all calling code
+  * Remove god's pid file on user requested termination
+
+== 0.5.2 / 2007-10-10
+
+* Minor Enhancement
+  * Allow extra args to pass through to config file
+  
+== 0.5.1 / 2007-10-08
+
+* Bug Fixes
+  * Rescue connection refused in http response code condition
+
 == 0.5.0 / 2007-10-05
 
 * Major Enhancements
