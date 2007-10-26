@@ -362,8 +362,15 @@ module God
     return false
   end
   
+  # Force the termination of god.
+  #   * Clean up pid file if one exists
+  #   * Stop DRb service
+  #   * Hard exit using exit!
+  #
+  # Never returns because the process will no longer exist!
   def self.terminate
     FileUtils.rm_f(self.pid) if self.pid
+    self.server.stop if self.server
     exit!(0)
   end
   

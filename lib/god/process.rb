@@ -147,6 +147,9 @@ module God
         STDOUT.reopen self.log, "a"
         STDERR.reopen STDOUT
         
+        # close any other file descriptors
+        3.upto(256){|fd| IO::new(fd).close rescue nil}
+        
         exec command unless command.empty?
       end
     end

@@ -3,6 +3,7 @@
 * Minor Enhancement
   * Move Syslog calls into God::Logger and clean up all calling code
   * Remove god's pid file on user requested termination
+  * Better handling and cleanup of DRb server's unix domain socket
 
 == 0.5.2 / 2007-10-10
 
