@@ -50,7 +50,7 @@ module God
       end
     end
     
-    def self.call(pid, event)
+    def self.call(pid, event, extra_data = {})
       @@actions[pid][event].call if watching_pid?(pid) && @@actions[pid][event]
     end
     

@@ -28,6 +28,8 @@ nlh_handle_events()
   struct nlmsghdr *hdr;
   struct proc_event *event;
   
+  VALUE extra_data;
+  
   fd_set fds;
   
   FD_ZERO(&fds);
@@ -61,16 +63,25 @@ nlh_handle_events()
           return INT2FIX(0);
         }
       
-        rb_funcall(cEventHandler, m_call, 2, INT2FIX(event->event_data.exit.process_pid), ID2SYM(proc_exit));
+        extra_data = rb_hash_new();
+        rb_hash_aset(extra_data, rb_intern("exit_code"), UINT2FIX(event->event_data.exit.exit_code));
+        rb_hash_aset(extra_data, rb_intern("exit_signal"), UINT2FIX(event->event_data.exit.exit_signal));
+        rb_hash_aset(extra_data, rb_intern("thread_group_id"), INT2FIX(event->event_data.exit.process_tgid));
+
+        rb_funcall(cEventHandler, m_call, 3, INT2FIX(event->event_data.exit.process_pid), ID2SYM(proc_exit), extra_data);
         return INT2FIX(1);
       
-      /* TODO: On fork, call and pass pid of child */
       case PROC_EVENT_FORK:
         if (Qnil == rb_funcall(cEventHandler, m_watching_pid, 1, INT2FIX(event->event_data.fork.parent_pid))) {
           return INT2FIX(0);
         }
+        
+        extra_data = rb_hash_new();
+        rb_hash_aset(extra_data, rb_intern("parent_thread_group_id"), INT2FIX(event->event_data.fork.parent_tgid));
+        rb_hash_aset(extra_data, rb_intern("child_pid"), INT2FIX(event->event_data.fork.child_pid));
+        rb_hash_aset(extra_data, rb_intern("child_thread_group_id"), INT2FIX(event->event_data.fork.child_tgid));
       
-        rb_funcall(cEventHandler, m_call, 2, INT2FIX(event->event_data.fork.parent_pid), ID2SYM(proc_fork));
+        rb_funcall(cEventHandler, m_call, 3, INT2FIX(event->event_data.fork.parent_pid), ID2SYM(proc_fork), extra_data);
         return INT2FIX(1);
 
       case PROC_EVENT_NONE:
