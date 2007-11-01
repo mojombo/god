@@ -80,7 +80,7 @@ module God
       end
       
       # pid dir must be writable if specified
-      if !@tracking_pid && !file_writable?(File.dirname(self.pid_file))
+      if !@tracking_pid && File.exist?(File.dirname(self.pid_file)) && !file_writable?(File.dirname(self.pid_file))
         valid = false
         applog(self, :error, "PID file directory '#{File.dirname(self.pid_file)}' is not writable by #{self.uid || Etc.getlogin}")
       end
