@@ -64,9 +64,9 @@ nlh_handle_events()
         }
       
         extra_data = rb_hash_new();
-        rb_hash_aset(extra_data, rb_intern("exit_code"), UINT2FIX(event->event_data.exit.exit_code));
-        rb_hash_aset(extra_data, rb_intern("exit_signal"), UINT2FIX(event->event_data.exit.exit_signal));
-        rb_hash_aset(extra_data, rb_intern("thread_group_id"), INT2FIX(event->event_data.exit.process_tgid));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("exit_code")), INT2FIX(event->event_data.exit.exit_code));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("exit_signal")), INT2FIX(event->event_data.exit.exit_signal));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("thread_group_id")), INT2FIX(event->event_data.exit.process_tgid));
 
         rb_funcall(cEventHandler, m_call, 3, INT2FIX(event->event_data.exit.process_pid), ID2SYM(proc_exit), extra_data);
         return INT2FIX(1);
