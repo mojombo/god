@@ -16,7 +16,8 @@ module God
         pid = File.read(self.watch.pid_file).strip.to_i
         
         begin
-          EventHandler.register(pid, :proc_exit) do
+          EventHandler.register(pid, :proc_exit) do |extra|
+            self.info = "process exited #{extra.inspect}"
             Hub.trigger(self)
           end
         rescue StandardError
