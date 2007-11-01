@@ -3,6 +3,64 @@ require 'net/http'
 module God
   module Conditions
     
+    # Condition Symbol :http_response_code
+    # Type: Poll
+    # 
+    # Trigger based on the response from an HTTP request.
+    #
+    # Paramaters
+    #   Required
+    #     +host+ is the hostname to connect [required]
+    #     --one of code_is or code_is_not--
+    #     +code_is+ trigger if the response code IS one of these
+    #               e.g. 500 or '500' or [404, 500] or %w{404 500}
+    #     +code_is_not+ trigger if the response code IS NOT one of these
+    #                   e.g. 200 or '200' or [200, 302] or %w{200 302}
+    #  Optional
+    #     +port+ is the port to connect (default 80)
+    #     +path+ is the path to connect (default '/')
+    #     +times+ is the number of times after which to trigger (default 1)
+    #             e.g. 3 (times in a row) or [3, 5] (three out of fives times)
+    #     +timeout+ is the time to wait for a connection (default 60.seconds)
+    #
+    # Examples
+    #
+    # Trigger if the response code from www.example.com/foo/bar
+    # is not a 200 (or if the connection is refused or times out:
+    #
+    #   on.condition(:http_response_code) do |c|
+    #     c.host = 'www.example.com'
+    #     c.path = '/foo/bar'
+    #     c.code_is_not = 200
+    #   end
+    #
+    # Trigger if the response code is a 404 or a 500 (will not
+    # be triggered by a connection refusal or timeout):
+    #
+    #   on.condition(:http_response_code) do |c|
+    #     c.host = 'www.example.com'
+    #     c.path = '/foo/bar'
+    #     c.code_is = [404, 500]
+    #   end
+    #
+    # Trigger if the response code is not a 200 five times in a row:
+    #
+    #   on.condition(:http_response_code) do |c|
+    #     c.host = 'www.example.com'
+    #     c.path = '/foo/bar'
+    #     c.code_is_not = 200
+    #     c.times = 5
+    #   end
+    #
+    # Trigger if the response code is not a 200 or does not respond
+    # within 10 seconds:
+    #
+    #   on.condition(:http_response_code) do |c|
+    #     c.host = 'www.example.com'
+    #     c.path = '/foo/bar'
+    #     c.code_is_not = 200
+    #     c.timeout = 10
+    #   end
     class HttpResponseCode < PollCondition
       attr_accessor :code_is,      # e.g. 500 or '500' or [404, 500] or %w{404 500}
                     :code_is_not,  # e.g. 200 or '200' or [200, 302] or %w{200 302}
@@ -14,7 +72,10 @@ module God
       
       def initialize
         super
+        self.port = 80
+        self.path = '/'
         self.times = [1, 1]
+        self.timeout = 60.seconds
       end
       
       def prepare
@@ -37,11 +98,8 @@ module God
       def valid?
         valid = true
         valid &= complain("Attribute 'host' must be specified", self) if self.host.nil?
-        valid &= complain("Attribute 'port' must be specified", self) if self.port.nil?
-        valid &= complain("Attribute 'path' must be specified", self) if self.path.nil?
         valid &= complain("One (and only one) of attributes 'code_is' and 'code_is_not' must be specified", self) if
           (self.code_is.nil? && self.code_is_not.nil?) || (self.code_is && self.code_is_not)
-        valid &= complain("Attribute 'timeout' must be specified", self) if self.timeout.nil?
         valid
       end
       

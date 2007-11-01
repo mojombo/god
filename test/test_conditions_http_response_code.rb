@@ -36,27 +36,6 @@ class TestHttpResponseCode < Test::Unit::TestCase
     no_stdout { assert !c.valid? }
   end
   
-  def test_valid_should_return_false_if_no_port_set
-    c = valid_condition do |cc|
-      cc.port = nil
-    end
-    no_stdout { assert !c.valid? }
-  end
-  
-  def test_valid_should_return_false_if_no_path_set
-    c = valid_condition do |cc|
-      cc.path = nil
-    end
-    no_stdout { assert !c.valid? }
-  end
-  
-  def test_valid_should_return_false_if_no_timeout_set
-    c = valid_condition do |cc|
-      cc.timeout = nil
-    end
-    no_stdout { assert !c.valid? }
-  end
-  
   # test
   
   def test_test_should_return_false_if_code_is_is_set_to_200_but_response_is_500
