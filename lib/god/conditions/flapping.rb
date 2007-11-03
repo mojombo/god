@@ -2,7 +2,13 @@ module God
   module Conditions
     
     class Flapping < TriggerCondition
-      attr_accessor :times, :within, :from_state, :to_state, :retry_in, :retry_times, :retry_within
+      attr_accessor :times,
+                    :within,
+                    :from_state,
+                    :to_state,
+                    :retry_in,
+                    :retry_times,
+                    :retry_within
       
       def initialize
         self.info = "process is flapping"

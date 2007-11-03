@@ -1,6 +1,27 @@
 module God
   module Conditions
     
+    # Condition Symbol :process_exits
+    # Type: Event
+    # 
+    # Trigger when a process exits.
+    #
+    # Paramaters
+    #   Required
+    #     +pid_file+ is the pid file of the process in question. Automatically
+    #                populated for Watches.
+    #
+    # Examples
+    #
+    # Trigger if process exits (from a Watch):
+    #
+    #   on.condition(:process_exits)
+    #
+    # Trigger if process exits:
+    #
+    #   on.condition(:process_exits) do |c|
+    #     c.pid_file = "/var/run/mongrel.3000.pid"
+    #   end
     class ProcessExits < EventCondition
       def initialize
         self.info = "process exited"
