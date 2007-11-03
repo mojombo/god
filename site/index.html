@@ -642,6 +642,10 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <p>This will display the last 1000 lines of log for the 'local-3000' Watch and update every second with new log messages.</p>
 
+<p>You can also supply a shorthand to the log command that will match one of your watches. If it happens to match several, the first match will be used:</p>
+
+<pre>$ sudo god log l3</pre>
+
 <!-- ------------------------------------------------------------------------- -->
 
 <h1>Notifications</h1>
