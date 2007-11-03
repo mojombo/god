@@ -385,11 +385,13 @@ module God
   end
   
   def self.running_log(watch_name, since)
-    unless self.watches[watch_name]
+    matches = pattern_match(self.watches.keys, watch_name)
+    
+    unless matches.first
       raise NoSuchWatchError.new
     end
     
-    LOG.watch_log_since(watch_name, since)
+    LOG.watch_log_since(matches.first, since)
   end
   
   def self.running_load(code, filename)
@@ -476,6 +478,28 @@ module God
   
   def self.at_exit
     self.start
+  end
+  
+  # private
+  
+  # Match a shortened pattern against a list of String candidates.
+  # The pattern is expanded into a regular expression by
+  # inserting .* between each character.
+  #
+  # Examples
+  #
+  #   list = %w{ foo bar bars }
+  #   pattern = 'br'
+  #   God.pattern_match(list, pattern)
+  #   # => ['bar', 'bars']
+  #
+  # Returns String[]
+  def self.pattern_match(list, pattern)
+    regex = pattern.split('').join('.*')
+    
+    list.select do |item|
+      item =~ Regexp.new(regex)
+    end
   end
 end
 

@@ -38,7 +38,7 @@ module God
       buf = StringIO.new
       templog = ::Logger.new(buf)
       templog.level = Logger::INFO
-      templog.send(level, text)
+      templog.send(level, text % [])
       @mutex.synchronize do
         @capture.puts(buf.string) if @capture
         self.logs[watch.name] << [Time.now, buf.string] if watch
@@ -46,7 +46,7 @@ module God
       templog.close
       
       # send to regular logger
-      self.send(level, text)
+      self.send(level, text % [])
       
       # send to syslog
       Syslog.send(SYSLOG_EQUIVALENTS[level], text)
