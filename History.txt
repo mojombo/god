@@ -5,6 +5,8 @@
   * Remove god's pid file on user requested termination
   * Better handling and cleanup of DRb server's unix domain socket
   * Allow shorthand for requesting a god log
+  * Add `god check` to make it easier to diagnose event problems
+  * Refactor god binary into class/method structure
 * New Conditions
   * DiskUsage < PollCondition - trigger if disk usage is above limit on mount [Rudy Desjardins]
 

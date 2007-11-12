@@ -304,6 +304,15 @@ class TestGod < Test::Unit::TestCase
     God.control('foo', 'unmonitor')
   end
   
+  def test_control_should_unwatch_on_remove
+    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
+    
+    w = God.watches['foo']
+    w.state = :up
+    God.expects(:unwatch)
+    God.control('foo', 'remove')
+  end
+  
   def test_control_should_raise_on_invalid_command
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     

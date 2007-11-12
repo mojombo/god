@@ -28,7 +28,7 @@ module God
         if %w{load status log quit terminate}.include?(@command)
           setup
           send("#{@command}_command")
-        elsif %w{start stop restart monitor unmonitor}.include?(@command)
+        elsif %w{start stop restart monitor unmonitor remove}.include?(@command)
           setup
           lifecycle_command
         elsif @command == 'check'

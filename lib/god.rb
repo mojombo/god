@@ -342,6 +342,8 @@ module God
         watches.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) if w.state != :unmonitored } }
       when "unmonitor"
         watches.each { |w| jobs << Thread.new { w.unmonitor if w.state != :unmonitored } }
+      when "remove"
+        watches.each { |w| jobs << Thread.new { self.unwatch(w) } }
       else
         raise InvalidCommandError.new
     end
