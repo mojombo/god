@@ -94,7 +94,6 @@ module Kernel
   def abort(text = nil)
     $run = false
     applog(nil, :error, text) if text
-    # text ? abort_orig(text) : exit(1)
     exit(1)
   end
   
@@ -166,6 +165,9 @@ module God
   self.log_buffer_size = nil
   self.pid_file_directory = nil
   
+  # Initialize internal data.
+  #
+  # Returns nothing
   def self.internal_init
     # only do this once
     return if self.inited
@@ -195,13 +197,25 @@ module God
   # Instantiate a new, empty Watch object and pass it to the mandatory
   # block. The attributes of the watch will be set by the configuration
   # file.
+  #
+  # Aborts on duplicate watch name
+  #           invalid watch
+  #           conflicting group name
+  #
+  # Returns nothing
   def self.watch(&block)
     self.task(Watch, &block)
   end
   
-  # Instantiate a new, empty Task object and pass it to the mandatory
+  # Instantiate a new, empty Task object and yield it to the mandatory
   # block. The attributes of the task will be set by the configuration
   # file.
+  #
+  # Aborts on duplicate task name
+  #           invalid task
+  #           conflicting group name
+  #
+  # Returns nothing
   def self.task(klass = Task)
     self.internal_init
     
@@ -255,6 +269,10 @@ module God
     end
   end
   
+  # Unmonitor and remove the given watch from god.
+  #   +watch+ is the Watch to remove
+  #
+  # Returns nothing
   def self.unwatch(watch)
     # unmonitor
     watch.unmonitor unless watch.state == :unmonitored
@@ -271,10 +289,20 @@ module God
     end
   end
   
+  # Instantiate a new Contact of the given kind and send it to the block.
+  # Then prepare, validate, and record the Contact.
+  #   +kind+ is the contact class specifier
+  #
+  # Aborts on invalid kind
+  #           duplicate contact name
+  #           invalid contact
+  #           conflicting group name
+  #
+  # Returns nothing
   def self.contact(kind)
     self.internal_init
     
-    # create the condition
+    # create the contact
     begin
       c = Contact.generate(kind)
     rescue NoSuchContactError => e
@@ -319,13 +347,28 @@ module God
     end
   end
   
+  # Remove the given contact from god.
+  #   +contact+ is the Contact to remove
+  #
+  # Returns nothing
   def self.uncontact(contact)
     self.contacts.delete(contact.name)
     if contact.group
       self.contact_groups[contact.group].delete(contact)
     end
   end
-    
+  
+  # Control the lifecycle of the given task(s).
+  #   +name+ is the name of a task/group (String)
+  #   +command+ is the command to run (String)
+  #             one of: "start"
+  #                     "monitor"
+  #                     "restart"
+  #                     "stop"
+  #                     "unmonitor"
+  #                     "remove"
+  #
+  # Returns String[]:task_names
   def self.control(name, command)
     # get the list of watches
     watches = Array(self.watches[name] || self.groups[name])
@@ -353,6 +396,10 @@ module God
     watches.map { |x| x.name }
   end
   
+  # Unmonitor and stop all tasks.
+  #
+  # Returns true on success
+  #         false if all tasks could not be stopped within 10 seconds
   def self.stop_all
     self.watches.sort.each do |name, w|
       Thread.new do
@@ -381,6 +428,13 @@ module God
     exit!(0)
   end
   
+  # Gather the status of each task.
+  #
+  # Examples
+  #   God.status
+  #   # => { 'mongrel' => :up, 'nginx' => :up }
+  #
+  # Returns { String:task_name => Symbol:status, ... }
   def self.status
     info = {}
     self.watches.map do |name, w|
@@ -389,8 +443,15 @@ module God
     info
   end
   
+  # Log lines for the given task since the specified time.
+  #   +watch_name+ is the name of the task (may be abbreviated)
+  #   +since+ is the Time since which to report log lines
+  #
+  # Raises God::NoSuchWatchError if no tasks matched
+  #
+  # Returns String:joined_log_lines
   def self.running_log(watch_name, since)
-    matches = pattern_match(self.watches.keys, watch_name)
+    matches = pattern_match(watch_name, self.watches.keys)
     
     unless matches.first
       raise NoSuchWatchError.new
@@ -399,6 +460,12 @@ module God
     LOG.watch_log_since(matches.first, since)
   end
   
+  # Load a config file into a running god instance. Rescues any exceptions
+  # that the config may raise and reports these back to the caller.
+  #   +code+ is a String containing the config file
+  #   +filename+ is the filename of the config file
+  #
+  # Returns [String[]:task_names, String:errors]
   def self.running_load(code, filename)
     errors = ""
     watches = []
@@ -431,6 +498,10 @@ module God
     [names, errors]
   end
   
+  # Load the given file(s) according to the given glob.
+  #   +glob+ is the glob-enabled path to load
+  #
+  # Returns nothing
   def self.load(glob)
     Dir[glob].each do |f|
       Kernel.load f
@@ -454,6 +525,9 @@ module God
     end
   end
   
+  # Initialize and startup the machinery that makes god work.
+  #
+  # Returns nothing
   def self.start
     self.internal_init
     self.setup
@@ -481,6 +555,9 @@ module God
     Timer.get.join
   end
   
+  # To be called on program exit to start god
+  #
+  # Returns nothing
   def self.at_exit
     self.start
   end
@@ -490,6 +567,8 @@ module God
   # Match a shortened pattern against a list of String candidates.
   # The pattern is expanded into a regular expression by
   # inserting .* between each character.
+  #   +pattern+ is the String containing the abbreviation
+  #   +list+ is the Array of Strings to match against
   #
   # Examples
   #
@@ -498,8 +577,8 @@ module God
   #   God.pattern_match(list, pattern)
   #   # => ['bar', 'bars']
   #
-  # Returns String[]
-  def self.pattern_match(list, pattern)
+  # Returns String[]:matched_elements
+  def self.pattern_match(pattern, list)
     regex = pattern.split('').join('.*')
     
     list.select do |item|
@@ -508,6 +587,10 @@ module God
   end
 end
 
+# Runs immediately before the program exits. If $run is true,
+# start god, if $run is false, exit normally.
+#
+# Returns nothing
 at_exit do
   God.at_exit if $run
 end

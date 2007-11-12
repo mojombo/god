@@ -535,10 +535,10 @@ class TestGod < Test::Unit::TestCase
   def test_pattern_match
     list = %w{ mongrel-3000 mongrel-3001 fuzed fuzed2 apache mysql}
     
-    assert_equal %w{ mongrel-3000 }, God.pattern_match(list, 'm3000')
-    assert_equal %w{ mongrel-3001 }, God.pattern_match(list, 'm31')
-    assert_equal %w{ fuzed fuzed2 }, God.pattern_match(list, 'fu')
-    assert_equal %w{ mysql }, God.pattern_match(list, 'sql')
+    assert_equal %w{ mongrel-3000 }, God.pattern_match('m3000', list)
+    assert_equal %w{ mongrel-3001 }, God.pattern_match('m31', list)
+    assert_equal %w{ fuzed fuzed2 }, God.pattern_match('fu', list)
+    assert_equal %w{ mysql }, God.pattern_match('sql', list)
   end
 end
 
