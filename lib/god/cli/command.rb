@@ -7,7 +7,6 @@ module God
         @options = options
         @args = args
         
-        setup
         dispatch
       end
       
@@ -27,9 +26,13 @@ module God
       
       def dispatch
         if %w{load status log quit terminate}.include?(@command)
+          setup
           send("#{@command}_command")
         elsif %w{start stop restart monitor unmonitor}.include?(@command)
+          setup
           lifecycle_command
+        elsif @command == 'check'
+          check_command
         else
           puts "Command '#{@command}' is not valid. Run 'god --help' for usage"
           abort
@@ -112,6 +115,50 @@ module God
         rescue DRb::DRbConnError
           puts 'Stopped god'
         end
+      end
+      
+      def check_command
+        Thread.new do
+          begin
+            event_system = God::EventHandler.event_system
+            puts "using event system: #{event_system}"
+            
+            if God::EventHandler.loaded?
+              puts "starting event handler"
+              God::EventHandler.start
+            else
+              puts "[fail] event system did not load"
+              exit(1)
+            end
+            
+            puts 'forking off new process'
+            
+            pid = fork do
+              loop { sleep(1) }
+            end
+            
+            puts "forked process with pid = #{pid}"
+            
+            God::EventHandler.register(pid, :proc_exit) do
+              puts "[ok] process exit event received"
+              exit(0)
+            end
+            
+            sleep(1)
+            
+            puts "killing process"
+            
+            ::Process.kill('KILL', pid)
+          rescue => e
+            puts e.message
+            puts e.backtrace.join("\n")
+          end
+        end
+        
+        sleep(2)
+        
+        puts "[fail] never received process exit event"
+        exit(1)
       end
       
       def lifecycle_command

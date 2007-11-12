@@ -3,7 +3,6 @@ Manifest.txt
 README.txt
 Rakefile
 bin/god
-bin/god-check
 examples/events.god
 examples/gravatar.god
 examples/single.god
@@ -15,6 +14,9 @@ lib/god.rb
 lib/god/behavior.rb
 lib/god/behaviors/clean_pid_file.rb
 lib/god/behaviors/notify_when_flapping.rb
+lib/god/cli/command.rb
+lib/god/cli/run.rb
+lib/god/cli/version.rb
 lib/god/condition.rb
 lib/god/conditions/always.rb
 lib/god/conditions/complex.rb

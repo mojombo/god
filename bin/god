@@ -34,6 +34,7 @@ begin
       status                             show status of each task
       quit                               stop god
       terminate                          stop god and all tasks
+      check                              run self diagnostic
       
     Options:
   EOF
