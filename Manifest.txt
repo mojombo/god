@@ -3,8 +3,10 @@ Manifest.txt
 README.txt
 Rakefile
 bin/god
+bin/god-check
 examples/events.god
 examples/gravatar.god
+examples/single.god
 ext/god/extconf.rb
 ext/god/kqueue_handler.c
 ext/god/netlink_handler.c

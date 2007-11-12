@@ -6,13 +6,20 @@ god
 
 == DESCRIPTION:
   
-God is an easy to configure, easy to extend monitoring framework written in Ruby.
+God is an easy to configure, easy to extend monitoring framework written 
+in Ruby.
 
-Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.
+Keeping your server processes and tasks running should be a simple part of 
+your deployment process. God aims to be the simplest, most powerful 
+monitoring application available.
 
 == DOCUMENTATION:
 
 See online documentation at http://god.rubyforge.org
+
+== COMMUNITY:
+
+Sign up for the god mailing list at http://groups.google.com/group/god-rb
 
 == INSTALL:
 
