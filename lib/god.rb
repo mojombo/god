@@ -52,6 +52,9 @@ require 'god/process'
 
 require 'god/sugar'
 
+require 'god/cli/version'
+require 'god/cli/command'
+
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
 # App wide logging system
