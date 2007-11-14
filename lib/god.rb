@@ -1,5 +1,8 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 
+# rubygems
+require 'rubygems'
+
 # core
 require 'stringio'
 require 'logger'
@@ -473,6 +476,7 @@ module God
     begin
       LOG.start_capture
       
+      Gem.clear_paths
       eval(code, root_binding, filename)
       self.pending_watches.each do |w|
         if previous_state = self.pending_watch_states[w.name]
