@@ -193,6 +193,7 @@ module God
               STDOUT.reopen(w)
               r.close
               pid = self.spawn(command)
+              puts pid.to_s # send pid back to forker
             end
             
             ::Process.waitpid(opid, 0)
