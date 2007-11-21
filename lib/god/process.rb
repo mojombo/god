@@ -188,16 +188,21 @@ module God
           # double fork god-daemonized processes
           # we don't want to wait for them to finish
           r, w = IO.pipe
-          opid = fork do
-            STDOUT.reopen(w)
-            r.close
-            pid = self.spawn(command)
-            puts pid.to_s
+          begin
+            opid = fork do
+              STDOUT.reopen(w)
+              r.close
+              pid = self.spawn(command)
+            end
+            
+            ::Process.waitpid(opid, 0)
+            w.close
+            pid = r.gets.chomp
+          ensure
+            # make sure the file descriptors get closed no matter what
+            r.close rescue nil
+            w.close rescue nil
           end
-          
-          ::Process.waitpid(opid, 0)
-          w.close
-          pid = r.gets.chomp
         else
           # single fork self-daemonizing processes
           # we want to wait for them to finish
