@@ -1,20 +1,20 @@
-Subject: [ANN] god 0.5.0 released
+Subject: [ANN] god 0.6.0 released (and mailing list)
 
-This release brings about a tremendous leap in stability and robustness. A large number of bugs have been discovered and addressed while god is being run in a production environment. We're battle testing god so you don't have to!
+!!!NEW MAILING LIST!!! We now have a mailing list at http://groups.google.com/group/god-rb
 
-There's a number of new features that you'll want to know about:
+This release is primarily focused on increased stability, robustness, and code cleanliness.
 
-* You can now define lifecycle conditions that are active during the full lifetime of a monitored process. This is especially useful for the :flapping condition that can detect when a process is being started over and over.
+The last release (0.5.0) switched from TCP sockets to Unix Domain Sockets for the CLI tools. There were some issues regarding file descriptors that would cause god to hang when restarting (the unix socket was being held open by spawned processes). These problems are all fixed in 0.6.0. You may need to kill any processes that were started under god 0.5.0 when you upgrade to 0.6.0 (you will only need to do this once during the upgrade process).
 
-* A notification framework has been added that allows you to be notified when conditions trigger. Currently there is an :email contact type that can send over SMTP (with optional authentication). Creating your own custom contact types is also extremely simple.
+More attention is now paid to Syslogging behavior.
 
-* Watches are now a specialized subclass of Tasks. Tasks don't know anything about processes and allow you to specify arbitrary states and setup a state machine for dealing with non-process monitoring.
+God will delete its own PID file when terminated via a user request.
 
-* Log output is much more human readable. It's very easy to tell exactly what's going on with your process and what conditions are triggering.
+A new command line option now allows you to check whether your installation properly handles events (sometimes the C extension will compile ok, but still not support events. Gentoo, I'm looking at you). Run `god check` to see an attempt to use the event system. It will tell you if your installation does not support events.
 
-* The CLI tools now use a UNIX domain socket to communicate with god. This means better security by enforcing that only authorized users can interact with god.
+A watch can now be removed entirely at runtime using `god remove <watch name>`.
 
-* An :http_response_code condition is now included that allows you to poll a website and ensure that a response code is within bounds.
+A new condition DiskUsage allows you to check the available disk space on a given volume.
 
 Updated documentation is now available on the website:
 
@@ -114,41 +114,19 @@ Detailed documentation is available at http://god.rubyforge.org/
 
 CHANGES
 
-== 0.5.0 / 2007-10-05
+== 0.6.0 / 2007-12-4
 
-* Major Enhancements
-  * Implement lifecycle scoped metric to allow for cross-state conditions
-  * Add TriggerCondition for conditions that need info about state changes
-  * Implement notification system
-  * Add Tasks (a generalization of Watches) to do non-process related tasks
-  * Add example init.d file in GOD_INSTALL_DIR/init/god [scott becker]
-  * Add human readable info to conditions (and make low level log lines debug)
-  * Switch DRb to use a unix domain socket for security reasons
-* Minor Enchancements
-  * Allow EventConditions to do transition overloading
-  * Report errors during god startup instead of failing silently
-  * Make transition block optional (default to Always condition returning true)
-  * Better usage info for `god --help`
-  * Explain what's going on when attempting to rebind to an in-use port
-  * Add -b option to god binary to auto-bind to an unused port
-  * Add `god quit` to stop god without stopping any tasks
-  * Make self-daemonized Watch commands synchronous (as they should be)
-  * Allow self-daemonized Watches to specify a log (could be useful)
-  * Check for existence of config file if specified
-  * Robustify `god load` and report errors back to the command issuer
-  * Warn when `god load` tries to set global options
-  * Add Configurable.clear method and make built-in conditions clear on entry
+* Minor Enhancement
+  * Move Syslog calls into God::Logger and clean up all calling code
+  * Remove god's pid file on user requested termination
+  * Better handling and cleanup of DRb server's unix domain socket
+  * Allow shorthand for requesting a god log
+  * Add `god check` to make it easier to diagnose event problems
+  * Refactor god binary into class/method structure
+  * Implement `god remove` to remove a Task altogether
 * New Conditions
-  * Flapping < TriggerCondition - trigger on state change
-  * HttpResponseCode < PollCondition - trigger on http response code or timeout (thx scott becker)
-* New Contacts
-  * Email < Contact - notify via email (smtp)
-* Bug Fixes
-  * Fix abort not aborting problem
-  * Fix -p option not working for god binary
-  * Fix God.init not accepting block (thx _eric)
-  * Fix SIGHUP ignore (thx _eric)
-  * Fix error reporting on `god --help` (don't error report a normal SystemExit)
+  * DiskUsage < PollCondition - trigger if disk usage is above limit on mount [Rudy Desjardins]
+
 
 
 AUTHORS
