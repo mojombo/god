@@ -64,7 +64,7 @@ nlh_handle_events()
         }
       
         extra_data = rb_hash_new();
-		rb_hash_aset(extra_data, ID2SYM(rb_intern("pid")), INT2FIX(event->event_data.exit.process_pid));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("pid")), INT2FIX(event->event_data.exit.process_pid));
         rb_hash_aset(extra_data, ID2SYM(rb_intern("exit_code")), INT2FIX(event->event_data.exit.exit_code));
         rb_hash_aset(extra_data, ID2SYM(rb_intern("exit_signal")), INT2FIX(event->event_data.exit.exit_signal));
         rb_hash_aset(extra_data, ID2SYM(rb_intern("thread_group_id")), INT2FIX(event->event_data.exit.process_tgid));
@@ -78,7 +78,7 @@ nlh_handle_events()
         }
         
         extra_data = rb_hash_new();
-		rb_hash_aset(extra_data, rb_intern("parent_pid"), INT2FIX(event->event_data.fork.parent_pid));
+        rb_hash_aset(extra_data, rb_intern("parent_pid"), INT2FIX(event->event_data.fork.parent_pid));
         rb_hash_aset(extra_data, rb_intern("parent_thread_group_id"), INT2FIX(event->event_data.fork.parent_tgid));
         rb_hash_aset(extra_data, rb_intern("child_pid"), INT2FIX(event->event_data.fork.child_pid));
         rb_hash_aset(extra_data, rb_intern("child_thread_group_id"), INT2FIX(event->event_data.fork.child_tgid));
