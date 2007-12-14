@@ -1,3 +1,8 @@
+== 0.6.1 / 2007-12-14
+
+* Minor Enhancement
+  * Log when state change is complete
+
 == 0.6.0 / 2007-12-4
 
 * Minor Enhancement
