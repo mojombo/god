@@ -170,7 +170,9 @@ class TestGod < Test::Unit::TestCase
     w = God.watches['bar']
     w.state = :up
     w.expects(:unmonitor)
-    God.unwatch(w)
+    no_stdout do
+      God.unwatch(w)
+    end
   end
   
   def test_unwatch_should_unregister_watch

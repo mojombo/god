@@ -290,6 +290,8 @@ module God
     if watch.group
       self.groups[watch.group].delete(watch)
     end
+    
+    applog(watch, :info, "#{watch.name} unwatched")
   end
   
   # Instantiate a new Contact of the given kind and send it to the block.
@@ -373,30 +375,30 @@ module God
   #
   # Returns String[]:task_names
   def self.control(name, command)
-    # get the list of watches
-    watches = Array(self.watches[name] || self.groups[name])
+    # get the list of items
+    items = Array(self.watches[name] || self.groups[name]).dup
     
     jobs = []
     
     # do the command
     case command
       when "start", "monitor"
-        watches.each { |w| jobs << Thread.new { w.monitor if w.state != :up } }
+        items.each { |w| jobs << Thread.new { w.monitor if w.state != :up } }
       when "restart"
-        watches.each { |w| jobs << Thread.new { w.move(:restart) } }
+        items.each { |w| jobs << Thread.new { w.move(:restart) } }
       when "stop"
-        watches.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) if w.state != :unmonitored } }
+        items.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) if w.state != :unmonitored } }
       when "unmonitor"
-        watches.each { |w| jobs << Thread.new { w.unmonitor if w.state != :unmonitored } }
+        items.each { |w| jobs << Thread.new { w.unmonitor if w.state != :unmonitored } }
       when "remove"
-        watches.each { |w| jobs << Thread.new { self.unwatch(w) } }
+        items.each { |w| self.unwatch(w) }
       else
         raise InvalidCommandError.new
     end
     
     jobs.each { |j| j.join }
     
-    watches.map { |x| x.name }
+    items.map { |x| x.name }
   end
   
   # Unmonitor and stop all tasks.
