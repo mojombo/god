@@ -163,6 +163,9 @@ module God
         # trigger
         Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
         
+        msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
+        applog(self, :info, msg)
+        
         # return self
         self
       end
