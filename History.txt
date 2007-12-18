@@ -1,3 +1,7 @@
+== 0.6.3 / 2007-12-18
+  * Minor Enhancements
+    * Output ProcessExits registration/deregistration info
+
 == 0.6.2 / 2007-12-17
   * Minor Enhancements
     * Output registered PID for ProcessExits
