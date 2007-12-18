@@ -38,7 +38,7 @@ module God
         
         begin
           EventHandler.register(pid, :proc_exit) do |extra|
-            self.info = "process exited #{extra.inspect}"
+            self.info = "process #{pid} exited #{extra.inspect}"
             Hub.trigger(self)
           end
         rescue StandardError

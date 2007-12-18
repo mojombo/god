@@ -77,6 +77,12 @@ module God
         begin
           Signal.trap('INT') { exit }
           name = @args[1]
+          
+          unless name
+            puts "You must specify a Task or Group name"
+            exit!
+          end
+          
           t = Time.at(0)
           loop do
             print @server.running_log(name, t)

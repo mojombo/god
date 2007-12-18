@@ -1,3 +1,9 @@
+== 0.6.2 / 2007-12-17
+  * Minor Enhancements
+    * Output registered PID for ProcessExits
+  * Bug Fixes
+    * Fix `god remove <group>` not working for unmonitored watches
+
 == 0.6.1 / 2007-12-14
 
 * Minor Enhancement
