@@ -38,7 +38,8 @@ module God
         
         begin
           EventHandler.register(pid, :proc_exit) do |extra|
-            self.info = "process #{pid} exited #{extra.inspect}"
+            formatted_extra = extra.size > 0 ? " #{extra.inspect}" : ""
+            self.info = "process #{pid} exited#{formatted_extra}"
             Hub.trigger(self)
           end
           
