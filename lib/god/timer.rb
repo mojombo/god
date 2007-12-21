@@ -34,25 +34,33 @@ module God
           begin
             # get the current time
             t = Time.now.to_i
-          
+            
             # iterate over each event and trigger any that are due
-            @events.each do |event|
-              if t >= event.at
-                self.trigger(event)
-                @mutex.synchronize do
-                  @events.delete(event)
+            @mutex.synchronize do
+              triggered = []
+              
+              @events.each do |event|
+                if t >= event.at
+                  # trigger the event and mark it for removal
+                  self.trigger(event)
+                  triggered << event
+                else
+                  # events are ordered, so we can bail on first miss
+                  break
                 end
-              else
-                break
+              end
+              
+              # remove all triggered events
+              triggered.each do |event|
+                @events.delete(event)
               end
             end
-          
-            # sleep until next check
-            sleep INTERVAL
           rescue Exception => e
             message = format("Unhandled exception (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
             applog(nil, :fatal, message)
+          ensure
+            # sleep until next check
             sleep INTERVAL
           end
         end
