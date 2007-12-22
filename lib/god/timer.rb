@@ -3,9 +3,14 @@ module God
   class TimerEvent
     attr_accessor :condition, :at
     
-    def initialize(condition, interval)
+    # Instantiate a new TimerEvent that will be triggered after the specified delay
+    #   +condition+ is the Condition
+    #   +delay+ is the number of seconds from now at which to trigger
+    #
+    # Returns TimerEvent
+    def initialize(condition, delay)
       self.condition = condition
-      self.at = Time.now.to_i + interval
+      self.at = Time.now.to_i + delay
     end
   end
   
@@ -16,15 +21,24 @@ module God
     
     @@timer = nil
     
+    # Get the singleton Timer
+    #
+    # Returns Timer
     def self.get
       @@timer ||= Timer.new
     end
     
+    # Reset the singleton Timer so the next call to Timer.get will
+    # create a new one
+    #
+    # Returns nothing
     def self.reset
       @@timer = nil
     end
     
-    # Start the scheduler loop to handle events
+    # Instantiate a new Timer and start the scheduler loop to handle events
+    #
+    # Returns Timer
     def initialize
       @events = []
       @mutex = Mutex.new
@@ -67,26 +81,39 @@ module God
       end
     end
     
-    # Create and register a new TimerEvent with the given parameters
-    def schedule(condition, interval = condition.interval)
+    # Create and register a new TimerEvent
+    #   +condition+ is the Condition
+    #   +delay+ is the number of seconds to delay (default: interval defined in condition)
+    #
+    # Returns nothing
+    def schedule(condition, delay = condition.interval)
       @mutex.synchronize do
-        @events << TimerEvent.new(condition, interval)
+        @events << TimerEvent.new(condition, delay)
         @events.sort! { |x, y| x.at <=> y.at }
       end
     end
     
     # Remove any TimerEvents for the given condition
+    #   +condition+ is the Condition
+    #
+    # Returns nothing
     def unschedule(condition)
       @mutex.synchronize do
         @events.reject! { |x| x.condition == condition }
       end
     end
     
+    # Trigger the event's condition to be evaluated
+    #   +event+ is the TimerEvent to trigger
+    #
+    # Returns nothing
     def trigger(event)
       Hub.trigger(event.condition)
     end
     
     # Join the timer thread
+    #
+    # Returns nothing
     def join
       @timer.join
     end
