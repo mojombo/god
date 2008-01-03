@@ -1,7 +1,7 @@
 module God
   
   class Task
-    attr_accessor :name, :interval, :group, :valid_states, :initial_state
+    attr_accessor :name, :interval, :group, :valid_states, :initial_state, :phase
     
     attr_writer   :autostart
     def autostart?; @autostart; end
@@ -128,6 +128,9 @@ module God
     # Move from one state to another
     def move(to_state)
       self.mutex.synchronize do
+        # set the phase for this move
+        self.phase = Time.now
+        
         orig_to_state = to_state
         from_state = self.state
         

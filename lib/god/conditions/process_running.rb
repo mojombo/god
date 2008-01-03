@@ -34,25 +34,29 @@ module God
     #     c.pid_file = "/var/run/mongrel.3000.pid"
     #   end
     class ProcessRunning < PollCondition
-      attr_accessor :running
+      attr_accessor :running, :pid_file
+      
+      def pid
+        self.watch.pid || File.read(self.pid_file).strip.to_i
+      end
       
       def valid?
         valid = true
-        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil? && self.pid_file.nil?
         valid &= complain("Attribute 'running' must be specified", self) if self.running.nil?
         valid
       end
-    
+      
       def test
         self.info = []
         
-        unless File.exist?(self.watch.pid_file)
-          self.info << "#{self.watch.name} #{self.class.name}: no such pid file: #{self.watch.pid_file}"
-          return !self.running
-        end
+        # unless File.exist?(self.watch.pid_file)
+        #   self.info << "#{self.watch.name} #{self.class.name}: no such pid file: #{self.watch.pid_file}"
+        #   return !self.running
+        # end
         
-        pid = File.read(self.watch.pid_file).strip
-        active = System::Process.new(pid).exists?
+        pid = self.watch.pid
+        active = pid && System::Process.new(pid).exists?
         
         if (self.running && active)
           self.info << "process is running"

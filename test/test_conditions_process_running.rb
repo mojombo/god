@@ -6,9 +6,11 @@ class TestConditionsProcessRunning < Test::Unit::TestCase
       c = Conditions::ProcessRunning.new
       c.running = r
     
-      c.stubs(:watch).returns(stub(:pid_file => '', :name => 'foo'))
+      c.stubs(:watch).returns(stub(:pid => 123, :name => 'foo'))
     
-      no_stdout { assert_equal !r, c.test }
+      # no_stdout do
+        assert_equal !r, c.test
+      # end
     end
   end
   
@@ -18,7 +20,7 @@ class TestConditionsProcessRunning < Test::Unit::TestCase
       c.running = r
     
       File.stubs(:exist?).returns(true)
-      c.stubs(:watch).returns(stub(:pid_file => ''))
+      c.stubs(:watch).returns(stub(:pid => 123))
       File.stubs(:read).returns('5')
       System::Process.any_instance.stubs(:exists?).returns(false)
     
@@ -32,7 +34,7 @@ class TestConditionsProcessRunning < Test::Unit::TestCase
       c.running = r
     
       File.stubs(:exist?).returns(true)
-      c.stubs(:watch).returns(stub(:pid_file => ''))
+      c.stubs(:watch).returns(stub(:pid => 123))
       File.stubs(:read).returns('5')
       System::Process.any_instance.stubs(:exists?).returns(true)
     

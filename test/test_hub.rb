@@ -12,13 +12,15 @@ class TestHub < Test::Unit::TestCase
     end
     
     @watch = God.watches['foo']
+    @watch.phase = Time.now
   end
   
   # attach
   
   def test_attach_should_store_condition_metric_association
     c = Conditions::FakePollCondition.new
-    m = Metric.new(@watch, :foo)
+    c.watch = @watch
+    m = Metric.new(@watch, {true => :up})
     Hub.attach(c, m)
     
     assert_equal m, Hub.directory[c]
@@ -26,7 +28,8 @@ class TestHub < Test::Unit::TestCase
   
   def test_attach_should_schedule_for_poll_condition
     c = Conditions::FakePollCondition.new
-    m = Metric.new(@watch, :foo)
+    c.watch = @watch
+    m = Metric.new(@watch, {true => :up})
     
     Timer.any_instance.expects(:schedule).with(c, 0)
     
@@ -35,7 +38,8 @@ class TestHub < Test::Unit::TestCase
   
   def test_attach_should_regsiter_for_event_condition
     c = Conditions::FakeEventCondition.new
-    m = Metric.new(@watch, :foo)
+    c.watch = @watch
+    m = Metric.new(@watch, {true => :up})
     
     c.expects(:register)
     
@@ -46,7 +50,8 @@ class TestHub < Test::Unit::TestCase
   
   def test_detach_should_remove_condition_metric_association
     c = Conditions::FakePollCondition.new
-    m = Metric.new(@watch, :foo)
+    c.watch = @watch
+    m = Metric.new(@watch, {true => :up})
     
     Hub.attach(c, m)
     Hub.detach(c)
@@ -56,7 +61,8 @@ class TestHub < Test::Unit::TestCase
   
   def test_detach_should_unschedule_poll_conditions
     c = Conditions::FakePollCondition.new
-    m = Metric.new(@watch, :foo)
+    c.watch = @watch
+    m = Metric.new(@watch, {true => :up})
     Hub.attach(c, m)
     
     Timer.any_instance.expects(:unschedule).with(c)
@@ -67,7 +73,8 @@ class TestHub < Test::Unit::TestCase
   
   def test_detach_should_deregister_event_conditions
     c = Conditions::FakeEventCondition.new
-    m = Metric.new(@watch, :foo)
+    c.watch = @watch
+    m = Metric.new(@watch, {true => :up})
     Hub.attach(c, m)
     
     c.expects(:deregister).once
@@ -79,22 +86,24 @@ class TestHub < Test::Unit::TestCase
   
   def test_trigger_should_handle_poll_for_poll_condition
     c = Conditions::FakePollCondition.new
-    Hub.expects(:handle_poll).with(c)
+    c.watch = @watch
+    Hub.expects(:handle_poll).with(c, @watch.phase)
     
-    Hub.trigger(c)
+    Hub.trigger(c, @watch.phase)
   end
   
   def test_trigger_should_handle_event_for_event_condition
     c = Conditions::FakeEventCondition.new
     Hub.expects(:handle_event).with(c)
     
-    Hub.trigger(c)
+    Hub.trigger(c, @watch.phase)
   end
   
   # handle_poll
   
   def test_handle_poll_no_change_should_reschedule
     c = Conditions::FakePollCondition.new
+    c.watch = @watch
     c.interval = 10
     
     m = Metric.new(@watch, {true => :up})
@@ -104,13 +113,14 @@ class TestHub < Test::Unit::TestCase
     Timer.any_instance.expects(:schedule)
     
     no_stdout do
-      t = Hub.handle_poll(c)
+      t = Hub.handle_poll(c, @watch.phase)
       t.join
     end
   end
   
   def test_handle_poll_change_should_move
     c = Conditions::FakePollCondition.new
+    c.watch = @watch
     c.interval = 10
     
     m = Metric.new(@watch, {true => :up})
@@ -120,13 +130,14 @@ class TestHub < Test::Unit::TestCase
     @watch.expects(:move).with(:up)
     
     no_stdout do
-      t = Hub.handle_poll(c)
+      t = Hub.handle_poll(c, @watch.phase)
       t.join
     end
   end
   
   def test_handle_poll_should_not_abort_on_exception
     c = Conditions::FakePollCondition.new
+    c.watch = @watch
     c.interval = 10
     
     m = Metric.new(@watch, {true => :up})
@@ -136,7 +147,7 @@ class TestHub < Test::Unit::TestCase
     
     assert_nothing_raised do
       no_stdout do
-        t = Hub.handle_poll(c)
+        t = Hub.handle_poll(c, @watch.phase)
         t.join
       end
     end
@@ -144,6 +155,7 @@ class TestHub < Test::Unit::TestCase
   
   def test_handle_poll_should_use_overridden_transition
     c = Conditions::Tries.new
+    c.watch = @watch
     c.times = 1
     c.transition = :start
     c.prepare
@@ -154,13 +166,14 @@ class TestHub < Test::Unit::TestCase
     @watch.expects(:move).with(:start)
     
     no_stdout do
-      t = Hub.handle_poll(c)
+      t = Hub.handle_poll(c, @watch.phase)
       t.join
     end
   end
   
   def test_handle_poll_should_notify_if_triggering
     c = Conditions::FakePollCondition.new
+    c.watch = @watch
     c.interval = 10
     c.notify = 'tom'
     
@@ -171,13 +184,14 @@ class TestHub < Test::Unit::TestCase
     Hub.expects(:notify)
     
     no_stdout do
-      t = Hub.handle_poll(c)
+      t = Hub.handle_poll(c, @watch.phase)
       t.join
     end
   end
   
   def test_handle_poll_should_not_notify_if_not_triggering
     c = Conditions::FakePollCondition.new
+    c.watch = @watch
     c.interval = 10
     c.notify = 'tom'
     
@@ -188,7 +202,7 @@ class TestHub < Test::Unit::TestCase
     Hub.expects(:notify).never
     
     no_stdout do
-      t = Hub.handle_poll(c)
+      t = Hub.handle_poll(c, @watch.phase)
       t.join
     end
   end
@@ -197,6 +211,7 @@ class TestHub < Test::Unit::TestCase
   
   def test_handle_event_should_move
     c = Conditions::FakeEventCondition.new
+    c.watch = @watch
     
     m = Metric.new(@watch, {true => :up})
     Hub.attach(c, m)
@@ -211,6 +226,7 @@ class TestHub < Test::Unit::TestCase
   
   def test_handle_event_should_notify_if_triggering
     c = Conditions::FakeEventCondition.new
+    c.watch = @watch
     c.notify = 'tom'
     
     m = Metric.new(@watch, {true => :up})
@@ -226,6 +242,7 @@ class TestHub < Test::Unit::TestCase
   
   def test_handle_event_should_not_notify_if_no_notify_set
     c = Conditions::FakeEventCondition.new
+    c.watch = @watch
     
     m = Metric.new(@watch, {true => :up})
     Hub.attach(c, m)

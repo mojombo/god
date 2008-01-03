@@ -1,7 +1,8 @@
 == 0.6.4 / 
   * Bug Fixes
     * Refactor Hub to clarify mutexing
-    * Eliminated potential iteration problem in Timer
+    * Eliminate potential iteration problem in Timer
+    * Add caching PID accessor to process to solve event deregistration failure
 
 == 0.6.3 / 2007-12-18
   * Minor Enhancements

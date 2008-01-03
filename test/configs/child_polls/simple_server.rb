@@ -8,5 +8,5 @@ loop do
   
   100000.times { data << 'x' }
   
-  sleep 0.1
+  sleep 10
 end

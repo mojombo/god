@@ -20,8 +20,9 @@ module God
     # Returns nothing
     def self.attach(condition, metric)
       self.mutex.synchronize do
-        self.directory[condition] = metric
+        condition.phase = condition.watch.phase
         condition.reset
+        self.directory[condition] = metric
         
         case condition
           when PollCondition
@@ -51,13 +52,14 @@ module God
     
     # Trigger evaluation of the condition
     #   +condition+ is the Condition to evaluate
+    #   +phase+ is the phase of the Watch at the time the condition was scheduled
     #
     # Returns nothing
-    def self.trigger(condition)
+    def self.trigger(condition, phase = nil)
       self.mutex.synchronize do
         case condition
           when PollCondition
-            self.handle_poll(condition)
+            self.handle_poll(condition, phase)
           when EventCondition, TriggerCondition
             self.handle_event(condition)
         end
@@ -69,9 +71,10 @@ module God
     # Asynchronously evaluate and handle the given poll condition. Handles logging
     # notifications, and moving to the new state if necessary
     #   +condition+ is the Condition to handle
+    #   +phase+ is the phase of the Watch that should be matched
     #
     # Returns nothing
-    def self.handle_poll(condition)
+    def self.handle_poll(condition, phase)
       metric = self.directory[condition]
       
       # it's possible that the timer will trigger an event before it can be cleared
@@ -83,45 +86,48 @@ module God
           watch = metric.watch
           
           watch.mutex.synchronize do
-            # run the test
-            result = condition.test
-            
-            # log
-            messages = self.log(watch, metric, condition, result)
-            
-            # notify
-            if condition.notify && self.trigger?(metric, result)
-              self.notify(condition, messages.last)
-            end
-            
-            # after-condition
-            condition.after
-            
-            # get the destination
-            dest = 
-            if result && condition.transition
-              # condition override
-              condition.transition
-            else
-              # regular
-              metric.destination && metric.destination[result]
-            end
-            
-            # transition or reschedule
-            if dest
-              # transition
-              begin
-                watch.move(dest)
-              rescue EventRegistrationFailedError
-                msg = watch.name + ' Event registration failed, moving back to previous state'
-                applog(watch, :info, msg)
-                
-                dest = watch.state
-                retry
+            # ensure this condition is still active when we finally get the mutex
+            if self.directory[condition] && phase == watch.phase
+              # run the test
+              result = condition.test
+              
+              # log
+              messages = self.log(watch, metric, condition, result)
+              
+              # notify
+              if condition.notify && self.trigger?(metric, result)
+                self.notify(condition, messages.last)
               end
-            else
-              # reschedule
-              Timer.get.schedule(condition)
+              
+              # after-condition
+              condition.after
+              
+              # get the destination
+              dest = 
+              if result && condition.transition
+                # condition override
+                condition.transition
+              else
+                # regular
+                metric.destination && metric.destination[result]
+              end
+              
+              # transition or reschedule
+              if dest
+                # transition
+                begin
+                  watch.move(dest)
+                rescue EventRegistrationFailedError
+                  msg = watch.name + ' Event registration failed, moving back to previous state'
+                  applog(watch, :info, msg)
+                  
+                  dest = watch.state
+                  retry
+                end
+              else
+                # reschedule
+                Timer.get.schedule(condition)
+              end
             end
           end
         rescue Exception => e
@@ -149,26 +155,29 @@ module God
           watch = metric.watch
           
           watch.mutex.synchronize do
-            # log
-            messages = self.log(watch, metric, condition, true)
-            
-            # notify
-            if condition.notify && self.trigger?(metric, true)
-              self.notify(condition, messages.last)
-            end
-            
-            # get the destination
-            dest = 
-            if condition.transition
-              # condition override
-              condition.transition
-            else
-              # regular
-              metric.destination && metric.destination[true]
-            end
-            
-            if dest
-              watch.move(dest)
+            # ensure this condition is still active when we finally get the mutex
+            if self.directory[condition]
+              # log
+              messages = self.log(watch, metric, condition, true)
+              
+              # notify
+              if condition.notify && self.trigger?(metric, true)
+                self.notify(condition, messages.last)
+              end
+              
+              # get the destination
+              dest = 
+              if condition.transition
+                # condition override
+                condition.transition
+              else
+                # regular
+                metric.destination && metric.destination[true]
+              end
+              
+              if dest
+                watch.move(dest)
+              end
             end
           end
         rescue Exception => e

@@ -1,7 +1,7 @@
 module God
   
   class TimerEvent
-    attr_accessor :condition, :at
+    attr_accessor :condition, :at, :phase
     
     # Instantiate a new TimerEvent that will be triggered after the specified delay
     #   +condition+ is the Condition
@@ -10,7 +10,10 @@ module God
     # Returns TimerEvent
     def initialize(condition, delay)
       self.condition = condition
-      self.at = Time.now.to_i + delay
+      self.phase = condition.watch.phase
+      
+      now = (Time.now.to_f * 4).round / 4.0
+      self.at = now + delay
     end
   end
   
@@ -41,7 +44,8 @@ module God
     # Returns Timer
     def initialize
       @events = []
-      @mutex = Mutex.new
+      @conditions = []
+      @mutex = Monitor.new
       
       @timer = Thread.new do
         loop do
@@ -66,6 +70,7 @@ module God
               
               # remove all triggered events
               triggered.each do |event|
+                @conditions.delete(event.condition)
                 @events.delete(event)
               end
             end
@@ -88,8 +93,11 @@ module God
     # Returns nothing
     def schedule(condition, delay = condition.interval)
       @mutex.synchronize do
-        @events << TimerEvent.new(condition, delay)
-        @events.sort! { |x, y| x.at <=> y.at }
+        unless @conditions.include?(condition)
+          @events << TimerEvent.new(condition, delay)
+          @conditions << condition
+          @events.sort! { |x, y| x.at <=> y.at }
+        end
       end
     end
     
@@ -99,6 +107,7 @@ module God
     # Returns nothing
     def unschedule(condition)
       @mutex.synchronize do
+        @conditions.delete(condition)
         @events.reject! { |x| x.condition == condition }
       end
     end
@@ -108,7 +117,7 @@ module God
     #
     # Returns nothing
     def trigger(event)
-      Hub.trigger(event.condition)
+      Hub.trigger(event.condition, event.phase)
     end
     
     # Join the timer thread

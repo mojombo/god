@@ -14,36 +14,39 @@ class TestTimer < Test::Unit::TestCase
     Time.stubs(:now).returns(0)
     
     w = Watch.new
-    @t.schedule(stub(:interval => 20))
+    @t.schedule(stub(:interval => 20, :watch => w))
     
     assert_equal 1, @t.events.size
   end
   
   def test_timer_should_remove_expired_events
-    @t.schedule(stub(:interval => 0))
+    @t.schedule(stub(:interval => -1, :watch => Watch.new))
     sleep(0.3)
     assert_equal 0, @t.events.size
   end
   
   def test_timer_should_remove_only_expired_events
-    @t.schedule(stub(:interval => 0))
-    @t.schedule(stub(:interval => 1000))
+    w = Watch.new
+    @t.schedule(stub(:interval => -1, :watch => w))
+    @t.schedule(stub(:interval => 1000, :watch => w))
     sleep(0.3)
     assert_equal 1, @t.events.size
   end
   
   def test_timer_should_sort_timer_events
-    @t.schedule(stub(:interval => 1000))
-    @t.schedule(stub(:interval => 800))
-    @t.schedule(stub(:interval => 900))
-    @t.schedule(stub(:interval => 100))
+    w = Watch.new
+    @t.schedule(stub(:interval => 1000, :watch => w))
+    @t.schedule(stub(:interval => 800, :watch => w))
+    @t.schedule(stub(:interval => 900, :watch => w))
+    @t.schedule(stub(:interval => 100, :watch => w))
     sleep(0.3)
     assert_equal [100, 800, 900, 1000], @t.events.map { |x| x.condition.interval }
   end
   
   def test_unschedule_should_remove_conditions
-    a = stub()
-    b = stub()
+    w = Watch.new
+    a = stub(:watch => w)
+    b = stub(:watch => w)
     @t.schedule(a, 100)
     @t.schedule(b, 200)
     assert_equal 2, @t.events.size
@@ -52,11 +55,12 @@ class TestTimer < Test::Unit::TestCase
   end
   
   def test_time_should_recover_from_exceptions
+    w = Watch.new
     @t.expects(:trigger).raises(Exception.new)
     no_stdout do
-      @t.schedule(stub(:interval => 0))
+      @t.schedule(stub(:interval => -1, :watch => w))
       sleep(0.3)
-      @t.schedule(stub(:interval => 0))
+      @t.schedule(stub(:interval => 0, :watch => w))
     end
   end
   

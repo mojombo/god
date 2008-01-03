@@ -12,6 +12,7 @@ module God
       @pid_file = nil
       @tracking_pid = true
       @user_log = false
+      @pid = nil
     end
     
     def alive?
@@ -122,6 +123,18 @@ module God
     
     def pid_file
       @pid_file ||= default_pid_file
+    end
+    
+    def pid
+      contents = File.read(self.pid_file).strip rescue ''
+      real_pid = contents =~ /^\d+$/ ? contents.to_i : nil
+      
+      if real_pid
+        @pid = real_pid
+        real_pid
+      else
+        @pid
+      end
     end
     
     def start!

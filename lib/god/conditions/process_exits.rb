@@ -28,13 +28,11 @@ module God
       end
       
       def valid?
-        valid = true
-        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
-        valid
+        true
       end
-    
+      
       def register
-        pid = File.read(self.watch.pid_file).strip.to_i
+        pid = self.watch.pid
         
         begin
           EventHandler.register(pid, :proc_exit) do |extra|
@@ -51,14 +49,14 @@ module God
       end
       
       def deregister
-        if File.exist?(self.watch.pid_file)
-          pid = File.read(self.watch.pid_file).strip.to_i
+        pid = self.watch.pid
+        if pid
           EventHandler.deregister(pid, :proc_exit)
           
           msg = "#{self.watch.name} deregistered 'proc_exit' event for pid #{pid}"
           applog(self.watch, :info, msg)
         else
-          applog(self.watch, :error, "#{self.watch.name} could not deregister: no such PID file #{self.watch.pid_file} (#{self.base_name})")
+          applog(self.watch, :error, "#{self.watch.name} could not deregister: no cached PID or PID file #{self.watch.pid_file} (#{self.base_name})")
         end
       end
     end

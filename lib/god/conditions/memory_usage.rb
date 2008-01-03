@@ -31,7 +31,7 @@ module God
     #     c.pid_file = "/var/run/mongrel.3000.pid"
     #   end
     class MemoryUsage < PollCondition
-      attr_accessor :above, :times
+      attr_accessor :above, :times, :pid_file
       
       def initialize
         super
@@ -51,17 +51,19 @@ module God
         @timeline.clear
       end
       
+      def pid
+        self.watch.pid || File.read(self.pid_file).strip.to_i
+      end
+      
       def valid?
         valid = true
-        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil? && self.pid_file.nil?
         valid &= complain("Attribute 'above' must be specified", self) if self.above.nil?
         valid
       end
       
       def test
-        return false unless File.exist?(self.watch.pid_file)
-        
-        pid = File.read(self.watch.pid_file).strip
+        pid = self.pid
         process = System::Process.new(pid)
         @timeline.push(process.memory)
         

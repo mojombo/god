@@ -144,6 +144,34 @@ class TestProcessDaemon < Test::Unit::TestCase
     end
   end
   
+  # pid
+  
+  def test_pid_should_return_integer_for_valid_pid_files
+    File.stubs(:read).returns("123")
+    assert_equal 123, @p.pid
+  end
+  
+  def test_pid_should_return_nil_for_missing_files
+    @p.pid_file = ''
+    assert_equal nil, @p.pid
+  end
+  
+  def test_pid_should_return_nil_for_invalid_pid_files
+    File.stubs(:read).returns("four score and seven years ago")
+    assert_equal nil, @p.pid
+  end
+  
+  def test_pid_should_retain_last_pid_value_if_pid_file_is_removed
+    File.stubs(:read).returns("123")
+    assert_equal 123, @p.pid
+    
+    File.stubs(:read).returns("")
+    assert_equal 123, @p.pid
+    
+    File.stubs(:read).returns("246")
+    assert_equal 246, @p.pid
+  end
+  
   # defaul_pid_file
   
   def test_default_pid_file
