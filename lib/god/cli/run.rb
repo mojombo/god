@@ -50,6 +50,11 @@ module God
               God.pid = @options[:pid] 
             end
             
+            # set log level if requested
+            if @options[:log_level]
+              God.log_level = @options[:log_level]
+            end
+            
             # load config
             if @options[:config]
               unless File.exist?(@options[:config])
@@ -94,6 +99,11 @@ module God
         
         if @options[:port]
           God.port = @options[:port]
+        end
+        
+        # set log level if requested
+        if @options[:log_level]
+          God.log_level = @options[:log_level]
         end
         
         if @options[:config]

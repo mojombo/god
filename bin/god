@@ -9,7 +9,7 @@ require 'optparse'
 require 'drb'
 
 begin
-  options = {:daemonize => true, :port => 17165}
+  options = {:daemonize => true, :port => 17165, :log_level => "info"}
 
   opts = OptionParser.new do |opts|
     opts.banner = <<-EOF
@@ -70,6 +70,10 @@ begin
     
     opts.on("-V", "Print extended version and build information") do
       options[:info] = true
+    end
+    
+    opts.on("--log-level LEVEL", "Log level [debug|info|fatal]") do |x|
+      options[:log_level] = x.to_sym
     end
   end
   

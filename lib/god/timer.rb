@@ -94,6 +94,7 @@ module God
     def schedule(condition, delay = condition.interval)
       @mutex.synchronize do
         unless @conditions.include?(condition)
+          applog(nil, :debug, "timer schedule #{condition} in #{delay}")
           @events << TimerEvent.new(condition, delay)
           @conditions << condition
           @events.sort! { |x, y| x.at <=> y.at }
@@ -117,6 +118,7 @@ module God
     #
     # Returns nothing
     def trigger(event)
+      applog(nil, :debug, "timer trigger #{event}")
       Hub.trigger(event.condition, event.phase)
     end
     

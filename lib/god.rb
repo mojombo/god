@@ -138,6 +138,7 @@ module God
   PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
   DRB_PORT_DEFAULT = 17165
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
+  LOG_LEVEL_DEFAULT = :info
   
   class << self
     # user configurable
@@ -146,7 +147,8 @@ module God
                        :port,
                        :allow,
                        :log_buffer_size,
-                       :pid_file_directory
+                       :pid_file_directory,
+                       :log_level
     
     # internal
     attr_accessor :inited,
@@ -167,6 +169,7 @@ module God
   self.allow = nil
   self.log_buffer_size = nil
   self.pid_file_directory = nil
+  self.log_level = nil
   
   # Initialize internal data.
   #
@@ -188,7 +191,13 @@ module God
     self.pid_file_directory ||= PID_FILE_DIRECTORY_DEFAULT
     self.port ||= DRB_PORT_DEFAULT
     self.allow ||= DRB_ALLOW_DEFAULT
-    LOG.level = Logger::INFO
+    self.log_level ||= LOG_LEVEL_DEFAULT
+    
+    # log level
+    log_level_map = {:debug => Logger::DEBUG,
+                     :info => Logger::INFO,
+                     :fatal => Logger::FATAL}
+    LOG.level = log_level_map[self.log_level]
     
     # init has been executed
     self.inited = true

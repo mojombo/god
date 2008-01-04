@@ -63,8 +63,7 @@ module God
       end
       
       def test
-        pid = self.pid
-        process = System::Process.new(pid)
+        process = System::Process.new(self.pid)
         @timeline.push(process.memory)
         
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}kb" }.join(", ") + "]"

@@ -125,6 +125,11 @@ module God
       @pid_file ||= default_pid_file
     end
     
+    # Fetch the PID from pid_file. If the pid_file does not
+    # exist, then use the PID from the last time it was read.
+    # If it has never been read, then return nil.
+    #
+    # Returns Integer(pid) or nil
     def pid
       contents = File.read(self.pid_file).strip rescue ''
       real_pid = contents =~ /^\d+$/ ? contents.to_i : nil
