@@ -108,7 +108,7 @@ module God
         
         Net::HTTP.start(self.host, self.port) do |http|
           http.read_timeout = self.timeout
-          response = http.head(self.path)
+          response = http.get(self.path)
         end
         
         actual_response_code = response.code.to_i
