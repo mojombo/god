@@ -11,8 +11,6 @@ class TestTimer < Test::Unit::TestCase
   end
   
   def test_schedule_should_queue_event
-    Time.stubs(:now).returns(0)
-    
     w = Watch.new
     @t.schedule(stub(:interval => 20, :watch => w))
     
@@ -49,9 +47,9 @@ class TestTimer < Test::Unit::TestCase
     b = stub(:watch => w)
     @t.schedule(a, 100)
     @t.schedule(b, 200)
-    assert_equal 2, @t.events.size
+    assert_equal 2, @t.conditions.size
     @t.unschedule(a)
-    assert_equal 1, @t.events.size
+    assert_equal 1, @t.conditions.size
   end
   
   def test_time_should_recover_from_exceptions

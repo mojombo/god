@@ -20,7 +20,7 @@ module God
   class Timer
     INTERVAL = 0.25
     
-    attr_reader :events, :timer
+    attr_reader :events, :conditions, :timer
     
     @@timer = nil
     
@@ -49,6 +49,8 @@ module God
       
       @timer = Thread.new do
         loop do
+          # applog(nil, :debug, "timer main loop, #{@events.size} events pending")
+          
           begin
             # get the current time
             t = Time.now.to_i
@@ -92,9 +94,9 @@ module God
     #
     # Returns nothing
     def schedule(condition, delay = condition.interval)
+      applog(nil, :debug, "timer schedule #{condition} in #{delay} seconds")
       @mutex.synchronize do
         unless @conditions.include?(condition)
-          applog(nil, :debug, "timer schedule #{condition} in #{delay}")
           @events << TimerEvent.new(condition, delay)
           @conditions << condition
           @events.sort! { |x, y| x.at <=> y.at }
@@ -107,10 +109,8 @@ module God
     #
     # Returns nothing
     def unschedule(condition)
-      @mutex.synchronize do
-        @conditions.delete(condition)
-        @events.reject! { |x| x.condition == condition }
-      end
+      applog(nil, :debug, "timer unschedule #{condition}")
+      @conditions.delete(condition)
     end
     
     # Trigger the event's condition to be evaluated

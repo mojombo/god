@@ -9,7 +9,7 @@ require 'optparse'
 require 'drb'
 
 begin
-  options = {:daemonize => true, :port => 17165, :log_level => "info"}
+  options = {:daemonize => true, :port => 17165}
 
   opts = OptionParser.new do |opts|
     opts.banner = <<-EOF
@@ -79,6 +79,12 @@ begin
   
   opts.parse!
   
+  # validate
+  if options[:log_level] && ![:debug, :info, :fatal].include?(options[:log_level])
+    abort("Invalid log level '#{options[:log_level]}'")
+  end
+  
+  # dispatch
   if !options[:config] && options[:version]
     require 'god'
     God::CLI::Version.version

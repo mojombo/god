@@ -40,7 +40,7 @@ class TestHttpResponseCode < Test::Unit::TestCase
   
   def test_test_should_return_false_if_code_is_is_set_to_200_but_response_is_500
     c = valid_condition
-    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 500)))
+    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :get => stub(:code => 500)))
     assert_equal false, c.test
   end
   
@@ -49,13 +49,13 @@ class TestHttpResponseCode < Test::Unit::TestCase
       cc.code_is = nil
       cc.code_is_not = [200]
     end
-    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 200)))
+    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :get => stub(:code => 200)))
     assert_equal false, c.test
   end
   
   def test_test_should_return_true_if_code_is_is_set_to_200_and_response_is_200
     c = valid_condition
-    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 200)))
+    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :get => stub(:code => 200)))
     assert_equal true, c.test
   end
   
@@ -64,7 +64,7 @@ class TestHttpResponseCode < Test::Unit::TestCase
       cc.code_is = nil
       cc.code_is_not = [200]
     end
-    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 500)))
+    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :get => stub(:code => 500)))
     assert_equal true, c.test
   end
   
@@ -102,7 +102,7 @@ class TestHttpResponseCode < Test::Unit::TestCase
     c = valid_condition do |cc|
       cc.times = [2, 2]
     end
-    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :head => stub(:code => 200))).times(2)
+    Net::HTTP.expects(:start).yields(stub(:read_timeout= => nil, :get => stub(:code => 200))).times(2)
     assert_equal false, c.test
     assert_equal true, c.test
   end
