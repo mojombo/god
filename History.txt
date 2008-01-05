@@ -1,4 +1,9 @@
-== 0.6.4 / 
+== 0.6.5 / 2008-01-04
+  * Bug Fixes
+    * Fix Timer descheduling deadlock issue
+    * Change HttpResponseCode to use GET instead of HEAD
+
+== 0.6.4 / 2008-12-31
   * Bug Fixes
     * Refactor Hub to clarify mutexing
     * Eliminate potential iteration problem in Timer
