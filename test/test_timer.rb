@@ -13,7 +13,7 @@ class TestTimer < Test::Unit::TestCase
   def test_schedule_should_queue_event
     w = Watch.new
     @t.schedule(stub(:interval => 20, :watch => w))
-    
+    sleep(0.3)
     assert_equal 1, @t.events.size
   end
   

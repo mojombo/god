@@ -20,7 +20,7 @@ module God
   class Timer
     INTERVAL = 0.25
     
-    attr_reader :events, :conditions, :timer
+    attr_reader :events, :pending_events, :conditions, :timer
     
     @@timer = nil
     
@@ -44,37 +44,44 @@ module God
     # Returns Timer
     def initialize
       @events = []
+      @pending_events = []
       @conditions = []
-      @mutex = Monitor.new
+      @pending_mutex = Mutex.new
       
       @timer = Thread.new do
         loop do
           # applog(nil, :debug, "timer main loop, #{@events.size} events pending")
           
           begin
+            # pull in pending events
+            @pending_mutex.synchronize do
+              @pending_events.each { |e| @events << e }
+              @pending_events.clear
+            end
+            
+            @events.sort! { |x, y| x.at <=> y.at }
+            
             # get the current time
             t = Time.now.to_i
             
             # iterate over each event and trigger any that are due
-            @mutex.synchronize do
-              triggered = []
-              
-              @events.each do |event|
-                if t >= event.at
-                  # trigger the event and mark it for removal
-                  self.trigger(event)
-                  triggered << event
-                else
-                  # events are ordered, so we can bail on first miss
-                  break
-                end
+            triggered = []
+            
+            @events.each do |event|
+              if t >= event.at
+                # trigger the event and mark it for removal
+                self.trigger(event)
+                triggered << event
+              else
+                # events are ordered, so we can bail on first miss
+                break
               end
-              
-              # remove all triggered events
-              triggered.each do |event|
-                @conditions.delete(event.condition)
-                @events.delete(event)
-              end
+            end
+            
+            # remove all triggered events
+            triggered.each do |event|
+              @conditions.delete(event.condition)
+              @events.delete(event)
             end
           rescue Exception => e
             message = format("Unhandled exception (%s): %s\n%s",
@@ -95,12 +102,11 @@ module God
     # Returns nothing
     def schedule(condition, delay = condition.interval)
       applog(nil, :debug, "timer schedule #{condition} in #{delay} seconds")
-      @mutex.synchronize do
-        unless @conditions.include?(condition)
-          @events << TimerEvent.new(condition, delay)
-          @conditions << condition
-          @events.sort! { |x, y| x.at <=> y.at }
+      unless @conditions.include?(condition)
+        @pending_mutex.synchronize do
+          @pending_events << TimerEvent.new(condition, delay)
         end
+        @conditions << condition
       end
     end
     

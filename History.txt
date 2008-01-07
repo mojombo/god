@@ -1,3 +1,7 @@
+== 0.6.6 / 2008-01-07
+  * Bug Fixes
+    * Redo Timer mutexing to reduce synchronization needs
+
 == 0.6.5 / 2008-01-04
   * Bug Fixes
     * Fix Timer descheduling deadlock issue
