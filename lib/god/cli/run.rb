@@ -50,13 +50,19 @@ module God
               God.pid = @options[:pid] 
             end
             
-            # set log level if requested
-            if @options[:log_level]
-              God.log_level = @options[:log_level]
+            unless @options[:syslog]
+              Logger.syslog = false
             end
             
             # load config
             if @options[:config]
+              # set log level, defaults to WARN
+              if @options[:log_level]
+                God.log_level = @options[:log_level]
+              else
+                God.log_level = :warn
+              end
+              
               unless File.exist?(@options[:config])
                 abort "File not found: #{@options[:config]}"
               end

@@ -89,6 +89,7 @@ module God
             applog(nil, :fatal, message)
           ensure
             # sleep until next check
+            GC.start
             sleep INTERVAL
           end
         end

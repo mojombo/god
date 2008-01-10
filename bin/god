@@ -9,7 +9,7 @@ require 'optparse'
 require 'drb'
 
 begin
-  options = {:daemonize => true, :port => 17165}
+  options = {:daemonize => true, :port => 17165, :syslog => true}
 
   opts = OptionParser.new do |opts|
     opts.banner = <<-EOF
@@ -72,15 +72,19 @@ begin
       options[:info] = true
     end
     
-    opts.on("--log-level LEVEL", "Log level [debug|info|fatal]") do |x|
+    opts.on("--log-level LEVEL", "Log level [debug|info|warn|error|fatal]") do |x|
       options[:log_level] = x.to_sym
+    end
+    
+    opts.on("--no-syslog", "Disable output to syslog") do
+      options[:syslog] = false
     end
   end
   
   opts.parse!
   
   # validate
-  if options[:log_level] && ![:debug, :info, :fatal].include?(options[:log_level])
+  if options[:log_level] && ![:debug, :info, :warn, :error, :fatal].include?(options[:log_level])
     abort("Invalid log level '#{options[:log_level]}'")
   end
   

@@ -8,7 +8,6 @@ require 'stringio'
 require 'logger'
 
 # stdlib
-require 'syslog'
 
 # internal requires
 require 'god/errors'
@@ -58,6 +57,8 @@ require 'god/sugar'
 require 'god/cli/version'
 require 'god/cli/command'
 
+require 'god/diagnostics'
+
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
 # App wide logging system
@@ -75,13 +76,6 @@ end
 $run ||= nil
 
 GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
-
-# Ensure that Syslog is open
-begin
-  Syslog.open('god')
-rescue RuntimeError
-  Syslog.reopen('god')
-end
 
 # Return the binding of god's root level
 def root_binding
@@ -196,6 +190,8 @@ module God
     # log level
     log_level_map = {:debug => Logger::DEBUG,
                      :info => Logger::INFO,
+                     :warn => Logger::WARN,
+                     :error => Logger::ERROR,
                      :fatal => Logger::FATAL}
     LOG.level = log_level_map[self.log_level]
     
@@ -565,6 +561,8 @@ module God
     
     # mark as running
     self.running = true
+    
+    # start_dike
     
     # join the timer thread so we don't exit
     Timer.get.join

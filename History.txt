@@ -1,3 +1,7 @@
+== 0.6.7 / 
+  * Minor Enhancements
+    * Add --no-syslog option to disable Syslog
+
 == 0.6.6 / 2008-01-07
   * Bug Fixes
     * Redo Timer mutexing to reduce synchronization needs
