@@ -89,7 +89,9 @@ module God
             applog(nil, :fatal, message)
           ensure
             # sleep until next check
-            GC.start
+            # GC.start
+            # BleakHouseDiagnostic.snapshot
+            # p BleakHouseDiagnostic.logger.mem_usage
             sleep INTERVAL
           end
         end

@@ -61,7 +61,13 @@ module God
     def self.start
       Thread.new do
         loop do
-          @@handler.handle_events
+          begin
+            @@handler.handle_events
+          rescue Exception => e
+            message = format("Unhandled exception (%s): %s\n%s",
+                             e.class, e.message, e.backtrace.join("\n"))
+            applog(nil, :fatal, message)
+          end
         end
       end
     end

@@ -128,7 +128,7 @@ end
 module God
   VERSION = '0.6.6'
   
-  LOG_BUFFER_SIZE_DEFAULT = 1000
+  LOG_BUFFER_SIZE_DEFAULT = 10
   PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
   DRB_PORT_DEFAULT = 17165
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
@@ -540,6 +540,10 @@ module God
   #
   # Returns nothing
   def self.start
+    # start_dike
+    # BleakHouseDiagnostic.install
+    # BleakHouseDiagnostic.spin
+    
     self.internal_init
     self.setup
     self.validater
@@ -561,8 +565,6 @@ module God
     
     # mark as running
     self.running = true
-    
-    # start_dike
     
     # join the timer thread so we don't exit
     Timer.get.join
