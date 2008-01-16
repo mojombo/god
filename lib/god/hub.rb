@@ -88,46 +88,48 @@ module God
           watch.mutex.synchronize do
             # ensure this condition is still active when we finally get the mutex
             if self.directory[condition] && phase == watch.phase
-              # run the test
-              result = condition.test
-              
-              # log
-              messages = self.log(watch, metric, condition, result)
-              
-              # notify
-              if condition.notify && self.trigger?(metric, result)
-                self.notify(condition, messages.last)
-              end
-              
-              # after-condition
-              condition.after
-              
-              # get the destination
-              dest = 
-              if result && condition.transition
-                # condition override
-                condition.transition
-              else
-                # regular
-                metric.destination && metric.destination[result]
-              end
-              
-              # transition or reschedule
-              if dest
-                # transition
-                begin
-                  watch.move(dest)
-                rescue EventRegistrationFailedError
-                  msg = watch.name + ' Event registration failed, moving back to previous state'
-                  applog(watch, :info, msg)
-                  
-                  dest = watch.state
-                  retry
-                end
-              else
-                # reschedule
-                Timer.get.schedule(condition)
-              end
+              # # run the test
+              # result = condition.test
+              # 
+              # # log
+              # messages = self.log(watch, metric, condition, result)
+              # 
+              # # notify
+              # if condition.notify && self.trigger?(metric, result)
+              #   self.notify(condition, messages.last)
+              # end
+              # 
+              # # after-condition
+              # condition.after
+              # 
+              # # get the destination
+              # dest = 
+              # if result && condition.transition
+              #   # condition override
+              #   condition.transition
+              # else
+              #   # regular
+              #   metric.destination && metric.destination[result]
+              # end
+              # 
+              # # transition or reschedule
+              # if dest
+              #   # transition
+              #   begin
+              #     watch.move(dest)
+              #   rescue EventRegistrationFailedError
+              #     msg = watch.name + ' Event registration failed, moving back to previous state'
+              #     applog(watch, :info, msg)
+              #     
+              #     dest = watch.state
+              #     retry
+              #   end
+              # else
+              #   # reschedule
+              #   Timer.get.schedule(condition)
+              # end
+              puts 'reschedule'
+              Timer.get.schedule(condition)
             end
           end
         rescue Exception => e

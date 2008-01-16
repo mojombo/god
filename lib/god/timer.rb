@@ -20,7 +20,7 @@ module God
   class Timer
     INTERVAL = 0.25
     
-    attr_reader :events, :pending_events, :conditions, :timer
+    attr_reader :events, :pending_events, :timer
     
     @@timer = nil
     
@@ -45,7 +45,6 @@ module God
     def initialize
       @events = []
       @pending_events = []
-      @conditions = []
       @pending_mutex = Mutex.new
       
       @timer = Thread.new do
@@ -80,7 +79,6 @@ module God
             
             # remove all triggered events
             triggered.each do |event|
-              @conditions.delete(event.condition)
               @events.delete(event)
             end
           rescue Exception => e
@@ -105,11 +103,8 @@ module God
     # Returns nothing
     def schedule(condition, delay = condition.interval)
       applog(nil, :debug, "timer schedule #{condition} in #{delay} seconds")
-      unless @conditions.include?(condition)
-        @pending_mutex.synchronize do
-          @pending_events << TimerEvent.new(condition, delay)
-        end
-        @conditions << condition
+      @pending_mutex.synchronize do
+        @pending_events << TimerEvent.new(condition, delay)
       end
     end
     
@@ -119,7 +114,6 @@ module God
     # Returns nothing
     def unschedule(condition)
       applog(nil, :debug, "timer unschedule #{condition}")
-      @conditions.delete(condition)
     end
     
     # Trigger the event's condition to be evaluated
