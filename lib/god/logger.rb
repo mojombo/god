@@ -55,8 +55,6 @@ module God
     #
     # Returns nothing
     def log(watch, level, text)
-      puts 'log'
-      
       # initialize watch log if necessary
       self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
       
@@ -66,7 +64,7 @@ module God
       @templog.send(level, text % [])
       @mutex.synchronize do
         @capture.puts(@templogio.string) if @capture
-        self.logs[watch.name] << [Time.now, @templogio.string] if watch
+        self.logs[watch.name] << [Time.now, @templogio.string.dup] if watch
       end
       
       # send to regular logger
