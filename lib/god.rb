@@ -3,6 +3,45 @@ $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 # rubygems
 require 'rubygems'
 
+begin
+  require 'fastthread'
+rescue RuntimeError => e
+  warn "fastthread not loaded: #{ e.message }"
+rescue LoadError
+ensure
+  require 'thread'
+end
+
+class Mutex
+  def lock
+    while (Thread.critical = true; @locked)
+      @waiting.unshift Thread.current
+      Thread.stop
+    end
+    @locked = true
+    Thread.critical = false
+    self
+  end
+  
+  def unlock
+    return unless @locked
+    Thread.critical = true
+    @locked = false
+    begin
+      t = @waiting.pop
+      t.wakeup if t
+    rescue ThreadError
+      retry
+    end
+    Thread.critical = false
+    begin
+      t.run if t
+    rescue ThreadError
+    end
+    self
+  end
+end
+
 # core
 require 'stringio'
 require 'logger'
