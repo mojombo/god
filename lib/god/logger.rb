@@ -55,8 +55,6 @@ module God
     #
     # Returns nothing
     def log(watch, level, text)
-      puts 'log'
-      
       # initialize watch log if necessary
       self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
       

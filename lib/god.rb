@@ -3,6 +3,15 @@ $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 # rubygems
 require 'rubygems'
 
+begin
+  require 'fastthread'
+rescue LoadError
+ensure
+  require 'thread'
+end
+
+require 'sync'
+
 # core
 require 'stringio'
 require 'logger'
@@ -556,6 +565,9 @@ module God
     
     # start the timer system
     Timer.get
+    
+    # start the hub thread pool
+    Hub.start
     
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }

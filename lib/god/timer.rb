@@ -20,6 +20,12 @@ module God
   class Timer
     INTERVAL = 0.25
     
+    class << self
+      attr_accessor :queue
+    end
+    
+    self.queue = Queue.new
+    
     attr_reader :events, :pending_events, :timer
     
     @@timer = nil
@@ -28,6 +34,7 @@ module God
     #
     # Returns Timer
     def self.get
+      # p @@timer.object_id
       @@timer ||= Timer.new
     end
     
@@ -52,6 +59,10 @@ module God
           # applog(nil, :debug, "timer main loop, #{@events.size} events pending")
           
           begin
+            while !Timer.queue.empty? do
+              @pending_events << Timer.queue.pop
+            end 
+            
             # pull in pending events
             @pending_mutex.synchronize do
               @pending_events.each { |e| @events << e }
@@ -69,7 +80,7 @@ module God
             @events.each do |event|
               if t >= event.at
                 # trigger the event and mark it for removal
-                self.trigger(event)
+                Hub.queue << event
                 triggered << event
               else
                 # events are ordered, so we can bail on first miss
@@ -94,35 +105,6 @@ module God
           end
         end
       end
-    end
-    
-    # Create and register a new TimerEvent
-    #   +condition+ is the Condition
-    #   +delay+ is the number of seconds to delay (default: interval defined in condition)
-    #
-    # Returns nothing
-    def schedule(condition, delay = condition.interval)
-      applog(nil, :debug, "timer schedule #{condition} in #{delay} seconds")
-      @pending_mutex.synchronize do
-        @pending_events << TimerEvent.new(condition, delay)
-      end
-    end
-    
-    # Remove any TimerEvents for the given condition
-    #   +condition+ is the Condition
-    #
-    # Returns nothing
-    def unschedule(condition)
-      applog(nil, :debug, "timer unschedule #{condition}")
-    end
-    
-    # Trigger the event's condition to be evaluated
-    #   +event+ is the TimerEvent to trigger
-    #
-    # Returns nothing
-    def trigger(event)
-      applog(nil, :debug, "timer trigger #{event}")
-      Hub.trigger(event.condition, event.phase)
     end
     
     # Join the timer thread
