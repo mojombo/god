@@ -64,7 +64,7 @@ module God
       @templog.send(level, text % [])
       @mutex.synchronize do
         @capture.puts(@templogio.string) if @capture
-        self.logs[watch.name] << [Time.now, @templogio.string] if watch
+        self.logs[watch.name] << [] if watch # [Time.now, @templogio.string] if watch
       end
       
       # send to regular logger

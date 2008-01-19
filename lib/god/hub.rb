@@ -14,19 +14,32 @@ module God
     
     self.directory = {}
     self.queue = Queue.new
-    self.mutex = Mutex.new
+    self.mutex = Monitor.new
     
     def self.start
       5.times do
         Thread.new do
           loop do
-            puts 'looping'
-            item = self.queue.pop rescue nil
-            if item
-              puts 'reschedule'
-              Timer.queue << TimerEvent.new(item.condition, item.condition.interval)
-              
-              sleep 0.25 if self.queue.empty?
+            begin
+              event = self.queue.pop rescue nil
+              if event
+                self.mutex.synchronize do
+                  case event.condition
+                    when PollCondition
+                      self.handle_poll(event.condition, event.phase)
+                    when EventCondition, TriggerCondition
+                      self.handle_event(event.condition)
+                  end
+                end
+                
+                # Timer.queue << TimerEvent.new(item.condition, item.condition.interval)
+                
+                sleep 0.25 if self.queue.empty?
+              end
+            rescue Exception => e
+              message = format("Unhandled exception (%s): %s\n%s",
+                               e.class, e.message, e.backtrace.join("\n"))
+              applog(nil, :fatal, message)
             end
           end
         end
@@ -76,18 +89,18 @@ module God
     #   +phase+ is the phase of the Watch at the time the condition was scheduled
     #
     # Returns nothing
-    def self.trigger(condition, phase = nil)
-      self.queue << [condition, phase]
-      
-      # self.mutex.synchronize do
-      #   case condition
-      #     when PollCondition
-      #       self.handle_poll(condition, phase)
-      #     when EventCondition, TriggerCondition
-      #       self.handle_event(condition)
-      #   end
-      # end
-    end
+    # def self.trigger(condition, phase = nil)
+    #   self.queue << [condition, phase]
+    #   
+    #   self.mutex.synchronize do
+    #     case condition
+    #       when PollCondition
+    #         self.handle_poll(condition, phase)
+    #       when EventCondition, TriggerCondition
+    #         self.handle_event(condition)
+    #     end
+    #   end
+    # end
     
     # private
     
@@ -98,81 +111,59 @@ module God
     #
     # Returns nothing
     def self.handle_poll(condition, phase)
-      # # puts 'reschedule'
-      # # Timer.get.schedule(condition)
-      # 
-      # metric = self.directory[condition]
-      # 
-      # # it's possible that the timer will trigger an event before it can be cleared
-      # # by an exiting metric, in which case it should be ignored
-      # return if metric.nil?
-      # 
-      # Thread.new do
-      #   begin
-      #     watch = metric.watch
-      #     
-      #     # watch.mutex.synchronize do
-      #       # ensure this condition is still active when we finally get the mutex
-      #       if self.directory[condition] && phase == watch.phase
-      #         # # run the test
-      #         # result = condition.test
-      #         # 
-      #         # # log
-      #         # messages = self.log(watch, metric, condition, result)
-      #         # 
-      #         # # notify
-      #         # if condition.notify && self.trigger?(metric, result)
-      #         #   self.notify(condition, messages.last)
-      #         # end
-      #         # 
-      #         # # after-condition
-      #         # condition.after
-      #         # 
-      #         # # get the destination
-      #         # dest = 
-      #         # if result && condition.transition
-      #         #   # condition override
-      #         #   condition.transition
-      #         # else
-      #         #   # regular
-      #         #   metric.destination && metric.destination[result]
-      #         # end
-      #         # 
-      #         # # transition or reschedule
-      #         # if dest
-      #         #   # transition
-      #         #   begin
-      #         #     watch.move(dest)
-      #         #   rescue EventRegistrationFailedError
-      #         #     msg = watch.name + ' Event registration failed, moving back to previous state'
-      #         #     applog(watch, :info, msg)
-      #         #     
-      #         #     dest = watch.state
-      #         #     retry
-      #         #   end
-      #         # else
-      #         #   # reschedule
-      #         #   Timer.get.schedule(condition)
-      #         # end
-      #         puts 'reschedule'
-      #         Timer.get.schedule(condition)
-      #       end
-      #     # end
-      #   rescue Exception => e
-      #     message = format("Unhandled exception (%s): %s\n%s",
-      #                      e.class, e.message, e.backtrace.join("\n"))
-      #     applog(nil, :fatal, message)
-      #   end
-      # end
+      metric = self.directory[condition]
       
-      # Thread.new do
-      #   puts 'reschedule'
-      #   Timer.get.schedule(condition)
-      # end
+      # it's possible that the timer will trigger an event before it can be cleared
+      # by an exiting metric, in which case it should be ignored
+      return if metric.nil?
       
-      # Timer.get.schedule(condition)
+      watch = metric.watch
       
-      # Thread.list.each {|t| p t}
+      watch.mutex.synchronize do
+        # ensure this condition is still active when we finally get the mutex
+        if self.directory[condition] && phase == watch.phase
+          # run the test
+          result = condition.test
+          
+          # log
+          messages = self.log(watch, metric, condition, result)
+          
+          # notify
+          if condition.notify && self.trigger?(metric, result)
+            self.notify(condition, messages.last)
+          end
+          
+          # after-condition
+          condition.after
+          
+          # # get the destination
+          # dest = 
+          # if result && condition.transition
+          #   # condition override
+          #   condition.transition
+          # else
+          #   # regular
+          #   metric.destination && metric.destination[result]
+          # end
+          # 
+          # # transition or reschedule
+          # if dest
+          #   # transition
+          #   begin
+          #     watch.move(dest)
+          #   rescue EventRegistrationFailedError
+          #     msg = watch.name + ' Event registration failed, moving back to previous state'
+          #     applog(watch, :info, msg)
+          #     
+          #     dest = watch.state
+          #     retry
+          #   end
+          # else
+            # reschedule
+            Timer.queue << TimerEvent.new(condition, condition.interval)
+          # end
+        end
+      end
     end
     
     # Asynchronously evaluate and handle the given event condition. Handles logging
