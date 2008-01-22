@@ -56,22 +56,22 @@ module God
     # Returns nothing
     def log(watch, level, text)
       # initialize watch log if necessary
-      self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
+      # self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
       
       # push onto capture and timeline for the given watch
-      @templogio.truncate(0)
-      @templogio.rewind
-      @templog.send(level, text % [])
-      @mutex.synchronize do
-        @capture.puts(@templogio.string) if @capture
-        self.logs[watch.name] << [] if watch # [Time.now, @templogio.string] if watch
-      end
+      # @templogio.truncate(0)
+      # @templogio.rewind
+      # @templog.send(level, text % [])
+      # @mutex.synchronize do
+      #   @capture.puts(@templogio.string) if @capture
+      #   self.logs[watch.name] << '' if watch # [Time.now, @templogio.string] if watch
+      # end
       
       # send to regular logger
-      self.send(level, text % [])
+      # self.send(level, text % [])
       
       # send to syslog
-      Syslog.send(SYSLOG_EQUIVALENTS[level], text) if Logger.syslog
+      # Syslog.send(SYSLOG_EQUIVALENTS[level], text) if Logger.syslog
     end
     
     # Get all log output for a given Watch since a certain Time.
