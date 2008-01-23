@@ -34,6 +34,7 @@ lib/god/configurable.rb
 lib/god/contact.rb
 lib/god/contacts/email.rb
 lib/god/dependency_graph.rb
+lib/god/diagnostics.rb
 lib/god/errors.rb
 lib/god/event_handler.rb
 lib/god/event_handlers/dummy_handler.rb
