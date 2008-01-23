@@ -263,7 +263,7 @@ module God
     # Returns nothing
     def ensure_stop
       unless self.pid
-        applog(self, :warn, "#{self.name} #{action} stop called but pid is uknown")
+        applog(self, :warn, "#{self.name} stop called but pid is uknown")
         return
       end
       
