@@ -1,3 +1,5 @@
+exit!(2)
+
 3.times do
   puts 'waiting'
   sleep 1

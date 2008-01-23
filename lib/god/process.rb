@@ -226,7 +226,19 @@ module God
           # single fork self-daemonizing processes
           # we want to wait for them to finish
           pid = self.spawn(command)
-          ::Process.waitpid(pid, 0)
+          status = ::Process.waitpid2(pid, 0)
+          exit_code = status[1] >> 8
+          
+          if exit_code != 0
+            applog(self, :warn, "#{self.name} #{action}: command exited with non-zero code = #{exit_code}")
+          end
+          
+          # if action == :stop
+          #   
+          #   10.times do
+          #     
+          #   end
+          # end
         end
         
         if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
