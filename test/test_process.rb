@@ -184,7 +184,7 @@ class TestProcessDaemon < Test::Unit::TestCase
   def test_call_action_with_string_should_call_system
     @p.start = "do something"
     @p.expects(:fork)
-    Process.expects(:waitpid)
+    Process.expects(:waitpid2).returns([123, 0])
     @p.call_action(:start)
   end
   

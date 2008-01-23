@@ -1,4 +1,4 @@
-exit!(2)
+# exit!(2)
 
 3.times do
   puts 'waiting'

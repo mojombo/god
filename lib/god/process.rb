@@ -1,5 +1,3 @@
-require 'fileutils'
-
 module God
   class Process
     WRITES_PID = [:start, :restart]
@@ -16,10 +14,9 @@ module God
     end
     
     def alive?
-      begin
-        pid = File.read(self.pid_file).strip.to_i
-        System::Process.new(pid).exists?
-      rescue Errno::ENOENT
+      if self.pid
+        System::Process.new(self.pid).exists?
+      else
         false
       end
     end
@@ -154,29 +151,15 @@ module God
       call_action(:restart)
     end
     
-    def spawn(command)
-      fork do
-        ::Process.setsid
-        ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-        ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
-        Dir.chdir "/"
-        $0 = command
-        STDIN.reopen "/dev/null"
-        STDOUT.reopen self.log, "a"
-        STDERR.reopen STDOUT
-        
-        # close any other file descriptors
-        3.upto(256){|fd| IO::new(fd).close rescue nil}
-        
-        exec command unless command.empty?
-      end
+    def default_pid_file
+      File.join(God.pid_file_directory, "#{self.name}.pid")
     end
     
     def call_action(action)
       command = send(action)
       
       if action == :stop && command.nil?
-        pid = File.read(self.pid_file).strip.to_i
+        pid = self.pid
         name = self.name
         command = lambda do
           applog(self, :info, "#{self.name} stop: default lambda killer")
@@ -230,15 +213,10 @@ module God
           exit_code = status[1] >> 8
           
           if exit_code != 0
-            applog(self, :warn, "#{self.name} #{action}: command exited with non-zero code = #{exit_code}")
+            applog(self, :warn, "#{self.name} #{action} command exited with non-zero code = #{exit_code}")
           end
           
-          # if action == :stop
-          #   
-          #   10.times do
-          #     
-          #   end
-          # end
+          ensure_stop if action == :stop
         end
         
         if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
@@ -257,8 +235,54 @@ module God
       end
     end
     
-    def default_pid_file
-      File.join(God.pid_file_directory, "#{self.name}.pid")
+    # Fork/exec the given command, returns immediately
+    #   +command+ is the String containing the shell command
+    #
+    # Returns nothing
+    def spawn(command)
+      fork do
+        ::Process.setsid
+        ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
+        ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
+        Dir.chdir "/"
+        $0 = command
+        STDIN.reopen "/dev/null"
+        STDOUT.reopen self.log, "a"
+        STDERR.reopen STDOUT
+        
+        # close any other file descriptors
+        3.upto(256){|fd| IO::new(fd).close rescue nil}
+        
+        exec command unless command.empty?
+      end
     end
+    
+    # Ensure that a stop command actually stops the process. Force kill
+    # if necessary.
+    #
+    # Returns nothing
+    def ensure_stop
+      unless self.pid
+        applog(self, :warn, "#{self.name} #{action} stop called but pid is uknown")
+        return
+      end
+      
+      # Poll to see if it's dead
+      10.times do
+        begin
+          ::Process.kill(0, self.pid)
+        rescue Errno::ESRCH
+          # It died. Good.
+          return
+        end
+        
+        sleep 1
+      end
+      
+      # last resort
+      ::Process.kill('KILL', self.pid) rescue nil
+      applog(self, :warn, "#{self.name} process still running 10 seconds after stop command returned. Force killing.")
+    end
+    
   end
 end
