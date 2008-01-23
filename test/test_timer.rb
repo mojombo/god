@@ -41,17 +41,6 @@ class TestTimer < Test::Unit::TestCase
     assert_equal [100, 800, 900, 1000], @t.events.map { |x| x.condition.interval }
   end
   
-  def test_unschedule_should_remove_conditions
-    w = Watch.new
-    a = stub(:watch => w)
-    b = stub(:watch => w)
-    @t.schedule(a, 100)
-    @t.schedule(b, 200)
-    assert_equal 2, @t.conditions.size
-    @t.unschedule(a)
-    assert_equal 1, @t.conditions.size
-  end
-  
   def test_time_should_recover_from_exceptions
     w = Watch.new
     @t.expects(:trigger).raises(Exception.new)

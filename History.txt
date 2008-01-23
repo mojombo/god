@@ -1,3 +1,7 @@
+== 0.6.9 / 2008-01-23
+  * Bug Fixes
+    * Fix Timer condition dedup behavior
+
 == 0.6.8 / 2008-01-23
   * Minor Enhancements
     * Warn if a command returns a non-zero exit code
