@@ -331,9 +331,10 @@ module God
       self.uncontact(existing_contact)
     end
     
-    # ensure the new contact has a unique name
+    # warn and noop if the contact has been defined before
     if self.contacts[c.name] || self.contact_groups[c.name]
-      abort "Contact name '#{c.name}' already used for a Contact or Contact Group"
+      applog(nil, :warn, "Contact name '#{c.name}' already used for a Contact or Contact Group")
+      return
     end
     
     # abort if the Contact is invalid, the Contact will have printed
@@ -540,10 +541,6 @@ module God
   #
   # Returns nothing
   def self.start
-    # start_dike
-    # BleakHouseDiagnostic.install
-    # BleakHouseDiagnostic.spin
-    
     self.internal_init
     self.setup
     self.validater

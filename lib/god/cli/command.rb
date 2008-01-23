@@ -147,7 +147,7 @@ module God
             
             God::EventHandler.register(pid, :proc_exit) do
               puts "[ok] process exit event received"
-              exit(0)
+              exit!(0)
             end
             
             sleep(1)

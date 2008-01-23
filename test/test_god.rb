@@ -241,15 +241,19 @@ class TestGod < Test::Unit::TestCase
   
   def test_contact_should_abort_on_duplicate_contact_name
     God.contact(:fake_contact) { |c| c.name = 'tom' }
-    assert_abort do
-      God.contact(:fake_contact) { |c| c.name = 'tom' }
+    no_stdout do
+      assert_nothing_raised do
+        God.contact(:fake_contact) { |c| c.name = 'tom' }
+      end
     end
   end
   
   def test_contact_should_abort_on_contact_with_same_name_as_group
     God.contact(:fake_contact) { |c| c.name = 'tom'; c.group = 'devs' }
-    assert_abort do
-      God.contact(:fake_contact) { |c| c.name = 'devs' }
+    no_stdout do
+      assert_nothing_raised do
+        God.contact(:fake_contact) { |c| c.name = 'devs' }
+      end
     end
   end
   

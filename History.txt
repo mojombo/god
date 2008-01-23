@@ -1,6 +1,7 @@
-== 0.6.7 / 
+== 0.6.7 / 2008-01-22
   * Minor Enhancements
     * Add --no-syslog option to disable Syslog
+    * Allow contact redeclaration (dups are ignored)
 
 == 0.6.6 / 2008-01-07
   * Bug Fixes
