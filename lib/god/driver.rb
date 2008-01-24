@@ -10,41 +10,34 @@ module God
     # Returns TimerEvent
     def initialize(condition, delay)
       self.condition = condition
-      self.phase = condition.watch.phase
-      
-      now = (Time.now.to_f * 4).round / 4.0
-      self.at = now + delay
+      self.at = Time.now + delay
     end
   end
   
   class Driver
     INTERVAL = 1
     
-    # Instantiate a new Timer and start the scheduler loop to handle events
+    # Instantiate a new Driver and start the scheduler loop to handle events
     #
-    # Returns Timer
-    def initialize
+    # Returns Driver
+    def initialize(task)
+      @task = task
       @events = []
-      @ops_queue = Queue.new
-      @events_queue = Queue.new
+      @ops = Queue.new
       
       @timer = Thread.new do
         loop do
           # applog(nil, :debug, "timer main loop, #{@events.size} events pending")
           
           begin
-            events_changed = false
-            
-            # pull in pending events
-            while !@events_queue.empty? do
-              @events << @events_queue.pop
-              events_changed = true
+            unless @op.empty?
+              command = @ops.pop
+              @task.send(command[0], *command[1])
+              next
             end
             
-            # sort events if it changed
-            if events_changed
-              @events.sort! { |x, y| x.at <=> y.at }
-            end
+            # sort events
+            @events.sort! { |x, y| x.at <=> y.at }
             
             # only do this when there are events
             if @events.empty?
@@ -66,16 +59,25 @@ module God
       end
     end
     
+    def clear_events
+      @events.each do |event|
+        case event.condition
+          when EventCondition, TriggerCondition
+            event.condition.deregister
+        end
+      end
+      
+      @events.clear
+    end
+    
     # Create and register a new TimerEvent
     #   +condition+ is the Condition
     #   +delay+ is the number of seconds to delay (default: interval defined in condition)
     #
     # Returns nothing
     def schedule(condition, delay = condition.interval)
-      applog(nil, :debug, "timer schedule #{condition} in #{delay} seconds")
-      @pending_mutex.synchronize do
-        @pending_events << TimerEvent.new(condition, delay)
-      end
+      applog(nil, :debug, "driver schedule #{condition} in #{delay} seconds")
+      @events_queue << DriverEvent.new(condition, delay)
     end
     
     # Remove any TimerEvents for the given condition

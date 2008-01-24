@@ -13,43 +13,6 @@ module God
     self.directory = {}
     self.mutex = Monitor.new
     
-    # Attach the condition to the hub and schedule/register it
-    #   +condition+ is the Condition to attach
-    #   +metric+ is the Metric to which the condition belongs
-    #
-    # Returns nothing
-    def self.attach(condition, metric)
-      self.mutex.synchronize do
-        condition.phase = condition.watch.phase
-        condition.reset
-        self.directory[condition] = metric
-        
-        case condition
-          when PollCondition
-            Timer.get.schedule(condition, 0)
-          when EventCondition, TriggerCondition
-            condition.register
-        end
-      end
-    end
-    
-    # Detach the condition from the hub and unschedule/deregister it
-    #   +condition+ is the Condition to detach
-    #
-    # Returns nothing
-    def self.detach(condition)
-      self.mutex.synchronize do
-        self.directory.delete(condition)
-        
-        case condition
-          when PollCondition
-            Timer.get.unschedule(condition)
-          when EventCondition, TriggerCondition
-            condition.deregister
-        end
-      end
-    end
-    
     # Trigger evaluation of the condition
     #   +condition+ is the Condition to evaluate
     #   +phase+ is the phase of the Watch at the time the condition was scheduled

@@ -1,16 +1,13 @@
 module God
   
   class Task
-    attr_accessor :name, :interval, :group, :valid_states, :initial_state, :phase
+    attr_accessor :name, :interval, :group, :valid_states, :initial_state, :driver
     
     attr_writer   :autostart
     def autostart?; @autostart; end
     
     # api
     attr_accessor :state, :behaviors, :metrics
-    
-    # internal
-    attr_accessor :mutex
     
     def initialize
       @autostart ||= true
@@ -24,8 +21,8 @@ module God
       # the list of conditions for each action
       self.metrics = {nil => [], :unmonitored => []}
       
-      # mutex
-      self.mutex = Monitor.new
+      # driver
+      self.driver = Driver.new(self)
     end
     
     def prepare
@@ -127,51 +124,43 @@ module God
     
     # Move from one state to another
     def move(to_state)
-      self.mutex.synchronize do
-        # set the phase for this move
-        self.phase = Time.now
-        
-        orig_to_state = to_state
-        from_state = self.state
-        
-        msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
-        applog(self, :info, msg)
-        
-        # cleanup from current state
-        self.metrics[from_state].each { |m| m.disable }
-        
-        if to_state == :unmonitored
-          self.metrics[nil].each { |m| m.disable }
-        end
-        
-        # perform action
-        self.action(to_state)
-        
-        # enable simple mode
-        if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
-          to_state = :up
-        end
-        
-        # move to new state
-        self.metrics[to_state].each { |m| m.enable }
-        
-        # if no from state, enable lifecycle metric
-        if from_state == :unmonitored
-          self.metrics[nil].each { |m| m.enable }
-        end
-        
-        # set state
-        self.state = to_state
-        
-        # trigger
-        Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
-        
-        msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
-        applog(self, :info, msg)
-        
-        # return self
-        self
+      self.driver.ops_queue << [:move, [to_state]]
+    end
+    
+    def move_async(to_state)
+      orig_to_state = to_state
+      from_state = self.state
+      
+      msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
+      applog(self, :info, msg)
+      
+      # cleanup from current state
+      self.driver.clear_events
+      
+      # perform action
+      self.action(to_state)
+      
+      # enable simple mode
+      if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
+        to_state = :up
       end
+      
+      # move to new state
+      self.metrics[to_state].each { |m| m.enable }
+      
+      # if no from state, enable lifecycle metric
+      if from_state == :unmonitored
+        self.metrics[nil].each { |m| m.enable }
+      end
+      
+      # set state
+      self.state = to_state
+      
+      # trigger
+      Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
+      
+      msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
+      applog(self, :info, msg)
     end
     
     ###########################################################################
@@ -215,6 +204,21 @@ module God
           else
             raise NotImplementedError
         end
+      end
+    end
+    
+    ###########################################################################
+    #
+    # Events
+    #
+    ###########################################################################
+    
+    def attach(condition)
+      case condition
+        when PollCondition
+          self.driver.schedule(condition, 0)
+        when EventCondition, TriggerCondition
+          condition.register
       end
     end
     
