@@ -43,8 +43,7 @@ require 'god/contact'
 require 'god/contacts/email'
 
 require 'god/socket'
-require 'god/timer'
-require 'god/hub'
+require 'god/driver'
 
 require 'god/metric'
 require 'god/watch'
@@ -553,9 +552,6 @@ module God
     # start event handler system
     EventHandler.start if EventHandler.loaded?
     
-    # start the timer system
-    Timer.get
-    
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }
     
@@ -565,8 +561,12 @@ module God
     # mark as running
     self.running = true
     
-    # join the timer thread so we don't exit
-    Timer.get.join
+    # don't exit
+    Thread.new do
+      loop do
+        sleep 60
+      end
+    end.join
   end
   
   # To be called on program exit to start god

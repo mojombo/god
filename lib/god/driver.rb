@@ -1,7 +1,7 @@
 module God
   
   class DriverEvent
-    attr_accessor :condition, :at, :phase
+    attr_accessor :condition, :at
     
     # Instantiate a new TimerEvent that will be triggered after the specified delay
     #   +condition+ is the Condition
@@ -12,10 +12,16 @@ module God
       self.condition = condition
       self.at = Time.now + delay
     end
-  end
+    
+    def due?
+      Time.now >= self.at
+    end
+  end # DriverEvent
   
   class Driver
-    INTERVAL = 1
+    attr_reader :thread
+    
+    INTERVAL = 0.25
     
     # Instantiate a new Driver and start the scheduler loop to handle events
     #
@@ -25,33 +31,18 @@ module God
       @events = []
       @ops = Queue.new
       
-      @timer = Thread.new do
+      @thread = Thread.new do
         loop do
-          # applog(nil, :debug, "timer main loop, #{@events.size} events pending")
-          
           begin
-            unless @op.empty?
-              command = @ops.pop
-              @task.send(command[0], *command[1])
-              next
-            end
-            
-            # sort events
-            @events.sort! { |x, y| x.at <=> y.at }
-            
-            # only do this when there are events
-            if @events.empty?
-              sleep INTERVAL
+            if !@ops.empty?
+              self.handle_op
+            elsif !@events.empty?
+              self.handle_event
             else
-              # get the current time
-              t = Time.now
-              
-              if t >= @events.first.at
-                self.trigger(@events.pop)
-              end
+              sleep INTERVAL
             end
           rescue Exception => e
-            message = format("Unhandled exception (%s): %s\n%s",
+            message = format("Unhandled exception in driver loop - (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
             applog(nil, :fatal, message)
           end
@@ -59,15 +50,34 @@ module God
       end
     end
     
-    def clear_events
-      @events.each do |event|
-        case event.condition
-          when EventCondition, TriggerCondition
-            event.condition.deregister
-        end
+    def handle_op
+      command = @ops.pop
+      @task.send(command[0], *command[1])
+    end
+    
+    def handle_event
+      # display_events
+      
+      if @events.first.due?
+        event = @events.shift
+        @task.handle_poll(event.condition)
       end
       
+      # display_events
+      
+      # don't sleep if there is a pending event and it is due
+      unless @events.first && @events.first.due?
+        # puts 'sleep'
+        sleep INTERVAL
+      end
+    end
+    
+    def clear_events
       @events.clear
+    end
+    
+    def message(name, args = [])
+      @ops.push([name, args])
     end
     
     # Create and register a new TimerEvent
@@ -77,32 +87,20 @@ module God
     # Returns nothing
     def schedule(condition, delay = condition.interval)
       applog(nil, :debug, "driver schedule #{condition} in #{delay} seconds")
-      @events_queue << DriverEvent.new(condition, delay)
+      
+      @events.concat([DriverEvent.new(condition, delay)])
+      
+      # sort events
+      @events.sort! { |x, y| x.at <=> y.at }
     end
     
-    # Remove any TimerEvents for the given condition
-    #   +condition+ is the Condition
-    #
-    # Returns nothing
-    def unschedule(condition)
-      applog(nil, :debug, "timer unschedule #{condition}")
+    def display_events
+      puts '+--'
+      @events.each do |e|
+        puts "| #{e.condition.friendly_name} - #{e.at.to_f}"
+      end
+      puts '+--'
     end
-    
-    # Trigger the event's condition to be evaluated
-    #   +event+ is the TimerEvent to trigger
-    #
-    # Returns nothing
-    def trigger(event)
-      applog(nil, :debug, "timer trigger #{event}")
-      Hub.trigger(event.condition, event.phase)
-    end
-    
-    # Join the timer thread
-    #
-    # Returns nothing
-    def join
-      @timer.join
-    end
-  end
+  end # Driver
   
-end
+end # God

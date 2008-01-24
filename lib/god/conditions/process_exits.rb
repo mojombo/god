@@ -38,7 +38,7 @@ module God
           EventHandler.register(pid, :proc_exit) do |extra|
             formatted_extra = extra.size > 0 ? " #{extra.inspect}" : ""
             self.info = "process #{pid} exited#{formatted_extra}"
-            Hub.trigger(self)
+            self.watch.trigger(self)
           end
           
           msg = "#{self.watch.name} registered 'proc_exit' event for pid #{pid}"

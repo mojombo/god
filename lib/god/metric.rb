@@ -45,13 +45,13 @@ module God
     
     def enable
       self.conditions.each do |c|
-        Hub.attach(c, self)
+        self.watch.attach(c)
       end
     end
     
     def disable
       self.conditions.each do |c|
-        Hub.detach(c)
+        self.watch.detach(c)
       end
     end
   end

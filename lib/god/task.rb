@@ -7,7 +7,7 @@ module God
     def autostart?; @autostart; end
     
     # api
-    attr_accessor :state, :behaviors, :metrics
+    attr_accessor :state, :behaviors, :metrics, :directory
     
     def initialize
       @autostart ||= true
@@ -20,6 +20,9 @@ module God
       
       # the list of conditions for each action
       self.metrics = {nil => [], :unmonitored => []}
+      
+      # the condition -> metric lookup
+      self.directory = {}
       
       # driver
       self.driver = Driver.new(self)
@@ -89,6 +92,11 @@ module God
           end
         end
         
+        # populate the condition -> metric directory
+        m.conditions.each do |c|
+          self.directory[c] = m
+        end
+        
         # record the metric
         self.metrics[start_state] ||= []
         self.metrics[start_state] << m
@@ -122,45 +130,48 @@ module God
       self.move(:unmonitored)
     end
     
-    # Move from one state to another
     def move(to_state)
-      self.driver.ops_queue << [:move, [to_state]]
+      if Thread.current != self.driver.thread
+        self.driver.message(:move, [to_state])
+      else
+        orig_to_state = to_state
+        from_state = self.state
+        
+        msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
+        applog(self, :info, msg)
+        
+        # cleanup from current state
+        self.driver.clear_events
+        
+        # perform action
+        self.action(to_state)
+        
+        # enable simple mode
+        if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
+          to_state = :up
+        end
+        
+        # move to new state
+        self.metrics[to_state].each { |m| m.enable }
+        
+        # if no from state, enable lifecycle metric
+        if from_state == :unmonitored
+          self.metrics[nil].each { |m| m.enable }
+        end
+        
+        # set state
+        self.state = to_state
+        
+        # trigger
+        Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
+        
+        msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
+        applog(self, :info, msg)
+      end
     end
     
-    def move_async(to_state)
-      orig_to_state = to_state
-      from_state = self.state
-      
-      msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
-      applog(self, :info, msg)
-      
-      # cleanup from current state
-      self.driver.clear_events
-      
-      # perform action
-      self.action(to_state)
-      
-      # enable simple mode
-      if [:start, :restart].include?(to_state) && self.metrics[to_state].empty?
-        to_state = :up
-      end
-      
-      # move to new state
-      self.metrics[to_state].each { |m| m.enable }
-      
-      # if no from state, enable lifecycle metric
-      if from_state == :unmonitored
-        self.metrics[nil].each { |m| m.enable }
-      end
-      
-      # set state
-      self.state = to_state
-      
-      # trigger
-      Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
-      
-      msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
-      applog(self, :info, msg)
+    def trigger(condition)
+      self.driver.ops << [:handle_event, [condition]]
     end
     
     ###########################################################################
@@ -234,6 +245,192 @@ module God
     
     def unregister!
       # override if necessary
+    end
+    
+    ###########################################################################
+    #
+    # Handlers
+    #
+    ###########################################################################
+    
+    # Asynchronously evaluate and handle the given poll condition. Handles logging
+    # notifications, and moving to the new state if necessary
+    #   +condition+ is the Condition to handle
+    #   +phase+ is the phase of the Watch that should be matched
+    #
+    # Returns nothing
+    def handle_poll(condition)
+      # lookup metric
+      metric = self.directory[condition]
+      
+      # run the test
+      result = condition.test
+      
+      # log
+      messages = self.log_line(self, metric, condition, result)
+      
+      # notify
+      if condition.notify && self.trigger?(metric, result)
+        self.notify(condition, messages.last)
+      end
+      
+      # after-condition
+      condition.after
+      
+      # get the destination
+      dest = 
+      if result && condition.transition
+        # condition override
+        condition.transition
+      else
+        # regular
+        metric.destination && metric.destination[result]
+      end
+      
+      # transition or reschedule
+      if dest
+        # transition
+        begin
+          self.move(dest)
+        rescue EventRegistrationFailedError
+          msg = watch.name + ' Event registration failed, moving back to previous state'
+          applog(watch, :info, msg)
+          
+          dest = watch.state
+          retry
+        end
+      else
+        # reschedule
+        self.driver.schedule(condition)
+      end
+    end
+    
+    # Asynchronously evaluate and handle the given event condition. Handles logging
+    # notifications, and moving to the new state if necessary
+    #   +condition+ is the Condition to handle
+    #
+    # Returns nothing
+    def handle_event(condition)
+      # lookup metric
+      metric = self.directory[condition]
+      
+      # log
+      messages = self.log_line(self, metric, condition, true)
+      
+      # notify
+      if condition.notify && self.trigger?(metric, true)
+        self.notify(condition, messages.last)
+      end
+      
+      # get the destination
+      dest = 
+      if condition.transition
+        # condition override
+        condition.transition
+      else
+        # regular
+        metric.destination && metric.destination[true]
+      end
+      
+      if dest
+        self.move(dest)
+      end
+    end
+    
+    # Determine whether a trigger happened
+    #   +metric+ is the Metric
+    #   +result+ is the result from the condition's test
+    #
+    # Returns Boolean
+    def trigger?(metric, result)
+      metric.destination && metric.destination[result]
+    end
+    
+    # Log info about the condition and return the list of messages logged
+    #   +watch+ is the Watch
+    #   +metric+ is the Metric
+    #   +condition+ is the Condition
+    #   +result+ is the Boolean result of the condition test evaluation
+    #
+    # Returns String[]
+    def log_line(watch, metric, condition, result)
+      status = 
+      if self.trigger?(metric, result)
+        "[trigger]"
+      else
+        "[ok]"
+      end
+      
+      messages = []
+      
+      # log info if available
+      if condition.info
+        Array(condition.info).each do |condition_info|
+          messages << "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
+          applog(watch, :info, messages.last)
+        end
+      else
+        messages << "#{watch.name} #{status} (#{condition.base_name})"
+        applog(watch, :info, messages.last)
+      end
+      
+      # log
+      debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      applog(watch, :debug, debug_message)
+      
+      messages
+    end
+    
+    # Format the destination specification for use in debug logging
+    #   +metric+ is the Metric
+    #   +condition+ is the Condition
+    #
+    # Returns String
+    def dest_desc(metric, condition)
+      if condition.transition
+        {true => condition.transition}.inspect
+      else
+        if metric.destination
+          metric.destination.inspect
+        else
+          'none'
+        end
+      end
+    end
+    
+    # Notify all recipeients of the given condition with the specified message
+    #   +condition+ is the Condition
+    #   +message+ is the String message to send
+    #
+    # Returns nothing
+    def notify(condition, message)
+      spec = Contact.normalize(condition.notify)
+      unmatched = []
+      
+      # resolve contacts
+      resolved_contacts =
+      spec[:contacts].inject([]) do |acc, contact_name_or_group|
+        cons = Array(God.contacts[contact_name_or_group] || God.contact_groups[contact_name_or_group])
+        unmatched << contact_name_or_group if cons.empty?
+        acc += cons
+        acc
+      end
+      
+      # warn about unmatched contacts
+      unless unmatched.empty?
+        msg = "#{condition.watch.name} no matching contacts for '#{unmatched.join(", ")}'"
+        applog(condition.watch, :warn, msg)
+      end
+      
+      # notify each contact
+      resolved_contacts.each do |c|
+        host = `hostname`.chomp rescue 'none'
+        c.notify(message, Time.now, spec[:priority], spec[:category], host)
+        
+        msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
+        
+        applog(condition.watch, :info, msg % [])
+      end
     end
   end
   
