@@ -1,6 +1,6 @@
 module God
   
-  class TimerEvent
+  class DriverEvent
     attr_accessor :condition, :at, :phase
     
     # Instantiate a new TimerEvent that will be triggered after the specified delay
@@ -17,80 +17,50 @@ module God
     end
   end
   
-  class Timer
-    INTERVAL = 0.25
-    
-    attr_reader :events, :pending_events, :timer
-    
-    @@timer = nil
-    
-    # Get the singleton Timer
-    #
-    # Returns Timer
-    def self.get
-      @@timer ||= Timer.new
-    end
-    
-    # Reset the singleton Timer so the next call to Timer.get will
-    # create a new one
-    #
-    # Returns nothing
-    def self.reset
-      @@timer = nil
-    end
+  class Driver
+    INTERVAL = 1
     
     # Instantiate a new Timer and start the scheduler loop to handle events
     #
     # Returns Timer
     def initialize
       @events = []
-      @pending_events = []
-      @pending_mutex = Mutex.new
+      @ops_queue = Queue.new
+      @events_queue = Queue.new
       
       @timer = Thread.new do
         loop do
           # applog(nil, :debug, "timer main loop, #{@events.size} events pending")
           
           begin
+            events_changed = false
+            
             # pull in pending events
-            @pending_mutex.synchronize do
-              @pending_events.each { |e| @events << e }
-              @pending_events.clear
+            while !@events_queue.empty? do
+              @events << @events_queue.pop
+              events_changed = true
             end
             
-            @events.sort! { |x, y| x.at <=> y.at }
+            # sort events if it changed
+            if events_changed
+              @events.sort! { |x, y| x.at <=> y.at }
+            end
             
-            # get the current time
-            t = Time.now.to_i
-            
-            # iterate over each event and trigger any that are due
-            triggered = []
-            
-            @events.each do |event|
-              if t >= event.at
-                # trigger the event and mark it for removal
-                self.trigger(event)
-                triggered << event
-              else
-                # events are ordered, so we can bail on first miss
-                break
+            # only do this when there are events
+            if @events.empty?
+              sleep INTERVAL
+            else
+              # get the current time
+              t = Time.now
+              
+              if t >= @events.first.at
+                self.trigger(@events.pop)
               end
-            end
-            
-            # remove all triggered events
-            triggered.each do |event|
-              @events.delete(event)
             end
           rescue Exception => e
             message = format("Unhandled exception (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
             applog(nil, :fatal, message)
-          ensure
-            # sleep until next check
-            # GC.start
-            # BleakHouseDiagnostic.snapshot
-            # p BleakHouseDiagnostic.logger.mem_usage
-            sleep INTERVAL
           end
         end
       end

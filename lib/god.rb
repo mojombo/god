@@ -7,6 +7,7 @@ require 'rubygems'
 require 'stringio'
 require 'logger'
 require 'fileutils'
+require 'thread'
 
 # stdlib
 
