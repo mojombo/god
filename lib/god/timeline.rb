@@ -27,12 +27,8 @@ module God
     #
     # Returns Timeline
     def push(val)
-      if (size + 1) > @max_size
-        reverse!
-        pop
-        reverse!
-      end
-      super(val)
+      self.concat([val])
+      shift if size > @max_size
     end
     
     # Push a value onto the timeline

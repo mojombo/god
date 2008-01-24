@@ -77,7 +77,7 @@ module God
     end
     
     def trigger
-      Hub.trigger(self)
+      self.watch.trigger(self)
     end
     
     def register

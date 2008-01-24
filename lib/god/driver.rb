@@ -24,6 +24,7 @@ module God
     INTERVAL = 0.25
     
     # Instantiate a new Driver and start the scheduler loop to handle events
+    #   +task+ is the Task this Driver belongs to
     #
     # Returns Driver
     def initialize(task)
@@ -50,37 +51,46 @@ module God
       end
     end
     
+    # Handle the next queued operation that was issued asynchronously
+    #
+    # Returns nothing
     def handle_op
       command = @ops.pop
       @task.send(command[0], *command[1])
     end
     
+    # Handle the next event (poll condition) that is due
+    #
+    # Returns nothing
     def handle_event
-      # display_events
-      
       if @events.first.due?
         event = @events.shift
         @task.handle_poll(event.condition)
       end
       
-      # display_events
-      
       # don't sleep if there is a pending event and it is due
       unless @events.first && @events.first.due?
-        # puts 'sleep'
         sleep INTERVAL
       end
     end
     
+    # Clear all events for this Driver
+    #
+    # Returns nothing
     def clear_events
       @events.clear
     end
     
+    # Queue an asynchronous message
+    #   +name+ is the Symbol name of the operation
+    #   +args+ is an optional Array of arguments
+    #
+    # Returns nothing
     def message(name, args = [])
       @ops.push([name, args])
     end
     
-    # Create and register a new TimerEvent
+    # Create and schedule a new DriverEvent
     #   +condition+ is the Condition
     #   +delay+ is the number of seconds to delay (default: interval defined in condition)
     #
@@ -92,14 +102,6 @@ module God
       
       # sort events
       @events.sort! { |x, y| x.at <=> y.at }
-    end
-    
-    def display_events
-      puts '+--'
-      @events.each do |e|
-        puts "| #{e.condition.friendly_name} - #{e.at.to_f}"
-      end
-      puts '+--'
     end
   end # Driver
   

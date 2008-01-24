@@ -110,6 +110,11 @@ module God
       # let the config file define some conditions on the metric
       yield(m)
       
+      # populate the condition -> metric directory
+      m.conditions.each do |c|
+        self.directory[c] = m
+      end
+      
       # record the metric
       self.metrics[nil] << m
     end
@@ -132,16 +137,27 @@ module God
     
     def move(to_state)
       if Thread.current != self.driver.thread
+        # called from outside Driver
+        
+        # send an async message to Driver
         self.driver.message(:move, [to_state])
       else
+        # called from within Driver
+        
+        # record original info
         orig_to_state = to_state
         from_state = self.state
         
+        # log
         msg = "#{self.name} move '#{from_state}' to '#{to_state}'"
         applog(self, :info, msg)
         
         # cleanup from current state
         self.driver.clear_events
+        self.metrics[from_state].each { |m| m.disable }
+        if to_state == :unmonitored
+          self.metrics[nil].each { |m| m.disable }
+        end
         
         # perform action
         self.action(to_state)
@@ -162,16 +178,20 @@ module God
         # set state
         self.state = to_state
         
-        # trigger
+        # broadcast to interested TriggerConditions
         Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
         
+        # log
         msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
         applog(self, :info, msg)
       end
     end
     
+    # Notify the Driver that an EventCondition has triggered
+    #
+    # Returns nothing
     def trigger(condition)
-      self.driver.ops << [:handle_event, [condition]]
+      self.driver.message(:handle_event, [condition])
     end
     
     ###########################################################################

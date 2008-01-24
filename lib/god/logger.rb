@@ -21,6 +21,9 @@ module God
       self.logs = {}
       @mutex = Mutex.new
       @capture = nil
+      @templogio = StringIO.new
+      @templog = ::Logger.new(@templogio)
+      @templog.level = Logger::INFO
       load_syslog
     end
     
@@ -56,15 +59,13 @@ module God
       self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
       
       # push onto capture and timeline for the given watch
-      buf = StringIO.new
-      templog = ::Logger.new(buf)
-      templog.level = Logger::INFO
-      templog.send(level, text % [])
+      @templogio.truncate(0)
+      @templogio.rewind
+      @templog.send(level, text % [])
       @mutex.synchronize do
-        @capture.puts(buf.string) if @capture
-        self.logs[watch.name] << [Time.now, buf.string] if watch
+        @capture.puts(@templogio.string) if @capture
+        self.logs[watch.name] << [Time.now, @templogio.string] if watch
       end
-      templog.close
       
       # send to regular logger
       self.send(level, text % [])
