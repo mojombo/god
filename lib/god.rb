@@ -154,7 +154,8 @@ module God
                   :watches,
                   :groups,
                   :contacts,
-                  :contact_groups
+                  :contact_groups,
+                  :main
   end
   
   # initialize class instance variables
@@ -562,11 +563,14 @@ module God
     self.running = true
     
     # don't exit
+    self.main = 
     Thread.new do
       loop do
         sleep 60
       end
-    end.join
+    end
+    
+    self.main.join
   end
   
   # To be called on program exit to start god

@@ -5,11 +5,12 @@ class TestGod < Test::Unit::TestCase
     God::Socket.stubs(:new).returns(true)
     God.stubs(:setup).returns(true)
     God.stubs(:validater).returns(true)
+    Thread.any_instance.stubs(:join).returns(true)
     God.reset
   end
   
   def teardown
-    Timer.get.timer.kill
+    God.main && God.main.kill
   end
   
   # applog
@@ -491,7 +492,6 @@ class TestGod < Test::Unit::TestCase
     
   def test_start_should_start_event_handler
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
-    Timer.any_instance.expects(:join)
     EventHandler.expects(:start).once
     no_stdout do
       God.start
@@ -504,7 +504,6 @@ class TestGod < Test::Unit::TestCase
       w.start = 'go'
     end
     
-    Timer.any_instance.expects(:join)
     Watch.any_instance.expects(:monitor).once
     God.start
   end
@@ -516,14 +515,12 @@ class TestGod < Test::Unit::TestCase
       w.autostart = false
     end
     
-    Timer.any_instance.expects(:join)
     Watch.any_instance.expects(:monitor).never
     God.start
   end
   
   def test_start_should_get_and_join_timer
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
-    Timer.any_instance.expects(:join)
     no_stdout do
       God.start
     end
@@ -557,7 +554,7 @@ class TestGodOther < Test::Unit::TestCase
   end
   
   def teardown
-    Timer.get.timer.kill
+    God.main && God.main.kill
   end
   
   # setup
