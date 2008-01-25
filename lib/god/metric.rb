@@ -51,7 +51,7 @@ module God
     
     def disable
       self.conditions.each do |c|
-        c.reset
+        self.watch.detach(c)
       end
     end
   end

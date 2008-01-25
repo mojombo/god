@@ -67,7 +67,7 @@ LOG = God::Logger.new
 LOG.datetime_format = "%Y-%m-%d %H:%M:%S "
 
 def applog(watch, level, text)
-  LOG.log(watch, level, text)
+  # LOG.log(watch, level, text)
 end
 
 # The $run global determines whether god should be started when the

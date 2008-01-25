@@ -181,6 +181,8 @@ module God
           ::Process.kill('KILL', pid) rescue nil
         end
       end
+      
+      print "a - #{System::Process.new(::Process.pid).memory}\n"; sleep 1
             
       if command.kind_of?(String)
         pid = nil
@@ -197,14 +199,20 @@ module God
               puts pid.to_s # send pid back to forker
             end
             
+            print "b - #{System::Process.new(::Process.pid).memory}\n"; sleep 1
+            
             ::Process.waitpid(opid, 0)
             w.close
             pid = r.gets.chomp
+            
+            print "c - #{System::Process.new(::Process.pid).memory}\n"; sleep 1
           ensure
             # make sure the file descriptors get closed no matter what
             r.close rescue nil
             w.close rescue nil
           end
+          
+          print "d - #{System::Process.new(::Process.pid).memory}\n"; sleep 1
         else
           # single fork self-daemonizing processes
           # we want to wait for them to finish
@@ -218,6 +226,8 @@ module God
           
           ensure_stop if action == :stop
         end
+        
+        print "e - #{System::Process.new(::Process.pid).memory}\n"
         
         if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
           File.open(default_pid_file, 'w') do |f|

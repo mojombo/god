@@ -18,7 +18,8 @@ class TestTimeline < Test::Unit::TestCase
   end
   
   def test_clear_should_clear_array
-    @timeline.push(1)
+    @timeline << 1
+    assert_equal [1], @timeline
     assert_equal [], @timeline.clear
   end
   

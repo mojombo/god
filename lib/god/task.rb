@@ -126,15 +126,23 @@ module God
     ###########################################################################
         
     # Enable monitoring
+    #
+    # Returns nothing
     def monitor
       self.move(self.initial_state)
     end
     
     # Disable monitoring
+    #
+    # Returns nothing
     def unmonitor
       self.move(:unmonitored)
     end
     
+    # Move to the givent state
+    #   +to_state+ is the Symbol representing the state to move to
+    #
+    # Returns Task (self)
     def move(to_state)
       if Thread.current != self.driver.thread
         # called from outside Driver
@@ -185,6 +193,8 @@ module God
         msg = "#{self.name} moved '#{from_state}' to '#{to_state}'"
         applog(self, :info, msg)
       end
+      
+      self
     end
     
     # Notify the Driver that an EventCondition has triggered
@@ -215,25 +225,37 @@ module God
       self.send(sym, *args)
     end
     
+    # Perform the given action
     #   +a+ is the action Symbol
     #   +c+ is the Condition
+    #
+    # Returns Task (self)
     def action(a, c = nil)
-      if self.respond_to?(a)
-        command = self.send(a)
+      if Thread.current != self.driver.thread
+        # called from outside Driver
         
-        case command
-          when String
-            msg = "#{self.name} #{a}: #{command}"
-            applog(self, :info, msg)
-            
-            system(command)
-          when Proc
-            msg = "#{self.name} #{a}: lambda"
-            applog(self, :info, msg)
-            
-            command.call
-          else
-            raise NotImplementedError
+        # send an async message to Driver
+        self.driver.message(:action, [a, c])
+      else
+        # called from within Driver
+        
+        if self.respond_to?(a)
+          command = self.send(a)
+          
+          case command
+            when String
+              msg = "#{self.name} #{a}: #{command}"
+              applog(self, :info, msg)
+              
+              system(command)
+            when Proc
+              msg = "#{self.name} #{a}: lambda"
+              applog(self, :info, msg)
+              
+              command.call
+            else
+              raise NotImplementedError
+          end
         end
       end
     end
@@ -250,6 +272,15 @@ module God
           self.driver.schedule(condition, 0)
         when EventCondition, TriggerCondition
           condition.register
+      end
+    end
+    
+    def detach(condition)
+      case condition
+        when PollCondition
+          condition.reset
+        when EventCondition, TriggerCondition
+          condition.deregister
       end
     end
     

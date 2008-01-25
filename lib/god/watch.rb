@@ -97,22 +97,33 @@ module God
     ###########################################################################
     
     def action(a, c = nil)
-      case a
-      when :start
-        call_action(c, :start)
-        sleep(self.start_grace + self.grace)
-      when :restart
-        if self.restart
-          call_action(c, :restart)
-        else
-          action(:stop, c)
-          action(:start, c)
+      if Thread.current != self.driver.thread
+        # called from outside Driver
+        
+        # send an async message to Driver
+        self.driver.message(:action, [a, c])
+      else
+        # called from within Driver
+        
+        case a
+        when :start
+          call_action(c, :start)
+          sleep(self.start_grace + self.grace)
+        when :restart
+          if self.restart
+            call_action(c, :restart)
+          else
+            action(:stop, c)
+            action(:start, c)
+          end
+          sleep(self.restart_grace + self.grace)
+        when :stop
+          call_action(c, :stop)
+          sleep(self.stop_grace + self.grace)
         end
-        sleep(self.restart_grace + self.grace)
-      when :stop
-        call_action(c, :stop)
-        sleep(self.stop_grace + self.grace)
       end
+      
+      self
     end
     
     def call_action(condition, action)
@@ -134,6 +145,8 @@ module God
       end
       
       @process.call_action(action)
+      
+      print "z - #{System::Process.new(::Process.pid).memory}\n"
       
       # after
       after_items = self.behaviors
