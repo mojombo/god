@@ -317,8 +317,8 @@ module God
       result = condition.test
       
       # log
-      # messages = self.log_line(self, metric, condition, result)
-      messages = []
+      messages = self.log_line(self, metric, condition, result)
+      # messages = []
       
       # notify
       if condition.notify && self.trigger?(metric, result)

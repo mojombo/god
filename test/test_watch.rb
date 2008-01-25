@@ -37,12 +37,6 @@ class TestWatch < Test::Unit::TestCase
     assert_equal :unmonitored, @watch.state
   end
   
-  # mutex
-  
-  def test_mutex_should_return_the_same_mutex_each_time
-    assert_equal @watch.mutex, @watch.mutex
-  end
-  
   # valid?
   
   def test_valid?
@@ -132,6 +126,9 @@ class TestWatch < Test::Unit::TestCase
   # move
   
   def test_move_should_not_clean_up_if_from_state_is_nil
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     metric = nil
     
     @watch.instance_eval do
@@ -150,6 +147,9 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_clean_up_from_state_if_not_nil
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     metric = nil
     
     @watch.instance_eval do
@@ -170,12 +170,18 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_call_action
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     @watch.expects(:action).with(:start)
     
     no_stdout { @watch.move(:start) }
   end
   
   def test_move_should_move_to_up_state_if_no_start_or_restart_metric
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     [:start, :restart].each do |state|
       @watch.expects(:action)
       no_stdout { @watch.move(state) }
@@ -184,6 +190,9 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_enable_destination_metric
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     metric = nil
     
     @watch.instance_eval do
@@ -204,6 +213,9 @@ class TestWatch < Test::Unit::TestCase
   # action
   
   def test_action_should_pass_start_and_stop_actions_to_call_action
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     c = Conditions::FakePollCondition.new
     [:start, :stop].each do |cmd|
       @watch.expects(:call_action).with(c, cmd)
@@ -212,6 +224,9 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_action_should_do_stop_then_start_if_no_restart_command
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     c = Conditions::FakePollCondition.new
     @watch.expects(:call_action).with(c, :stop)
     @watch.expects(:call_action).with(c, :start)
@@ -219,6 +234,9 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_action_should_restart_to_call_action_if_present
+    Thread.current.stubs(:==).returns(true)
+    @watch.driver.expects(:message).never
+    
     @watch.restart = lambda { }
     c = Conditions::FakePollCondition.new
     @watch.expects(:call_action).with(c, :restart)
