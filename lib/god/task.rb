@@ -304,10 +304,9 @@ module God
     #
     ###########################################################################
     
-    # Asynchronously evaluate and handle the given poll condition. Handles logging
+    # Evaluate and handle the given poll condition. Handles logging
     # notifications, and moving to the new state if necessary
     #   +condition+ is the Condition to handle
-    #   +phase+ is the phase of the Watch that should be matched
     #
     # Returns nothing
     def handle_poll(condition)
@@ -319,6 +318,7 @@ module God
       
       # log
       # messages = self.log_line(self, metric, condition, result)
+      messages = []
       
       # notify
       if condition.notify && self.trigger?(metric, result)
@@ -367,6 +367,7 @@ module God
       
       # log
       # messages = self.log_line(self, metric, condition, true)
+      messages = []
       
       # notify
       if condition.notify && self.trigger?(metric, true)

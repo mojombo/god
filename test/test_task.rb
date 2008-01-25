@@ -2,7 +2,19 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestTask < Test::Unit::TestCase
   def setup
+    God::Socket.stubs(:new).returns(true)
     God.internal_init
+    God.reset
+    
+    God.watch do |w|
+      w.name = 'foo'
+      w.start = 'bar'
+      w.interval = 10
+    end
+    
+    @watch = God.watches['foo']
+    
+    
     @task = Task.new
     @task.name = 'foo'
     @task.valid_states = [:foo, :bar]
@@ -91,5 +103,172 @@ class TestTask < Test::Unit::TestCase
     @task.foo = 'foo'
     @task.driver.expects(:message).with(:action, [:foo, nil])
     @task.action(:foo, nil)
+  end
+  
+  # attach
+  
+  def test_attach_should_schedule_for_poll_condition
+    c = Conditions::FakePollCondition.new
+    @task.driver.expects(:schedule).with(c, 0)
+    @task.attach(c)
+  end
+  
+  def test_attach_should_regsiter_for_event_condition
+    c = Conditions::FakeEventCondition.new
+    c.expects(:register)
+    @task.attach(c)
+  end
+  
+  # detach
+  
+  def test_detach_should_reset_poll_condition
+    c = Conditions::FakePollCondition.new
+    c.expects(:reset)
+    c.expects(:deregister).never
+    @task.detach(c)
+  end
+  
+  def test_detach_should_deregister_event_conditions
+    c = Conditions::FakeEventCondition.new
+    c.expects(:deregister).once
+    @task.detach(c)
+  end
+  
+  # trigger
+  
+  def test_trigger_should_send_message_to_driver
+    c = Conditions::FakePollCondition.new
+    @task.driver.expects(:message).with(:handle_event, [c])
+    @task.trigger(c)
+  end
+  
+  # handle_poll
+  
+  def test_handle_poll_no_change_should_reschedule
+    c = Conditions::FakePollCondition.new
+    c.watch = @task
+    c.interval = 10
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    c.expects(:test).returns(false)
+    @task.driver.expects(:schedule)
+    
+    no_stdout do
+      @task.handle_poll(c)
+    end
+  end
+  
+  def test_handle_poll_change_should_move
+    c = Conditions::FakePollCondition.new
+    c.watch = @task
+    c.interval = 10
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    c.expects(:test).returns(true)
+    @task.expects(:move).with(:up)
+    
+    no_stdout do
+      @task.handle_poll(c)
+    end
+  end
+  
+  def test_handle_poll_should_use_overridden_transition
+    c = Conditions::Tries.new
+    c.watch = @task
+    c.times = 1
+    c.transition = :start
+    c.prepare
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    @task.expects(:move).with(:start)
+    
+    no_stdout do
+      @task.handle_poll(c)
+    end
+  end
+  
+  def test_handle_poll_should_notify_if_triggering
+    c = Conditions::FakePollCondition.new
+    c.watch = @task
+    c.interval = 10
+    c.notify = 'tom'
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    c.expects(:test).returns(true)
+    @task.expects(:notify)
+    
+    no_stdout do
+      @task.handle_poll(c)
+    end
+  end
+  
+  def test_handle_poll_should_not_notify_if_not_triggering
+    c = Conditions::FakePollCondition.new
+    c.watch = @task
+    c.interval = 10
+    c.notify = 'tom'
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    c.expects(:test).returns(false)
+    @task.expects(:notify).never
+    
+    no_stdout do
+      @task.handle_poll(c)
+    end
+  end
+  
+  # handle_event
+  
+  def test_handle_event_should_move
+    c = Conditions::FakeEventCondition.new
+    c.watch = @task
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    @task.expects(:move).with(:up)
+    
+    no_stdout do
+      @task.handle_event(c)
+    end
+  end
+  
+  def test_handle_event_should_notify_if_triggering
+    c = Conditions::FakeEventCondition.new
+    c.watch = @task
+    c.notify = 'tom'
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    @task.expects(:notify)
+    
+    no_stdout do
+      @task.handle_event(c)
+    end
+  end
+  
+  def test_handle_event_should_not_notify_if_no_notify_set
+    c = Conditions::FakeEventCondition.new
+    c.watch = @task
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    @task.expects(:notify).never
+    
+    no_stdout do
+      @task.handle_event(c)
+    end
   end
 end
