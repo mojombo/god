@@ -7,7 +7,13 @@ require 'rubygems'
 require 'stringio'
 require 'logger'
 require 'fileutils'
-require 'thread'
+
+begin
+  require 'fastthread'
+rescue LoadError
+ensure
+  require 'thread'
+end
 
 # stdlib
 
