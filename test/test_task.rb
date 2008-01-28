@@ -2,19 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestTask < Test::Unit::TestCase
   def setup
-    God::Socket.stubs(:new).returns(true)
     God.internal_init
-    God.reset
-    
-    God.watch do |w|
-      w.name = 'foo'
-      w.start = 'bar'
-      w.interval = 10
-    end
-    
-    @watch = God.watches['foo']
-    
-    
     @task = Task.new
     @task.name = 'foo'
     @task.valid_states = [:foo, :bar]

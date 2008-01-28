@@ -11,6 +11,11 @@ class TestGod < Test::Unit::TestCase
   
   def teardown
     God.main && God.main.kill
+    if God.watches
+      God.watches.each do |k, w|
+        w.driver.thread.kill
+      end
+    end
   end
   
   # applog

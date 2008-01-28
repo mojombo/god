@@ -69,20 +69,4 @@ class TestMetric < Test::Unit::TestCase
       @metric.condition(:invalid) { }
     end
   end
-  
-  # enable
-  
-  def test_enable_should_attach_conditions
-    @metric.condition(:fake_poll_condition)
-    Hub.expects(:attach).with(@metric.conditions.first, @metric)
-    @metric.enable
-  end
-  
-  # disable
-  
-  def test_disable_should_detach_conditions
-    @metric.condition(:fake_poll_condition)
-    Hub.expects(:detach).with(@metric.conditions.first)
-    @metric.disable
-  end
 end
