@@ -74,6 +74,7 @@ end
 
 class TestEventHandlerOperational < Test::Unit::TestCase
   def test_operational
+    God::EventHandler.start
     assert God::EventHandler.loaded?
   end
 end
