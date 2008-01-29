@@ -494,14 +494,6 @@ class TestGod < Test::Unit::TestCase
     God::Socket.expects(:new).returns(true)
     God.start
   end
-    
-  def test_start_should_start_event_handler
-    God.watch { |w| w.name = 'foo'; w.start = 'bar' }
-    EventHandler.expects(:start).once
-    no_stdout do
-      God.start
-    end
-  end
   
   def test_start_should_begin_monitoring_autostart_watches
     God.watch do |w|

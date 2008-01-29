@@ -557,7 +557,7 @@ module God
     self.server = Socket.new(self.port)
     
     # start event handler system
-    EventHandler.start if EventHandler.loaded?
+    # EventHandler.start if EventHandler.loaded?
     
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }

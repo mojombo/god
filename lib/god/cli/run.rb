@@ -67,6 +67,9 @@ module God
                 abort "File not found: #{@options[:config]}"
               end
               
+              # start the event handler
+              God::EventHandler.start if God::EventHandler.loaded?
+              
               begin
                 load File.expand_path(@options[:config])
               rescue Exception => e
@@ -116,6 +119,9 @@ module God
           unless File.exist?(@options[:config])
             abort "File not found: #{@options[:config]}"
           end
+          
+          # start the event handler
+          God::EventHandler.start if God::EventHandler.loaded?
           
           begin
             load File.expand_path(@options[:config])

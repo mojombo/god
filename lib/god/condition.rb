@@ -14,6 +14,10 @@ module God
         abort "Condition '#{c.class.name}' must subclass God::PollCondition, God::EventCondition, or God::TriggerCondition" 
       end
       
+      if !EventHandler.loaded? && c.kind_of?(EventCondition)
+        abort "Condition '#{c.class.name}' requires an event system but none has been loaded"
+      end
+      
       c.watch = watch
       c
     rescue NameError

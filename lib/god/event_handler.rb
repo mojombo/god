@@ -70,6 +70,40 @@ module God
           end
         end
       end
+      
+      # do a real test to make sure events are working properly
+      @@loaded = self.operational?
+    end
+    
+    def self.operational?
+      com = [false]
+      
+      Thread.new do
+        begin
+          event_system = God::EventHandler.event_system
+          
+          pid = fork do
+            loop { sleep(1) }
+          end
+          
+          self.register(pid, :proc_exit) do
+            com[0] = true
+          end
+          
+          ::Process.kill('KILL', pid)
+          
+          sleep(0.1)
+          
+          self.deregister(pid, :proc_exit) rescue nil
+        rescue => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
+      end.join
+      
+      sleep(0.1)
+      
+      com.first
     end
     
   end

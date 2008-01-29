@@ -17,6 +17,14 @@ class TestCondition < Test::Unit::TestCase
     end
   end
   
+  def test_generate_should_abort_on_event_condition_without_loaded_event_system
+    God::EventHandler.stubs(:operational?).returns(false)
+    assert_abort do
+      God::EventHandler.start
+      Condition.generate(:process_exits, nil).class
+    end
+  end
+  
   def test_generate_should_return_a_good_error_message_for_invalid_types
     emsg = "No Condition found with the class name God::Conditions::FooBar"
     rmsg = nil
