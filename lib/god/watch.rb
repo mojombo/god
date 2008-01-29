@@ -146,8 +146,6 @@ module God
       
       @process.call_action(action)
       
-      print "z - #{System::Process.new(::Process.pid).memory}\n"
-      
       # after
       after_items = self.behaviors
       after_items += [condition] if condition
