@@ -318,7 +318,6 @@ module God
       
       # log
       messages = self.log_line(self, metric, condition, result)
-      # messages = []
       
       # notify
       if condition.notify && self.trigger?(metric, result)
@@ -366,8 +365,7 @@ module God
       metric = self.directory[condition]
       
       # log
-      # messages = self.log_line(self, metric, condition, true)
-      messages = []
+      messages = self.log_line(self, metric, condition, true)
       
       # notify
       if condition.notify && self.trigger?(metric, true)

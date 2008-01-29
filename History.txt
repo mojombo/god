@@ -1,3 +1,9 @@
+== 0.6.11 / 
+  * Major Enhancements
+    * HUGE refactor of timer system to simplify scheduling
+  * Minor Enhancements
+    * Check for a truly working event system and disallow event conditions if none is present
+
 == 0.6.10 / 2003-01-24
   * Bug Fixes
     * Fix ensure_stop nil pid no local variable bug
