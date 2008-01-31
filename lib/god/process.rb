@@ -164,7 +164,8 @@ module God
         command = lambda do
           applog(self, :info, "#{self.name} stop: default lambda killer")
           
-          ::Process.kill('HUP', pid) rescue nil
+          ::Process.kill('TERM', pid) rescue nil
+          applog(self, :info, "#{self.name} sent SIGTERM")
           
           # Poll to see if it's dead
           5.times do
@@ -172,6 +173,7 @@ module God
               ::Process.kill(0, pid)
             rescue Errno::ESRCH
               # It died. Good.
+              applog(self, :info, "#{self.name} process stopped")
               return
             end
             
@@ -179,6 +181,7 @@ module God
           end
           
           ::Process.kill('KILL', pid) rescue nil
+          applog(self, :info, "#{self.name} still alive; sent SIGKILL")
         end
       end
             
