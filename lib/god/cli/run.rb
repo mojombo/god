@@ -87,6 +87,7 @@ module God
             STDIN.reopen "/dev/null"
             STDOUT.reopen(log_file, "a")
             STDERR.reopen STDOUT
+            STDOUT.sync = true
           rescue => e
             puts e.message
             puts e.backtrace.join("\n")
@@ -133,6 +134,16 @@ module God
               puts e.backtrace.join("\n")
               abort "There was an error in your configuration file (see above)"
             end
+          end
+          
+          if @options[:log]
+            log_file = @options[:log] || "/dev/null"
+            
+            # reset file descriptors
+            STDIN.reopen "/dev/null"
+            STDOUT.reopen(log_file, "a")
+            STDERR.reopen STDOUT
+            STDOUT.sync = true
           end
         end
       end
