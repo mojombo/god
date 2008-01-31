@@ -1,4 +1,4 @@
-== 0.6.12 / 
+== 0.6.12 / 2008-01-31
   * Minor Enhancements
     * Allow log file output for non-daemonized god
     * Switch to SIGTERM from SIGHUP for default lambda killer
