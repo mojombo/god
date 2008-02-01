@@ -137,7 +137,8 @@ module God
           end
           
           if @options[:log]
-            log_file = @options[:log] || "/dev/null"
+            log_file = File.expand_path(@options[:log])
+            puts "Sending output to log file: #{log_file}"
             
             # reset file descriptors
             STDIN.reopen "/dev/null"
