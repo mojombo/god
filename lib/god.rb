@@ -133,7 +133,7 @@ class Module
 end
 
 module God
-  VERSION = '0.6.12'
+  VERSION = '0.7.0'
   
   LOG_BUFFER_SIZE_DEFAULT = 10
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
