@@ -121,6 +121,8 @@ module God
         end
       rescue Errno::ECONNREFUSED
         self.code_is ? fail('Refused') : pass('Refused')
+      rescue Errno::ECONNRESET
+        self.code_is ? fail('Reset') : pass('Reset')
       rescue EOFError
         self.code_is ? fail('EOF') : pass('EOF')
       rescue Timeout::Error

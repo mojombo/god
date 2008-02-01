@@ -1,3 +1,9 @@
+== 0.6.13 / 
+  * Minor Enhancements
+    * Better default pid_file_directory behavior
+  * Bug Fixes
+    * Handle ECONNRESET in HttpResponseCode
+
 == 0.6.12 / 2008-01-31
   * Minor Enhancements
     * Allow log file output for non-daemonized god

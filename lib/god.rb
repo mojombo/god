@@ -136,7 +136,7 @@ module God
   VERSION = '0.6.12'
   
   LOG_BUFFER_SIZE_DEFAULT = 10
-  PID_FILE_DIRECTORY_DEFAULT = '/var/run/god'
+  PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
   DRB_PORT_DEFAULT = 17165
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
   LOG_LEVEL_DEFAULT = :info
@@ -190,10 +190,12 @@ module God
     
     # set defaults
     self.log_buffer_size ||= LOG_BUFFER_SIZE_DEFAULT
-    self.pid_file_directory ||= PID_FILE_DIRECTORY_DEFAULT
     self.port ||= DRB_PORT_DEFAULT
     self.allow ||= DRB_ALLOW_DEFAULT
     self.log_level ||= LOG_LEVEL_DEFAULT
+    
+    # additional setup
+    self.setup
     
     # log level
     log_level_map = {:debug => Logger::DEBUG,
@@ -529,20 +531,40 @@ module God
   end
   
   def self.setup
-    # Make pid directory
-    unless test(?d, self.pid_file_directory)
-      begin
-        FileUtils.mkdir_p(self.pid_file_directory)
-      rescue Errno::EACCES => e
-        abort "Failed to create pid file directory: #{e.message}"
+    if self.pid_file_directory
+      # pid file dir was specified, ensure it is created and writable
+      unless File.exist?(self.pid_file_directory)
+        begin
+          FileUtils.mkdir_p(self.pid_file_directory)
+        rescue Errno::EACCES => e
+          abort "Failed to create pid file directory: #{e.message}"
+        end
+      end
+      
+      unless File.writable?(self.pid_file_directory)
+        abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"
+      end
+    else
+      # no pid file dir specified, try defaults
+      PID_FILE_DIRECTORY_DEFAULTS.each do |idir|
+        dir = File.expand_path(idir)
+        begin
+          FileUtils.mkdir_p(dir)
+          if File.writable?(dir)
+            self.pid_file_directory = dir
+            break
+          end
+        rescue Errno::EACCES => e
+        end
+      end
+      
+      unless self.pid_file_directory
+        dirs = PID_FILE_DIRECTORY_DEFAULTS.map { |x| File.expand_path(x) }
+        abort "No pid file directory exists, could be created, or is writable at any of #{dirs.join(', ')}"
       end
     end
-  end
-  
-  def self.validater
-    unless test(?w, self.pid_file_directory)
-      abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"
-    end
+    
+    applog(nil, :info, "Using pid file directory: #{self.pid_file_directory}")
   end
   
   # Initialize and startup the machinery that makes god work.
@@ -550,8 +572,6 @@ module God
   # Returns nothing
   def self.start
     self.internal_init
-    self.setup
-    self.validater
     
     # instantiate server
     self.server = Socket.new(self.port)
