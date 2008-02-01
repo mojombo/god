@@ -79,6 +79,10 @@ begin
     opts.on("--no-syslog", "Disable output to syslog") do
       options[:syslog] = false
     end
+    
+    opts.on("--attach PID", "Quit god when the attached process dies") do |x|
+      options[:attach] = x
+    end
   end
   
   opts.parse!

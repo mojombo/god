@@ -12,10 +12,24 @@ module God
         # have at_exit start god
         $run = true
         
+        # run
         if @options[:daemonize]
           run_daemonized
         else
           run_in_front
+        end
+      end
+      
+      def attach
+        process = System::Process.new(@options[:attach])
+        Thread.new do
+          loop do
+            unless process.exists?
+              applog(nil, :info, "Going down because attached process #{@options[:attach]} exited")
+              exit!
+            end
+            sleep 5
+          end
         end
       end
       
@@ -38,6 +52,11 @@ module God
               puts "*"
               puts "***********************************************************************"
               puts
+            end
+            
+            # start attached pid watcher if necessary
+            if @options[:attach]
+              self.attach
             end
             
             # set port if requested
@@ -106,6 +125,11 @@ module God
       
       def run_in_front
         require 'god'
+        
+        # start attached pid watcher if necessary
+        if @options[:attach]
+          self.attach
+        end
         
         if @options[:port]
           God.port = @options[:port]

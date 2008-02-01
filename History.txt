@@ -1,6 +1,7 @@
-== 0.6.13 / 
+== 0.7.0 / 2008-02-01
   * Minor Enhancements
     * Better default pid_file_directory behavior
+    * Add --attach <pid> to specify that god should quit if <pid> exits
   * Bug Fixes
     * Handle ECONNRESET in HttpResponseCode
 
