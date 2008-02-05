@@ -132,7 +132,7 @@ end
 module God
   VERSION = '0.7.1'
   
-  LOG_BUFFER_SIZE_DEFAULT = 10
+  LOG_BUFFER_SIZE_DEFAULT = 100
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
   DRB_PORT_DEFAULT = 17165
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
