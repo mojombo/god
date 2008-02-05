@@ -89,9 +89,6 @@ def root_binding
   binding
 end
 
-# Load the event handler system
-God::EventHandler.load
-
 module Kernel
   alias_method :abort_orig, :abort
   
@@ -149,7 +146,8 @@ module God
                        :allow,
                        :log_buffer_size,
                        :pid_file_directory,
-                       :log_level
+                       :log_level,
+                       :use_events
     
     # internal
     attr_accessor :inited,

@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
+God::EventHandler.load
 
 require 'test/unit'
 require 'set'

@@ -9,7 +9,7 @@ require 'optparse'
 require 'drb'
 
 begin
-  options = {:daemonize => true, :port => 17165, :syslog => true}
+  options = {:daemonize => true, :port => 17165, :syslog => true, :events => true}
 
   opts = OptionParser.new do |opts|
     opts.banner = <<-EOF
@@ -82,6 +82,10 @@ begin
     
     opts.on("--attach PID", "Quit god when the attached process dies") do |x|
       options[:attach] = x
+    end
+    
+    opts.on("--no-events", "Disable the event system") do
+      options[:events] = false
     end
   end
   

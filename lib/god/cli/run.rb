@@ -73,6 +73,10 @@ module God
               Logger.syslog = false
             end
             
+            if @options[:events]
+              God::EventHandler.load
+            end
+            
             # load config
             if @options[:config]
               # set log level, defaults to WARN
@@ -133,6 +137,10 @@ module God
         
         if @options[:port]
           God.port = @options[:port]
+        end
+        
+        if @options[:events]
+          God::EventHandler.load
         end
         
         # set log level if requested
