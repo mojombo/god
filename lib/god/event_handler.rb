@@ -40,12 +40,13 @@ module God
     
     def self.deregister(pid, event=nil)
       if watching_pid? pid
+        running = ::Process.kill(0, pid.to_i) rescue false
         if event.nil?
           @@actions.delete(pid)
-          @@handler.register_process(pid, []) if system("kill -0 #{pid} &> /dev/null")
+          @@handler.register_process(pid, []) if running
         else
           @@actions[pid].delete(event)
-          @@handler.register_process(pid, @@actions[pid].keys) if system("kill -0 #{pid} &> /dev/null")
+          @@handler.register_process(pid, @@actions[pid].keys) if running
         end
       end
     end
