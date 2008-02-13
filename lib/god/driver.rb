@@ -21,7 +21,7 @@ module God
   class Driver
     attr_reader :thread
     
-    INTERVAL = 0.25
+    INTERVAL = 0
     
     # Instantiate a new Driver and start the scheduler loop to handle events
     #   +task+ is the Task this Driver belongs to
@@ -35,6 +35,8 @@ module God
       @thread = Thread.new do
         loop do
           begin
+            BleakHouseDiagnostic.snapshot("begin-driver")
+            
             if !@ops.empty?
               self.handle_op
             elsif !@events.empty?
@@ -42,6 +44,10 @@ module God
             else
               sleep INTERVAL
             end
+            
+            
+            
+            BleakHouseDiagnostic.snapshot("end-driver")
           rescue Exception => e
             message = format("Unhandled exception in driver loop - (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
@@ -65,7 +71,9 @@ module God
     def handle_event
       if @events.first.due?
         event = @events.shift
-        @task.handle_poll(event.condition)
+        # @task.handle_poll(event.condition)
+        puts "driver-loop-#{rand 9999}"
+        self.schedule(event.condition)
       end
       
       # don't sleep if there is a pending event and it is due
