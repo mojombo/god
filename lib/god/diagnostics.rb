@@ -22,8 +22,8 @@ class BleakHouseDiagnostic
     File.delete(LOG_FILE) rescue nil
   end
   
-  def self.snapshot
-    self.logger.snapshot(LOG_FILE, "timer", false) if self.logger
+  def self.snapshot(name)
+    self.logger.snapshot(LOG_FILE, name, false) if self.logger
   end
   
   def self.spin(delay = 1)

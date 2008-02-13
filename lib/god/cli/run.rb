@@ -130,6 +130,10 @@ module God
       def run_in_front
         require 'god'
         
+        if @options[:bleakhouse]
+          BleakHouseDiagnostic.install
+        end
+        
         # start attached pid watcher if necessary
         if @options[:attach]
           self.attach
