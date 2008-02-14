@@ -1,3 +1,10 @@
+== 0.7.3 / 2008-02-14
+  * Minor Enhancements
+    * Add --bleakhouse to make running diagnostics easier
+  * Bug Fixes
+    * Use ::Process.kill(0, ...) instead of `kill -0`
+    * Fix pid_file behavior in process-centric conditions so they work with tasks
+
 == 0.7.2 / 2008-02-04
   * Bug Fixes
     * Start event system for CLI commands
