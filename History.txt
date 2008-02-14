@@ -4,6 +4,7 @@
   * Bug Fixes
     * Use ::Process.kill(0, ...) instead of `kill -0`
     * Fix pid_file behavior in process-centric conditions so they work with tasks
+    * Redirect output of daemonized god to log file or /dev/null earlier
 
 == 0.7.2 / 2008-02-04
   * Bug Fixes
