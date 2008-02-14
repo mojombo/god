@@ -165,7 +165,7 @@ class TestProcessDaemon < Test::Unit::TestCase
     File.stubs(:read).returns("123")
     assert_equal 123, @p.pid
     
-    File.stubs(:read).returns("")
+    File.stubs(:read).raises(Errno::ENOENT)
     assert_equal 123, @p.pid
     
     File.stubs(:read).returns("246")
