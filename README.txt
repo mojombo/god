@@ -24,6 +24,14 @@ Sign up for the god mailing list at http://groups.google.com/group/god-rb
 == INSTALL:
 
   $ sudo gem install god
+  
+== CONTRIBUTE:
+
+Latest code is available at http://github.com/mojombo/god
+
+The 'master' branch can be cloned with:
+
+  $ git clone git://github.com/mojombo/god.git
 
 == LICENSE:
 
