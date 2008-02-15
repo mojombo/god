@@ -31,6 +31,7 @@ module God
     end
     
     def base_name
+      x = 1
       self.class.name.split('::').last
     end
     
