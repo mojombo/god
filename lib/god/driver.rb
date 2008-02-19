@@ -65,9 +65,7 @@ module God
     def handle_event
       if @events.first.due?
         event = @events.shift
-        # @task.handle_poll(event.condition)
-        puts "loop #{rand 9999}"
-        self.schedule(event.condition)
+        @task.handle_poll(event.condition)
       end
       
       # don't sleep if there is a pending event and it is due
