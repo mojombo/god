@@ -1,3 +1,7 @@
+== 0.7.4 / 2008-02-18
+  * Bug Fixes
+    * Introduce local scope to prevent faulty optimization that causes memory to leak
+
 == 0.7.3 / 2008-02-14
   * Minor Enhancements
     * Add --bleakhouse to make running diagnostics easier
