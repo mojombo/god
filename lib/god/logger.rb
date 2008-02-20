@@ -1,10 +1,10 @@
 module God
   class Loggy
-    FATAL = 0
-    ERROR = 1
+    DEBUG = 0
+    INFO = 1
     WARN = 2
-    INFO = 3
-    DEBUG = 4
+    ERROR = 3
+    FATAL = 4
   
     attr_accessor :datetime_format, :level
   
