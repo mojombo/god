@@ -1,6 +1,29 @@
 module God
+  class Loggy
+    FATAL = 0
+    ERROR = 1
+    WARN = 2
+    INFO = 3
+    DEBUG = 4
   
-  class Logger < ::Logger
+    attr_accessor :datetime_format, :level
+  
+    def initialize(io)
+      @io = io
+    end
+  
+    def output(msg)
+      @io.print("#{msg}\n")
+    end
+  
+    alias_method :fatal, :output
+    alias_method :error, :output
+    alias_method :warn, :output
+    alias_method :info, :output
+    alias_method :debug, :output
+  end
+  
+  class Logger < Loggy
     SYSLOG_EQUIVALENTS = {:fatal => :crit,
                           :error => :err,
                           :warn => :debug,

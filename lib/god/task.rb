@@ -417,7 +417,7 @@ module God
       if condition.info
         Array(condition.info).each do |condition_info|
           messages << "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
-          # applog(watch, :info, messages.last)
+          applog(watch, :info, messages.last)
         end
       else
         messages << "#{watch.name} #{status} (#{condition.base_name})"
