@@ -1,7 +1,7 @@
 module God
   class Loggy
     DEBUG = 0
-    INFO = 1
+    INFO = 3
     WARN = 2
     ERROR = 3
     FATAL = 4
