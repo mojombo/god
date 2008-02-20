@@ -1,6 +1,6 @@
 module God
   
-  class Logger < ::Logger
+  class Logger < SimpleLogger
     SYSLOG_EQUIVALENTS = {:fatal => :crit,
                           :error => :err,
                           :warn => :debug,
