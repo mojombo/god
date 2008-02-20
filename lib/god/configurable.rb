@@ -31,7 +31,7 @@ module God
     end
     
     def base_name
-      x = 1
+      x = 1 # fix for MRI's local scope optimization bug DO NOT REMOVE!
       self.class.name.split('::').last
     end
     

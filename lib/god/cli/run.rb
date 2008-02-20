@@ -43,16 +43,11 @@ module God
             
             log_file = @options[:log] || "/dev/null"
             
-            unless God::EventHandler.loaded?
-              puts
-              puts "***********************************************************************"
-              puts "*"
-              puts "* Event conditions are not available for your installation of god."
-              puts "* You may still use and write custom conditions using the poll system"
-              puts "*"
-              puts "***********************************************************************"
-              puts
-            end
+            # reset file descriptors
+            STDIN.reopen "/dev/null"
+            STDOUT.reopen(log_file, "a")
+            STDERR.reopen STDOUT
+            STDOUT.sync = true
             
             # start attached pid watcher if necessary
             if @options[:attach]
@@ -75,6 +70,17 @@ module God
             
             if @options[:events]
               God::EventHandler.load
+            end
+            
+            unless God::EventHandler.loaded?
+              puts
+              puts "***********************************************************************"
+              puts "*"
+              puts "* Event conditions are not available for your installation of god."
+              puts "* You may still use and write custom conditions using the poll system"
+              puts "*"
+              puts "***********************************************************************"
+              puts
             end
             
             # load config
@@ -105,12 +111,6 @@ module God
                 end
               end
             end
-            
-            # reset file descriptors
-            STDIN.reopen "/dev/null"
-            STDOUT.reopen(log_file, "a")
-            STDERR.reopen STDOUT
-            STDOUT.sync = true
           rescue => e
             puts e.message
             puts e.backtrace.join("\n")
