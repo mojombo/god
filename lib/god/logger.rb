@@ -10,17 +10,34 @@ module God
   
     def initialize(io)
       @io = io
+      @datetime_format = "%Y-%m-%d %H:%M:%S"
     end
   
-    def output(msg)
-      @io.print("#{msg}\n")
+    def output(level, msg)
+      time = Time.now.strftime(self.datetime_format)
+      label = 'INFO' # SEV_LABEL[level]
+      @io.print("#{label[0..0]} [#{time}] #{label.rjust(5)}: #{msg}\n")
     end
   
-    alias_method :fatal, :output
-    alias_method :error, :output
-    alias_method :warn, :output
-    alias_method :info, :output
-    alias_method :debug, :output
+    def fatal(msg)
+      self.output(FATAL, msg)
+    end
+    
+    def error(msg)
+      self.output(ERROR, msg)
+    end
+    
+    def warn(msg)
+      self.output(WARN, msg)
+    end
+    
+    def info(msg)
+      self.output(INFO, msg)
+    end
+    
+    def debug(msg)
+      self.output(DEBUG, msg)
+    end
   end
   
   class Logger < Loggy
