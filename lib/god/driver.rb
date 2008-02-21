@@ -21,7 +21,7 @@ module God
   class Driver
     attr_reader :thread
     
-    INTERVAL = 0
+    INTERVAL = 0.25
     
     # Instantiate a new Driver and start the scheduler loop to handle events
     #   +task+ is the Task this Driver belongs to
