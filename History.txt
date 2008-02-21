@@ -1,3 +1,7 @@
+== 0.7.5 / 2008-02-21
+  * Bug Fixes
+    * Remove Ruby's Logger and replace with custom SimpleLogger to stop threaded leak
+
 == 0.7.4 / 2008-02-18
   * Bug Fixes
     * Introduce local scope to prevent faulty optimization that causes memory to leak
