@@ -22,7 +22,7 @@ module God
       @mutex = Mutex.new
       @capture = nil
       @templogio = StringIO.new
-      @templog = ::Logger.new(@templogio)
+      @templog = SimpleLogger.new(@templogio)
       @templog.level = Logger::INFO
       load_syslog
     end
