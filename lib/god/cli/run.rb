@@ -33,6 +33,60 @@ module God
         end
       end
       
+      def default_run
+        # start attached pid watcher if necessary
+        if @options[:attach]
+          self.attach
+        end
+        
+        if @options[:port]
+          God.port = @options[:port]
+        end
+        
+        if @options[:events]
+          God::EventHandler.load
+        end
+        
+        # set log level, defaults to WARN
+        if @options[:log_level]
+          God.log_level = @options[:log_level]
+        else
+          God.log_level = @options[:daemonize] ? :warn : :info
+        end
+        
+        if @options[:config]
+          unless File.exist?(@options[:config])
+            abort "File not found: #{@options[:config]}"
+          end
+          
+          # start the event handler
+          God::EventHandler.start if God::EventHandler.loaded?
+          
+          load_config @options[:config]
+        end
+      end
+      
+      def run_in_front
+        require 'god'
+        
+        if @options[:bleakhouse]
+          BleakHouseDiagnostic.install
+        end
+        
+        default_run
+        
+        if @options[:log]
+          log_file = File.expand_path(@options[:log])
+          puts "Sending output to log file: #{log_file}"
+          
+          # reset file descriptors
+          STDIN.reopen "/dev/null"
+          STDOUT.reopen(log_file, "a")
+          STDERR.reopen STDOUT
+          STDOUT.sync = true
+        end
+      end
+      
       def run_daemonized
         # trap and ignore SIGHUP
         Signal.trap('HUP') {}
@@ -49,18 +103,8 @@ module God
             STDERR.reopen STDOUT
             STDOUT.sync = true
             
-            # start attached pid watcher if necessary
-            if @options[:attach]
-              self.attach
-            end
-            
-            # set port if requested
-            if @options[:port]
-              God.port = @options[:port]
-            end
-            
             # set pid if requested
-            if @options[:pid]
+            if @options[:pid] # and as deamon
               God.pid = @options[:pid] 
             end
             
@@ -68,9 +112,7 @@ module God
               Logger.syslog = false
             end
             
-            if @options[:events]
-              God::EventHandler.load
-            end
+            default_run
             
             unless God::EventHandler.loaded?
               puts
@@ -83,34 +125,6 @@ module God
               puts
             end
             
-            # load config
-            if @options[:config]
-              # set log level, defaults to WARN
-              if @options[:log_level]
-                God.log_level = @options[:log_level]
-              else
-                God.log_level = :warn
-              end
-              
-              unless File.exist?(@options[:config])
-                abort "File not found: #{@options[:config]}"
-              end
-              
-              # start the event handler
-              God::EventHandler.start if God::EventHandler.loaded?
-              
-              begin
-                load File.expand_path(@options[:config])
-              rescue Exception => e
-                if e.instance_of?(SystemExit)
-                  raise
-                else
-                  puts e.message
-                  puts e.backtrace.join("\n")
-                  abort "There was an error in your configuration file (see above)"
-                end
-              end
-            end
           rescue => e
             puts e.message
             puts e.backtrace.join("\n")
@@ -127,63 +141,35 @@ module God
         exit
       end
       
-      def run_in_front
-        require 'god'
-        
-        if @options[:bleakhouse]
-          BleakHouseDiagnostic.install
-        end
-        
-        # start attached pid watcher if necessary
-        if @options[:attach]
-          self.attach
-        end
-        
-        if @options[:port]
-          God.port = @options[:port]
-        end
-        
-        if @options[:events]
-          God::EventHandler.load
-        end
-        
-        # set log level if requested
-        if @options[:log_level]
-          God.log_level = @options[:log_level]
-        end
-        
-        if @options[:config]
-          unless File.exist?(@options[:config])
-            abort "File not found: #{@options[:config]}"
+      def load_config(config)
+        if File.directory? config
+          files_loaded = false
+          Dir[File.expand_path('**/*.god', config)].each do |god_file|
+            files_loaded ||= load_god_file(File.expand_path(god_file))
           end
-          
-          # start the event handler
-          God::EventHandler.start if God::EventHandler.loaded?
-          
-          begin
-            load File.expand_path(@options[:config])
-          rescue Exception => e
-            if e.instance_of?(SystemExit)
-              raise
-            else
-              puts e.message
-              puts e.backtrace.join("\n")
-              abort "There was an error in your configuration file (see above)"
-            end
+          unless files_loaded
+            abort "No files could be loaded"
           end
-          
-          if @options[:log]
-            log_file = File.expand_path(@options[:log])
-            puts "Sending output to log file: #{log_file}"
-            
-            # reset file descriptors
-            STDIN.reopen "/dev/null"
-            STDOUT.reopen(log_file, "a")
-            STDERR.reopen STDOUT
-            STDOUT.sync = true
+        else
+          unless load_god_file(File.expand_path(config))
+            abort "File could not be loaded"
           end
         end
       end
+      
+      def load_god_file(god_file)
+        load File.expand_path(god_file)
+      rescue Exception => e
+        if e.instance_of?(SystemExit)
+          raise
+        else
+          puts "There was an error in #{god_file}"
+          puts "\t" + e.message
+          puts "\t" + e.backtrace.join("\n\t")
+          return false
+        end
+      end
+      
     end # Run
     
   end
