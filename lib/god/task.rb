@@ -19,7 +19,7 @@ module God
       self.behaviors = []
       
       # the list of conditions for each action
-      self.metrics = {nil => [], :unmonitored => []}
+      self.metrics = {nil => [], :unmonitored => [], :stop => []}
       
       # the condition -> metric lookup
       self.directory = {}

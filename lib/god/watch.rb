@@ -74,6 +74,12 @@ module God
       end
     end
     
+    def stop_if 
+      self.transition(:up, :stop) do |on| 
+        yield(on) 
+      end 
+    end
+    
     ###########################################################################
     #
     # Lifecycle
