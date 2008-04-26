@@ -2,7 +2,7 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart
+    attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart, :unix_socket
     
     def initialize
       self.log = '/dev/null'
@@ -121,14 +121,6 @@ module God
     
     def pid_file
       @pid_file ||= default_pid_file
-    end
-    
-    def unix_socket=(value)
-      @unix_socket = value
-    end
-    
-    def unix_socket
-      File.exists?(@unix_socket) ? @unix_socket : nil
     end
     
     # Fetch the PID from pid_file. If the pid_file does not

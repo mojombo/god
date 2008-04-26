@@ -180,13 +180,7 @@ class TestProcessDaemon < Test::Unit::TestCase
   
   # unix socket
   
-  def test_unix_socket_should_return_nil_if_file_does_not_exist
-    @p.unix_socket = '/path/does-not-exist'
-    assert_equal nil, @p.unix_socket
-  end
-  
-  def test_unix_socket_should_return_path_if_file_exists
-    File.stubs(:exists?).returns(true)
+  def test_unix_socket_should_return_path_specified
     @p.unix_socket = '/path/does-exist'
     assert_equal '/path/does-exist', @p.unix_socket
   end

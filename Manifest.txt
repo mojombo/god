@@ -13,6 +13,7 @@ init/god
 lib/god.rb
 lib/god/behavior.rb
 lib/god/behaviors/clean_pid_file.rb
+lib/god/behaviors/clean_unix_socket.rb
 lib/god/behaviors/notify_when_flapping.rb
 lib/god/cli/command.rb
 lib/god/cli/run.rb
