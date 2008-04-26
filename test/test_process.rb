@@ -181,8 +181,8 @@ class TestProcessDaemon < Test::Unit::TestCase
   # unix socket
   
   def test_unix_socket_should_return_path_specified
-    @p.unix_socket = '/path/does-exist'
-    assert_equal '/path/does-exist', @p.unix_socket
+    @p.unix_socket = '/path/to-socket'
+    assert_equal '/path/to-socket', @p.unix_socket
   end
   
   # call_action
