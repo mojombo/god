@@ -172,10 +172,23 @@ class TestProcessDaemon < Test::Unit::TestCase
     assert_equal 246, @p.pid
   end
   
-  # defaul_pid_file
+  # default_pid_file
   
   def test_default_pid_file
     assert_equal File.join(God.pid_file_directory, 'foo.pid'), @p.default_pid_file
+  end
+  
+  # unix socket
+  
+  def test_unix_socket_should_return_nil_if_file_does_not_exist
+    @p.unix_socket = '/path/does-not-exist'
+    assert_equal nil, @p.unix_socket
+  end
+  
+  def test_unix_socket_should_return_path_if_file_exists
+    File.stubs(:exists?).returns(true)
+    @p.unix_socket = '/path/does-exist'
+    assert_equal '/path/does-exist', @p.unix_socket
   end
   
   # call_action

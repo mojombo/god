@@ -11,6 +11,7 @@ module God
       @tracking_pid = true
       @user_log = false
       @pid = nil
+      @unix_socket = nil
     end
     
     def alive?
@@ -120,6 +121,14 @@ module God
     
     def pid_file
       @pid_file ||= default_pid_file
+    end
+    
+    def unix_socket=(value)
+      @unix_socket = value
+    end
+    
+    def unix_socket
+      File.exists?(@unix_socket) ? @unix_socket : nil
     end
     
     # Fetch the PID from pid_file. If the pid_file does not

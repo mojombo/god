@@ -13,7 +13,8 @@ module God
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart,
                               :name=, :uid=, :gid=, :start=, :stop=, :restart=,
-                              :pid_file, :pid_file=, :log, :log=, :alive?, :pid
+                              :pid_file, :pid_file=, :log, :log=, :alive?, :pid,
+                              :unix_socket, :unix_socket=
     # 
     def initialize
       super
