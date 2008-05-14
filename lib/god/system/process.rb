@@ -8,7 +8,7 @@ module God
       
       # Return true if this process is running, false otherwise
       def exists?
-        system("kill -0 #{@pid} &> /dev/null")
+        !!::Process.kill(0, @pid) rescue false
       end
       
       # Memory usage in kilobytes (resident set size)

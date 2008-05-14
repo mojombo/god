@@ -115,7 +115,7 @@ class TestProcessDaemon < Test::Unit::TestCase
   # alive?
   
   def test_alive_should_call_system_process_exists
-    File.expects(:read).with('blah.pid').returns('1234')
+    File.expects(:read).with('blah.pid').times(2).returns('1234')
     System::Process.any_instance.expects(:exists?).returns(false)
     assert !@p.alive?
   end
@@ -165,7 +165,7 @@ class TestProcessDaemon < Test::Unit::TestCase
     File.stubs(:read).returns("123")
     assert_equal 123, @p.pid
     
-    File.stubs(:read).returns("")
+    File.stubs(:read).raises(Errno::ENOENT)
     assert_equal 123, @p.pid
     
     File.stubs(:read).returns("246")

@@ -87,6 +87,10 @@ begin
     opts.on("--no-events", "Disable the event system") do
       options[:events] = false
     end
+    
+    opts.on("--bleakhouse", "Enable bleakhouse profiling") do
+      options[:bleakhouse] = true
+    end
   end
   
   opts.parse!

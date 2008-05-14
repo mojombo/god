@@ -2,3 +2,4 @@ coverage
 pkg
 *.log
 logs
+*.rbc

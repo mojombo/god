@@ -45,6 +45,7 @@ lib/god/logger.rb
 lib/god/metric.rb
 lib/god/process.rb
 lib/god/registry.rb
+lib/god/simple_logger.rb
 lib/god/socket.rb
 lib/god/sugar.rb
 lib/god/system/process.rb
@@ -67,6 +68,7 @@ test/configs/daemon_polls/daemon_polls.god
 test/configs/daemon_polls/simple_server.rb
 test/configs/degrading_lambda/degrading_lambda.god
 test/configs/degrading_lambda/tcp_server.rb
+test/configs/matias/matias.god
 test/configs/real.rb
 test/configs/running_load/running_load.god
 test/configs/stress/simple_server.rb
