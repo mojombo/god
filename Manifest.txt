@@ -48,7 +48,9 @@ lib/god/registry.rb
 lib/god/simple_logger.rb
 lib/god/socket.rb
 lib/god/sugar.rb
+lib/god/system/portable_poller.rb
 lib/god/system/process.rb
+lib/god/system/slash_proc_poller.rb
 lib/god/task.rb
 lib/god/timeline.rb
 lib/god/trigger.rb
@@ -96,6 +98,7 @@ test/test_process.rb
 test/test_registry.rb
 test/test_socket.rb
 test/test_sugar.rb
+test/test_system_portable_poller.rb
 test/test_system_process.rb
 test/test_task.rb
 test/test_timeline.rb
