@@ -3,6 +3,7 @@ module God
     class SlashProcPoller < PortablePoller
       @@kb_per_page = 4 # TODO: Need to make this portable
       @@hertz = 100
+      @@total_mem = nil
       
       def initialize(pid)
         super(pid)

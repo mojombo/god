@@ -4,7 +4,7 @@ module God
     class Process
       def initialize(pid)
         @pid = pid.to_i
-        @poller = fetch_system_poller
+        @poller = fetch_system_poller.new(@pid)
       end
       
       # Return true if this process is running, false otherwise
@@ -14,17 +14,17 @@ module God
       
       # Memory usage in kilobytes (resident set size)
       def memory
-        @poller.memory(@pid)
+        @poller.memory
       end
       
       # Percentage memory usage
       def percent_memory
-        @poller.percent_memory(@pid)
+        @poller.percent_memory
       end
       
       # Percentage CPU usage
       def percent_cpu
-        @poller.percent_cpu(@pid)
+        @poller.percent_cpu
       end
       
       private
