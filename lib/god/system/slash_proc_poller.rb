@@ -19,12 +19,12 @@ module God
         stat[:rss].to_i * @@kb_per_page
       end
       
-      def precent_memory(pid)
+      def percent_memory(pid)
         (memory / @@total_mem.to_f) * 100
       end
       
       # TODO: Change this to calculate the wma instead
-      def cpu_percent
+      def percent_cpu
         percent_cpu = 0
         stats = stat
         total_time = stats[:utime].to_i + stats[:stime].to_i # in jiffies
