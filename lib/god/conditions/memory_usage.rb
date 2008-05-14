@@ -52,12 +52,12 @@ module God
       end
       
       def pid
-        self.watch.pid || File.read(self.pid_file).strip.to_i
+        self.pid_file ? File.read(self.pid_file).strip.to_i : self.watch.pid
       end
       
       def valid?
         valid = true
-        valid &= complain("Attribute 'pid_file' must be specified", self) if self.watch.pid_file.nil? && self.pid_file.nil?
+        valid &= complain("Attribute 'pid_file' must be specified", self) if self.pid_file.nil? && self.watch.pid_file.nil?
         valid &= complain("Attribute 'above' must be specified", self) if self.above.nil?
         valid
       end

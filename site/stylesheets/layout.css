@@ -1,0 +1,174 @@
+* {
+	margin: 0;
+	font-size: 100%;
+}
+
+body {
+	font: normal .8em/1.5em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	color: #484848;
+	background: #E6EAE9 url(../images/bg_grey.gif);
+}
+
+a {
+	color: #c75f3e;
+	text-decoration: none;
+}
+
+a:hover,
+a:active {
+	text-decoration: underline;
+}
+
+#mothership {
+	width: 307px;
+	height: 117px;
+	margin: 0 auto;
+	background: url(../images/god_logo1.gif);
+}
+
+#content {
+	width: 700px;
+	margin: 3px auto;
+	background: white;
+	border: 1px solid #444;
+	padding: 0 24px;
+	background: #f8f8ff;
+	overflow: hidden;
+}
+
+.banner {
+	margin-top: 24px;
+	border: 1px solid #ddd;
+	width: 698px;
+	height: 150px;
+	background: url(../images/banner.jpg);
+}
+
+#menu {
+	margin-top: 5px;
+}
+
+#menu div.dots {
+	background: url(../images/red_dot.gif) repeat;
+	height: 5px;
+	width: 700px;
+	font-size: 0;
+}
+
+#menu ul {
+	font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	text-transform: uppercase;
+	color: #4D4D4D;
+	font-size: 12px;
+	padding: 0;
+	margin: 0;
+	margin-top: 0 !important;
+	margin-top: -2px;
+}
+
+#menu li {
+	display: inline;
+	margin: 0 30px 0 0;
+}
+
+#menu a:link,
+#menu a:visited {
+	color: #4D4D4D;
+	text-decoration: none;
+}
+
+#menu a:hover,
+#menu a:active {
+	color: black;
+	text-decoration: none;
+}
+
+#page_home #menu li.menu_home a {
+	color: #A70000;
+}
+
+.columnleft {
+	float: left;
+	width: 325px;
+	margin-bottom: 20px;
+}
+
+.columnleft p {
+		text-align: justify;
+}
+
+.columnright {
+	float: right;
+	width: 325px;
+	margin-bottom: 20px;
+}
+
+h1 {
+	font: bold 1.5em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	color: #f36e21;
+	text-transform: uppercase;
+	margin: 1.5em 0 .5em 0;
+	clear: both;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+ul {
+  margin-bottom: 1em;
+}
+
+ul.features {
+	padding: 0;
+	margin-left: 1.5em !important;
+	margin-left: 1.3em;
+}
+
+ul.features li {
+	list-style-position: outside;
+	list-style-type: circle;
+	list-style-image: url(../images/bullet.jpg);
+	line-height: 1.4em;
+}
+
+#footer {
+	text-align: center;
+	color: white;
+	margin-bottom: 50px;
+}
+
+
+
+pre {
+  line-height: 1.3;
+  border: 1px solid #ccc;
+  padding: 1em;
+  background-color: #efefef;
+  margin: 1em 0;
+}
+
+code {
+  font-size: 1.2em;
+}
+
+.ruby .keywords {
+  color: blue;
+}
+
+.ruby .comment {
+	color : green;
+}
+
+.ruby .string {
+	color : teal;
+}
+
+.ruby .keywords {
+	color : navy;
+}
+
+.ruby .brackets {
+	color : navy;
+}
