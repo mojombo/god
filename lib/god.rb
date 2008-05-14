@@ -20,7 +20,11 @@ end
 # internal requires
 require 'god/errors'
 require 'god/logger'
+
 require 'god/system/process'
+require 'god/system/portable_poller'
+require 'god/system/slash_proc_poller'
+
 require 'god/dependency_graph'
 require 'god/timeline'
 require 'god/configurable'
