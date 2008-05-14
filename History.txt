@@ -1,3 +1,11 @@
+== 0.7.6 / 2008-05-13
+  * Major Enhancements
+    * Implement System::Process methods for Linux based on /proc [Kevin Clark]
+  * Minor Enhancements
+    * Allowing directories to be loaded at start [Bert Goethals]
+  * Bug Fixes
+    * Don't leak events on error in the kqueue handler [Kevin Clark]
+
 == 0.7.5 / 2008-02-21
   * Bug Fixes
     * Remove Ruby's Logger and replace with custom SimpleLogger to stop threaded leak
