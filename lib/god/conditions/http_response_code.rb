@@ -127,6 +127,12 @@ module God
         self.code_is ? fail('EOF') : pass('EOF')
       rescue Timeout::Error
         self.code_is ? fail('Timeout') : pass('Timeout')
+      rescue Errno::ETIMEDOUT
+        self.code_is ? fail('Timedout') : pass('Timedout')
+      rescue Exception => failure
+        self.code_is ? fail(failure.class.name) : pass(failure.class.name)
+      end
+        
       end
       
       private
