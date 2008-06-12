@@ -2,7 +2,7 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart
+    attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart, :chroot, :env
     
     def initialize
       self.log = '/dev/null'
@@ -23,9 +23,13 @@ module God
     
     def file_writable?(file)
       pid = fork do
-        ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-        ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
-        
+        uid_num = Etc.getpwnam(self.uid).uid if self.uid
+        gid_num = Etc.getgrnam(self.gid).gid if self.gid
+
+        ::Dir.chroot(self.chroot) if self.chroot
+        ::Process::Sys.setgid(gid_num) if self.gid
+        ::Process::Sys.setuid(uid_num) if self.uid
+
         File.writable?(file) ? exit(0) : exit(1)
       end
       
@@ -99,6 +103,19 @@ module God
         unless file_writable?(File.dirname(self.log))
           valid = false
           applog(self, :error, "Log directory '#{File.dirname(self.log)}' is not writable by #{self.uid || Etc.getlogin}")
+        end
+      end
+
+      # chroot directory must exist and have /dev/null in it
+      if self.chroot
+        if !File.directory?(self.chroot)
+          valid = false
+          LOG.log(self, :error, "CHROOT directory '#{self.chroot}' does not exist")
+        end
+
+        if !File.exist?(File.join(self.chroot, '/dev/null'))
+          valid = false
+          LOG.log(self, :error, "CHROOT directory '#{self.chroot}' does not contain '/dev/null'")
         end
       end
       
@@ -244,18 +261,28 @@ module God
     # Returns nothing
     def spawn(command)
       fork do
+        uid_num = Etc.getpwnam(self.uid).uid if self.uid
+        gid_num = Etc.getgrnam(self.gid).gid if self.gid
+
+        ::Dir.chroot(self.chroot) if self.chroot
         ::Process.setsid
-        ::Process::Sys.setgid(Etc.getgrnam(self.gid).gid) if self.gid
-        ::Process::Sys.setuid(Etc.getpwnam(self.uid).uid) if self.uid
+        ::Process::Sys.setgid(gid_num) if self.gid
+        ::Process::Sys.setuid(uid_num) if self.uid
         Dir.chdir "/"
         $0 = command
         STDIN.reopen "/dev/null"
-        STDOUT.reopen self.log, "a"
+        STDOUT.reopen file_in_chroot(self.log), "a"
         STDERR.reopen STDOUT
         
         # close any other file descriptors
         3.upto(256){|fd| IO::new(fd).close rescue nil}
-        
+
+        if self.env && self.env.is_a?(Hash)
+          self.env.each do |(key, value)|
+            ENV[key] = value
+          end
+        end
+
         exec command unless command.empty?
       end
     end
@@ -286,6 +313,12 @@ module God
       ::Process.kill('KILL', self.pid) rescue nil
       applog(self, :warn, "#{self.name} process still running 10 seconds after stop command returned. Force killing.")
     end
-    
+
+    private
+    def file_in_chroot(file)
+      return file unless self.chroot
+
+      file.gsub(/^#{Regexp.escape(File.expand_path(self.chroot))}/, '')
+    end
   end
 end
