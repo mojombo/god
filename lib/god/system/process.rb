@@ -30,7 +30,7 @@ module God
       private
       
       def fetch_system_poller
-        if test(?d, '/proc')
+        if SlashProcPoller.usable?
           SlashProcPoller
         else
           PortablePoller

@@ -1,3 +1,7 @@
+== 0.7.7 / TBD
+  * Bug Fixes
+    * Fix detection of proc file system [raggi]
+
 == 0.7.6 / 2008-05-13
   * Major Enhancements
     * Implement System::Process methods for Linux based on /proc [Kevin Clark]
