@@ -61,10 +61,8 @@ Category: #{category}
           
           self.info = "sent email to #{self.email}"
         rescue => e
-          puts e.message
-          puts e.backtrace.join("\n")
-          
-          self.info = "failed to send email to #{self.email}: #{e.message}"
+          applog(nil, :info, "failed to send email to #{self.email}: #{e.message}")
+          applog(nil, :debug, e.backtrace.join("\n"))
         end
       end
     end
