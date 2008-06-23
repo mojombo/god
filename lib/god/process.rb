@@ -2,7 +2,7 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart
+    attr_accessor :name, :uid, :gid, :log, :start, :stop, :restart, :unix_socket
     
     def initialize
       self.log = '/dev/null'
@@ -11,6 +11,7 @@ module God
       @tracking_pid = true
       @user_log = false
       @pid = nil
+      @unix_socket = nil
     end
     
     def alive?
