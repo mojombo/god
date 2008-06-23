@@ -1,6 +1,8 @@
 == _._._ / TBD
   * Bug Fixes
     * Catch all Exceptions from HttpResponseCode condition [github.com/rliebling]
+  * New Behaviors
+    * clean_unix_socket [github.com/gma]
 
 == 0.7.7 / 2008-06-17
   * Bug Fixes
