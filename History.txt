@@ -3,6 +3,8 @@
     * Catch all Exceptions from HttpResponseCode condition [github.com/rliebling]
   * New Behaviors
     * clean_unix_socket [github.com/gma]
+  * New Contacts
+    * jabber [github.com/jwulff]
 
 == 0.7.7 / 2008-06-17
   * Bug Fixes
