@@ -132,8 +132,6 @@ module God
       rescue Exception => failure
         self.code_is ? fail(failure.class.name) : pass(failure.class.name)
       end
-        
-      end
       
       private
       
