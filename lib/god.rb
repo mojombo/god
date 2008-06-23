@@ -52,6 +52,10 @@ require 'god/conditions/complex'
 
 require 'god/contact'
 require 'god/contacts/email'
+begin
+  require 'god/contacts/jabber'
+rescue LoadError
+end
 
 require 'god/socket'
 require 'god/driver'
