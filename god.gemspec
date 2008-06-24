@@ -1,4 +1,3 @@
-(in /home/eric/code/god)
 Gem::Specification.new do |s|
   s.name = %q{god}
   s.version = "0.7.7"
@@ -21,17 +20,4 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.2.0}
   s.summary = %q{Like monit, only awesome}
   s.test_files = ["test/test_process.rb", "test/test_watch.rb", "test/test_system_portable_poller.rb", "test/test_conditions_tries.rb", "test/test_task.rb", "test/test_condition.rb", "test/test_timeline.rb", "test/test_logger.rb", "test/test_conditions_process_running.rb", "test/test_handlers_kqueue_handler.rb", "test/test_conditions_disk_usage.rb", "test/test_event_handler.rb", "test/test_driver.rb", "test/test_dependency_graph.rb", "test/test_metric.rb", "test/test_registry.rb", "test/test_behavior.rb", "test/test_socket.rb", "test/test_sugar.rb", "test/test_trigger.rb", "test/test_conditions_http_response_code.rb", "test/test_god.rb", "test/test_system_process.rb", "test/test_contact.rb"]
-
-  if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
-    s.specification_version = 2
-
-    if current_version >= 3 then
-      s.add_runtime_dependency(%q<hoe>, [">= 1.5.3"])
-    else
-      s.add_dependency(%q<hoe>, [">= 1.5.3"])
-    end
-  else
-    s.add_dependency(%q<hoe>, [">= 1.5.3"])
-  end
 end
