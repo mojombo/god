@@ -4,3 +4,4 @@ pkg
 logs
 *.rbc
 *~
+.*.sw?
