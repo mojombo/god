@@ -466,7 +466,7 @@ module God
   def self.status
     info = {}
     self.watches.map do |name, w|
-      info[name] = {:state => w.state}
+      info[name] = {:state => w.state, :group => w.group}
     end
     info
   end
