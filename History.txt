@@ -2,12 +2,15 @@
   * Bug Fixes
     * Catch all Exceptions from HttpResponseCode condition [github.com/rliebling]
     * Don't error out if the process went away in SlashProcPoller [Kevin Clark]
+    * Correction of Task#handle_poll to prevent crash under event registration failure conditions. [github.com/raggi]
+    * Cleaned up logging of failed e-mail sends. [github.com/raggi]
   * New Behaviors
     * clean_unix_socket [github.com/gma]
   * New Contacts
     * jabber [github.com/jwulff]
   * Minor Enhancements
     * chroot support [github.com/eric]
+    * Added God.log_file for the main god log, overridden by command line option. [github.com/raggi]
 
 == 0.7.7 / 2008-06-17
   * Bug Fixes
