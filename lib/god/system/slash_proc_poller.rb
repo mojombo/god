@@ -31,10 +31,14 @@ module God
       
       def memory
         stat[:rss].to_i * @@kb_per_page
+      rescue # This shouldn't fail is there's an error (or proc doesn't exist)
+        0
       end
       
       def percent_memory
         (memory / @@total_mem.to_f) * 100
+      rescue # This shouldn't fail is there's an error (or proc doesn't exist)
+        0
       end
       
       # TODO: Change this to calculate the wma instead
@@ -47,6 +51,8 @@ module God
         else
           ((total_time * 1000 / @@hertz) / seconds) / 10
         end
+      rescue # This shouldn't fail is there's an error (or proc doesn't exist)
+        0
       end
       
       private

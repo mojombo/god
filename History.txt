@@ -1,6 +1,7 @@
 == _._._ / TBD
   * Bug Fixes
     * Catch all Exceptions from HttpResponseCode condition [github.com/rliebling]
+    * Don't error out if the process went away in SlashProcPoller [Kevin Clark]
   * New Behaviors
     * clean_unix_socket [github.com/gma]
   * New Contacts
