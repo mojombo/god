@@ -378,14 +378,22 @@ class TestGod < Test::Unit::TestCase
     
     w = God.watches['foo']
     w.state = :up
-    assert_equal({'foo' => {:state => :up}}, God.status)
+    assert_equal({'foo' => {:state => :up, :group => nil}}, God.status)
   end
   
+  def test_status_should_show_state_with_group
+    God.watch { |w| w.name = 'foo'; w.start = 'bar'; w.group = 'g' }
+    
+    w = God.watches['foo']
+    w.state = :up
+    assert_equal({'foo' => {:state => :up, :group => 'g'}}, God.status)
+  end
+
   def test_status_should_show_unmonitored_for_nil_state
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     
     w = God.watches['foo']
-    assert_equal({'foo' => {:state => :unmonitored}}, God.status)
+    assert_equal({'foo' => {:state => :unmonitored, :group => nil}}, God.status)
   end
   
   # running_log
