@@ -67,7 +67,7 @@ module God
       
       def status_command
         watches = {}
-        @server.status.each do |name,status|
+        @server.status.each do |name, status|
           g = status[:group] || ''
           unless watches.has_key?(g)
             watches[g] = {}
@@ -75,10 +75,10 @@ module God
           watches[g][name] = status
         end
         watches.keys.sort.each do |group|
-          puts "#{group}:" if !group.empty?
+          puts "#{group}:" unless group.empty?
           watches[group].keys.sort.each do |name|
             state = watches[group][name][:state]
-            print "    " if !group.empty?
+            print "  " unless group.empty?
             puts "#{name}: #{state}"
           end
         end
