@@ -11,6 +11,8 @@
   * Minor Enhancements
     * chroot support [github.com/eric]
     * Added God.log_file for the main god log, overridden by command line option. [github.com/raggi]
+    * Print groups from `god status` command if present [github.com/pdlug]
+    * Allow headers to be specified for http_response_code condition [github.com/pdlug]
 
 == 0.7.7 / 2008-06-17
   * Bug Fixes
