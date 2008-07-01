@@ -9,6 +9,7 @@
     * clean_unix_socket [github.com/gma]
   * New Contacts
     * jabber [github.com/jwulff]
+    * email via sendmail [github.com/monde]
   * Minor Enhancements
     * chroot support [github.com/eric]
     * Added God.log_file for the main god log, overridden by command line option. [github.com/raggi]
