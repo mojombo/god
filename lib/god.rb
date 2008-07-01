@@ -20,7 +20,11 @@ end
 require 'god/errors'
 require 'god/simple_logger'
 require 'god/logger'
+
 require 'god/system/process'
+require 'god/system/portable_poller'
+require 'god/system/slash_proc_poller'
+
 require 'god/dependency_graph'
 require 'god/timeline'
 require 'god/configurable'
@@ -29,6 +33,7 @@ require 'god/task'
 
 require 'god/behavior'
 require 'god/behaviors/clean_pid_file'
+require 'god/behaviors/clean_unix_socket'
 require 'god/behaviors/notify_when_flapping'
 
 require 'god/condition'
@@ -47,6 +52,10 @@ require 'god/conditions/complex'
 
 require 'god/contact'
 require 'god/contacts/email'
+begin
+  require 'god/contacts/jabber'
+rescue LoadError
+end
 
 require 'god/socket'
 require 'god/driver'
@@ -129,7 +138,7 @@ class Module
 end
 
 module God
-  VERSION = '0.7.5'
+  VERSION = '0.7.7'
   
   LOG_BUFFER_SIZE_DEFAULT = 100
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
@@ -145,6 +154,7 @@ module God
                        :allow,
                        :log_buffer_size,
                        :pid_file_directory,
+                       :log_file,
                        :log_level,
                        :use_events
     
@@ -456,7 +466,7 @@ module God
   def self.status
     info = {}
     self.watches.map do |name, w|
-      info[name] = {:state => w.state}
+      info[name] = {:state => w.state, :group => w.group}
     end
     info
   end

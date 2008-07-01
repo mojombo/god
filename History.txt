@@ -1,3 +1,31 @@
+== _._._ / TBD
+  * Bug Fixes
+    * Catch all Exceptions from HttpResponseCode condition [github.com/rliebling]
+    * Don't error out if the process went away in SlashProcPoller [Kevin Clark]
+    * Correction of Task#handle_poll to prevent crash under event registration failure conditions. [github.com/raggi]
+    * Cleaned up logging of failed e-mail sends. [github.com/raggi]
+  * New Behaviors
+    * clean_unix_socket [github.com/gma]
+  * New Contacts
+    * jabber [github.com/jwulff]
+  * Minor Enhancements
+    * chroot support [github.com/eric]
+    * Added God.log_file for the main god log, overridden by command line option. [github.com/raggi]
+    * Print groups from `god status` command if present [github.com/pdlug]
+    * Allow headers to be specified for http_response_code condition [github.com/pdlug]
+
+== 0.7.7 / 2008-06-17
+  * Bug Fixes
+    * Fix detection of proc file system [raggi]
+
+== 0.7.6 / 2008-05-13
+  * Major Enhancements
+    * Implement System::Process methods for Linux based on /proc [Kevin Clark]
+  * Minor Enhancements
+    * Allowing directories to be loaded at start [Bert Goethals]
+  * Bug Fixes
+    * Don't leak events on error in the kqueue handler [Kevin Clark]
+
 == 0.7.5 / 2008-02-21
   * Bug Fixes
     * Remove Ruby's Logger and replace with custom SimpleLogger to stop threaded leak

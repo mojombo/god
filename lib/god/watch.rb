@@ -13,7 +13,8 @@ module God
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart,
                               :name=, :uid=, :gid=, :start=, :stop=, :restart=,
-                              :pid_file, :pid_file=, :log, :log=, :alive?, :pid
+                              :pid_file, :pid_file=, :log, :log=, :alive?, :pid,
+                              :unix_socket, :unix_socket=, :chroot, :chroot=, :env, :env=
     # 
     def initialize
       super
@@ -72,6 +73,12 @@ module God
       self.transition(:up, :restart) do |on|
         yield(on)
       end
+    end
+    
+    def stop_if 
+      self.transition(:up, :stop) do |on| 
+        yield(on) 
+      end 
     end
     
     ###########################################################################

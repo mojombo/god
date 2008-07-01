@@ -68,7 +68,7 @@ class TestProcessChild < Test::Unit::TestCase
     assert @p.valid?
   end
   
-  def test_valid_should_return_true_if_gid_does_not_exists
+  def test_valid_should_return_false_if_gid_does_not_exists
     @p.start = 'qux'
     @p.log = '/tmp/foo.log'
     @p.gid = 'foobarbaz'
@@ -78,6 +78,28 @@ class TestProcessChild < Test::Unit::TestCase
         assert !@p.valid?
       end
     end
+  end
+
+  def test_valid_should_return_false_with_bogus_chroot
+    @p.chroot = '/bogusroot'
+
+    no_stdout do
+      no_stderr do
+        assert !@p.valid?
+      end
+    end
+  end
+
+  def test_valid_should_return_true_with_chroot_and_valid_log
+    @p.start = 'qux'
+    @p.chroot = '/tmp'
+    @p.log = '/tmp/foo.log'
+
+    File.expects(:exist?).with('/tmp').returns(true)
+    File.expects(:exist?).with('/tmp/foo.log').returns(true)
+    File.expects(:exist?).with('/tmp/dev/null').returns(true)
+
+    assert @p.valid?
   end
   
   # call_action
@@ -172,10 +194,17 @@ class TestProcessDaemon < Test::Unit::TestCase
     assert_equal 246, @p.pid
   end
   
-  # defaul_pid_file
+  # default_pid_file
   
   def test_default_pid_file
     assert_equal File.join(God.pid_file_directory, 'foo.pid'), @p.default_pid_file
+  end
+  
+  # unix socket
+  
+  def test_unix_socket_should_return_path_specified
+    @p.unix_socket = '/path/to-socket'
+    assert_equal '/path/to-socket', @p.unix_socket
   end
   
   # call_action

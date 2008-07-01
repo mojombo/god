@@ -26,17 +26,5 @@ class TestSystemProcess < Test::Unit::TestCase
   def test_percent_cpu
     assert_kind_of Float, @process.percent_cpu
   end
-  
-  def test_cpu_time
-    assert_kind_of Integer, @process.cpu_time
-  end
-  
-  def test_time_string_to_seconds
-    assert_equal 0, @process.bypass.time_string_to_seconds('0:00:00')
-    assert_equal 0, @process.bypass.time_string_to_seconds('0:00:55')
-    assert_equal 27, @process.bypass.time_string_to_seconds('0:27:32')
-    assert_equal 75, @process.bypass.time_string_to_seconds('1:15:13')
-    assert_equal 735, @process.bypass.time_string_to_seconds('12:15:13')
-  end
 end
 
