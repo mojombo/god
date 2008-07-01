@@ -67,7 +67,7 @@ Category: #{category}
         end
       end
 
-      private
+      # private
 
       def notify_smtp(mail)
         args = [Email.server_settings[:address], Email.server_settings[:port]]
