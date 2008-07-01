@@ -19,7 +19,7 @@ module God
       self.behaviors = []
       
       # the list of conditions for each action
-      self.metrics = {nil => [], :unmonitored => []}
+      self.metrics = {nil => [], :unmonitored => [], :stop => []}
       
       # the condition -> metric lookup
       self.directory = {}
@@ -343,10 +343,10 @@ module God
         begin
           self.move(dest)
         rescue EventRegistrationFailedError
-          msg = watch.name + ' Event registration failed, moving back to previous state'
-          applog(watch, :info, msg)
+          msg = self.name + ' Event registration failed, moving back to previous state'
+          applog(self, :info, msg)
           
-          dest = watch.state
+          dest = self.state
           retry
         end
       else

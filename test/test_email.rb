@@ -10,9 +10,11 @@ class TestEmail < Test::Unit::TestCase
       God::Contacts::Email.any_instance.expects(:notify_smtp).never
       God::Contacts::Email.any_instance.expects(:notify_sendmail).never
       God::Contacts::Email.delivery_method = :foo_protocol
+      LOG.expects(:log).times(2)
+ 
       g = God::Contacts::Email.new
       g.notify(:a, :b, :c, :d, :e)
-      assert_equal "failed to send email to : unknown delivery method: foo_protocol", g.info
+      assert_nil g.info
     end
   end
 

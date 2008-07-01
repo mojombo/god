@@ -3,3 +3,5 @@ pkg
 *.log
 logs
 *.rbc
+*~
+.*.sw?
