@@ -4,6 +4,7 @@
     * Don't error out if the process went away in SlashProcPoller [Kevin Clark]
     * Correction of Task#handle_poll to prevent crash under event registration failure conditions. [github.com/raggi]
     * Cleaned up logging of failed e-mail sends. [github.com/raggi]
+    * Listen on 127.0.0.1 when using God as a client. [github.com/halorgium]
   * New Behaviors
     * clean_unix_socket [github.com/gma]
   * New Contacts
