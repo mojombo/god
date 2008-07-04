@@ -1,4 +1,6 @@
 == _._._ / TBD
+  * Minor Enhancements
+    * Added webhook output support [Martyn Loughran]
   * Bug Fixes
     * Catch all Exceptions from HttpResponseCode condition [github.com/rliebling]
     * Don't error out if the process went away in SlashProcPoller [Kevin Clark]

@@ -56,6 +56,7 @@ begin
   require 'god/contacts/jabber'
 rescue LoadError
 end
+require 'god/contacts/webhook'
 
 require 'god/socket'
 require 'god/driver'
