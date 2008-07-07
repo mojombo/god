@@ -28,6 +28,7 @@ module God
         gid_num = Etc.getgrnam(self.gid).gid if self.gid
 
         ::Dir.chroot(self.chroot) if self.chroot
+        ::Process.groups = [gid_num] if self.gid
         ::Process::Sys.setgid(gid_num) if self.gid
         ::Process::Sys.setuid(uid_num) if self.uid
 
@@ -267,6 +268,7 @@ module God
 
         ::Dir.chroot(self.chroot) if self.chroot
         ::Process.setsid
+        ::Process.groups = [gid_num] if self.gid
         ::Process::Sys.setgid(gid_num) if self.gid
         ::Process::Sys.setuid(uid_num) if self.uid
         Dir.chdir "/"
