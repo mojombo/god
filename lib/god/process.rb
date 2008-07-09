@@ -32,7 +32,7 @@ module God
         ::Process::Sys.setgid(gid_num) if self.gid
         ::Process::Sys.setuid(uid_num) if self.uid
 
-        File.writable?(file) ? exit(0) : exit(1)
+        File.writable?(file_in_chroot(file)) ? exit(0) : exit(1)
       end
       
       wpid, status = ::Process.waitpid2(pid)
