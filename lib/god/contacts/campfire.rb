@@ -57,10 +57,6 @@ module God
         EOF
       end
       
-      def valid?
-        true
-      end
-      
       def notify(message, time, priority, category, host)
         
         begin
