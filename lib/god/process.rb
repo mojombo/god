@@ -281,9 +281,6 @@ module God
           STDOUT.reopen file_in_chroot(self.log), "a"        
         end
         STDERR.reopen STDOUT
-            
-        STDOUT.reopen file_in_chroot(self.log), "a"
-        STDERR.reopen STDOUT
         
         # close any other file descriptors
         3.upto(256){|fd| IO::new(fd).close rescue nil}
