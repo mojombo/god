@@ -5,3 +5,4 @@ logs
 *.rbc
 *~
 .*.sw?
+.DS_Store
