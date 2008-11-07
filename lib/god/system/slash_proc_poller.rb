@@ -59,7 +59,7 @@ module God
       
       # Some systems (CentOS?) have a /proc, but they can hang when trying to
       # read from them. Try to use this sparingly as it is expensive.
-      def readable?(path)
+      def self.readable?(path)
         begin
           timeout(1) { File.read(path) }
         rescue Timeout::Error
