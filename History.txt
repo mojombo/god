@@ -1,3 +1,8 @@
+== 0.7.10 / 
+  * Bug Fixes
+    * setup logging *after* loading a given config file when daemonized. 
+      enables logging to the 'God.log_file' specified in a config file. [github.com/jnewland]
+
 == 0.7.9 / 2008-08-06
   * Major Enhancements
     * Use a psuedo-priority queue for more efficient driver loop [Darrell Kresge]
