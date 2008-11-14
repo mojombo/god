@@ -86,6 +86,7 @@ test/configs/test.rb
 test/helper.rb
 test/suite.rb
 test/test_behavior.rb
+test/test_campfire.rb
 test/test_condition.rb
 test/test_conditions_disk_usage.rb
 test/test_conditions_http_response_code.rb
@@ -94,6 +95,7 @@ test/test_conditions_tries.rb
 test/test_contact.rb
 test/test_dependency_graph.rb
 test/test_driver.rb
+test/test_email.rb
 test/test_event_handler.rb
 test/test_god.rb
 test/test_handlers_kqueue_handler.rb
