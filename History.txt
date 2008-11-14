@@ -1,3 +1,7 @@
+== 0.7.11 / 
+  * Bug Fixes
+    * Make notifications work inside lifecycle blocks
+
 == 0.7.10 / 2008-11-13
   * Major Enhancements
     * Enable sending of arbitrary signals to a task or group via `god signal`

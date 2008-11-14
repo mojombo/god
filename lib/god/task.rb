@@ -324,7 +324,7 @@ module God
       messages = self.log_line(self, metric, condition, result)
       
       # notify
-      if condition.notify && self.trigger?(metric, result)
+      if result && condition.notify
         self.notify(condition, messages.last)
       end
       
@@ -372,7 +372,7 @@ module God
       messages = self.log_line(self, metric, condition, true)
       
       # notify
-      if condition.notify && self.trigger?(metric, true)
+      if result && condition.notify
         self.notify(condition, messages.last)
       end
       
