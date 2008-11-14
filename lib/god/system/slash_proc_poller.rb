@@ -15,7 +15,7 @@ module God
       # Returns true if +RequiredPaths+ are readable.
       def self.usable?
         RequiredPaths.all? do |path|
-          test(?r, path)
+          test(?r, path) && readable?(path)
         end
       end
       
@@ -56,6 +56,16 @@ module God
       end
       
       private
+      
+      # Some systems (CentOS?) have a /proc, but they can hang when trying to
+      # read from them. Try to use this sparingly as it is expensive.
+      def self.readable?(path)
+        begin
+          timeout(1) { File.read(path) }
+        rescue Timeout::Error
+          false
+        end
+      end
       
       # in seconds
       def uptime
