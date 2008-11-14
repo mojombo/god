@@ -37,43 +37,46 @@ module God
       end
 
       self.server_settings = {:subdomain => '',
-        :user_name => '',
-        :password => '',
-        :room => ''}
+                              :user_name => '',
+                              :password => '',
+                              :room => ''}
 
-        self.format = lambda do |message, host|
-          <<-EOF
-          #{host} - #{message}
-          EOF
-        end
+      self.format = lambda do |message, host|
+        <<-EOF
+        #{host} - #{message}
+        EOF
+      end
 
-        def notify(message, time, priority, category, host)
+      def initialize
+        @room = nil
+      end
 
-          begin
-            body = Campfire.format.call(message,host)
+      def notify(message, time, priority, category, host)
+        begin
+          body = Campfire.format.call(message,host)
 
-            room.speak body
+          room.speak body
 
-            self.info = "notified campfire: #{Campfire.server_settings[:subdomain]}"
-          rescue => e
-            applog(nil, :info, "failed to notify campfire: #{e.message}")
-            applog(nil, :debug, e.backtrace.join("\n"))
-          end
-        end
-        
-        private
-        def room
-          unless @room
-            applog(nil,:debug, "initializing campfire connection using credentials: #{Campfire.server_settings.inspect}")
-
-            campfire = Tinder::Campfire.new Campfire.server_settings[:subdomain] 
-            campfire.login Campfire.server_settings[:user_name], Campfire.server_settings[:password]
-            @room = campfire.find_room_by_name(Campfire.server_settings[:room])
-          end
-          @room
+          self.info = "notified campfire: #{Campfire.server_settings[:subdomain]}"
+        rescue => e
+          applog(nil, :info, "failed to notify campfire: #{e.message}")
+          applog(nil, :debug, e.backtrace.join("\n"))
         end
       end
 
+      private
+
+      def room
+        unless @room
+          applog(nil,:debug, "initializing campfire connection using credentials: #{Campfire.server_settings.inspect}")
+
+          campfire = Tinder::Campfire.new Campfire.server_settings[:subdomain] 
+          campfire.login Campfire.server_settings[:user_name], Campfire.server_settings[:password]
+          @room = campfire.find_room_by_name(Campfire.server_settings[:room])
+        end
+        @room
+      end
     end
+
   end
 end
