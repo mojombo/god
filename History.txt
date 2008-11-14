@@ -7,6 +7,8 @@
   * New Contacts
     * Twitter - allow messages to twitter [github.com/jwilkins]
     * Campfire - send messages to 37signals' Campfire [github.com/hellvinz]
+  * Minor Enhancements
+    * Add watch log_cmd that can be reopened with STDOUT instead of a log file [github.com/jberkel]
 
 == 0.7.9 / 2008-08-06
   * Major Enhancements
