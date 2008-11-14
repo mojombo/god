@@ -54,6 +54,10 @@ require 'god/conditions/file_mtime'
 require 'god/contact'
 require 'god/contacts/email'
 begin
+  require 'god/contacts/twitterer'
+rescue LoadError
+end
+begin
   require 'god/contacts/jabber'
 rescue LoadError
 end
