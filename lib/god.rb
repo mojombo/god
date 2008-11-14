@@ -62,6 +62,8 @@ end
 begin
   require 'god/contacts/jabber'
 rescue LoadError
+  puts "You must have the 'xmpp4r' gem installed to use the Jabber contact."
+  exit 1
 end
 
 require 'god/socket'
