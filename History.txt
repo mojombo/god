@@ -1,4 +1,4 @@
-== 0.7.11 / 
+== 0.7.11 / 2008-11-14
   * Bug Fixes
     * Make notifications work inside lifecycle blocks
 
