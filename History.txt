@@ -6,6 +6,7 @@
     * FileMtime < PollCondition - trigger on file mtime durations [github.com/jwilkins]
   * New Contacts
     * Twitter - allow messages to twitter [github.com/jwilkins]
+    * Campfire - send messages to 37signals' Campfire [github.com/hellvinz]
 
 == 0.7.9 / 2008-08-06
   * Major Enhancements
