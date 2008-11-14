@@ -34,6 +34,7 @@ lib/god/conditions/process_running.rb
 lib/god/conditions/tries.rb
 lib/god/configurable.rb
 lib/god/contact.rb
+lib/god/contacts/campfire.rb
 lib/god/contacts/email.rb
 lib/god/contacts/jabber.rb
 lib/god/contacts/twitter.rb
