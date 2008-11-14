@@ -25,7 +25,7 @@ module God
       end
       
       def dispatch
-        if %w{load status log quit terminate}.include?(@command)
+        if %w{load status signal log quit terminate}.include?(@command)
           setup
           send("#{@command}_command")
         elsif %w{start stop restart monitor unmonitor remove}.include?(@command)
@@ -81,6 +81,29 @@ module God
             print "  " unless group.empty?
             puts "#{name}: #{state}"
           end
+        end
+      end
+      
+      def signal_command
+        # get the name of the watch/group
+        name = @args[1]
+        signal = @args[2]
+        
+        puts "Sending signal '#{signal}' to '#{name}'"
+        
+        t = Thread.new { loop { sleep(1); STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+        
+        watches = @server.signal(name, signal)
+        
+        # output response
+        t.kill; STDOUT.puts
+        unless watches.empty?
+          puts 'The following watches were affected:'
+          watches.each do |w|
+            puts '  ' + w
+          end
+        else
+          puts 'No matching task or group'
         end
       end
       

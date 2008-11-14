@@ -159,6 +159,15 @@ module God
       end
     end
     
+    # Send the given signal to this process.
+    #
+    # Returns nothing
+    def signal(sig)
+      sig = sig.to_i if sig.to_i != 0
+      applog(self, :info, "#{self.name} sending signal '#{sig}' to pid #{self.pid}")
+      ::Process.kill(sig, self.pid) rescue nil
+    end
+    
     def start!
       call_action(:start)
     end

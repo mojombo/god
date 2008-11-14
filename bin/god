@@ -33,6 +33,7 @@ begin
       load <file>                        load a config into a running god
       log <task name>                    show realtime log for given task
       status                             show status of each task
+      signal <task or group name> <sig>  signal all matching tasks
       quit                               stop god
       terminate                          stop god and all tasks
       check                              run self diagnostic

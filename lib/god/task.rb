@@ -204,6 +204,10 @@ module God
       self.driver.message(:handle_event, [condition])
     end
     
+    def signal(sig)
+      # noop
+    end
+    
     ###########################################################################
     #
     # Actions
