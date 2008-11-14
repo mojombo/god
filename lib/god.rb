@@ -56,20 +56,14 @@ require 'god/contacts/email'
 begin
   require 'god/contacts/twitter'
 rescue LoadError
-  puts "You must have the 'twitter' gem installed to use the Twitter contact."
-  exit 1
 end
 begin
   require 'god/contacts/jabber'
 rescue LoadError
-  puts "You must have the 'xmpp4r' gem installed to use the Jabber contact."
-  exit 1
 end
 begin
   require 'god/contacts/campfire'
 rescue LoadError
-  puts "You must have the 'tinder' gem installed to use the Campfire contact."
-  exit 1
 end
 
 require 'god/socket'
