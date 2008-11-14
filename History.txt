@@ -1,4 +1,6 @@
-== 0.7.10 / 
+== 0.7.10 / 2008-11-13
+  * Major Enhancements
+    * Enable sending of arbitrary signals to a task or group via `god signal`
   * Bug Fixes
     * setup logging *after* loading a given config file when daemonized. 
       enables logging to the 'God.log_file' specified in a config file. [github.com/jnewland]
