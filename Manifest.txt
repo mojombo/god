@@ -35,6 +35,7 @@ lib/god/conditions/tries.rb
 lib/god/configurable.rb
 lib/god/contact.rb
 lib/god/contacts/email.rb
+lib/god/contacts/jabber.rb
 lib/god/contacts/twitter.rb
 lib/god/dependency_graph.rb
 lib/god/diagnostics.rb
