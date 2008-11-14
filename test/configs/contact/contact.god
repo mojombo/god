@@ -6,6 +6,13 @@ God::Contacts::Email.server_settings = {
   :domain => "powerset.com"
 }
 
+God::Contacts::Twitter.settings = {
+  # this is for my 'mojombo2' twitter test account
+  # feel free to use it for testing your conditions
+  :username => 'mojombo@gmail.com',
+  :password  => 'gok9we3ot1av2e'
+}
+
 God.contact(:email) do |c|
   c.name = 'tom'
   c.email = 'tom@mojombo.com'
@@ -24,12 +31,15 @@ God.contact(:email) do |c|
   c.group = 'platform'
 end
 
+God.contact(:twitter) do |c|
+  c.name      = 'tom2'
+  c.group     = 'developers'
+end
+
 God.watch do |w|
   w.name = "contact"
   w.interval = 5.seconds
   w.start = "ruby " + File.join(File.dirname(__FILE__), *%w[simple_server.rb])
-  w.uid = 'tom'
-  w.gid = 'tom'
   w.log = "/Users/tom/contact.log"
   
   # determine the state on startup
@@ -55,7 +65,7 @@ God.watch do |w|
   # start if process is not running
   w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
-      c.notify = {:contacts => ['tom', 'foobar'], :priority => 1, :category => 'product'}
+      c.notify = {:contacts => ['tom2', 'foobar'], :priority => 1, :category => 'product'}
     end
   end
   
