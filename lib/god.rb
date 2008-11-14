@@ -53,6 +53,7 @@ require 'god/conditions/file_mtime'
 
 require 'god/contact'
 require 'god/contacts/email'
+require 'god/contacts/webhook'
 begin
   require 'god/contacts/twitter'
 rescue LoadError
