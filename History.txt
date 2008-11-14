@@ -2,6 +2,8 @@
   * Bug Fixes
     * setup logging *after* loading a given config file when daemonized. 
       enables logging to the 'God.log_file' specified in a config file. [github.com/jnewland]
+  * New Conditions
+    * FileMtime < PollCondition - trigger on file mtime durations [github.com/jwilkins]
 
 == 0.7.9 / 2008-08-06
   * Major Enhancements
