@@ -56,6 +56,8 @@ require 'god/contacts/email'
 begin
   require 'god/contacts/twitter'
 rescue LoadError
+  puts "You must have the 'twitter' gem installed to use the Twitter contact."
+  exit 1
 end
 begin
   require 'god/contacts/jabber'
