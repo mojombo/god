@@ -3,9 +3,9 @@
 #
 # Configure your watches like this:
 #
-#   God::Contacts::Twitterer.settings = { :username => 'sender@example.com',
+#   God::Contacts::Twitter.settings = { :username => 'sender@example.com',
 #                                       :password  => 'secret' }
-#   God.contact(:twitterer) do |c|
+#   God.contact(:twitter) do |c|
 #     c.name      = 'Tester'
 #     c.group     = 'developers'
 #   end
@@ -15,7 +15,7 @@ require 'twitter'
 
 module God
   module Contacts
-    class Twitterer < Contact
+    class Twitter < Contact
       class << self
         attr_accessor :settings
       end
@@ -26,10 +26,10 @@ module God
 
       def notify(message, time, priority, category, host)
         begin
-          Twitter::Base.new(Twitterer.settings[:username], 
-                            Twitterer.settings[:password]).update(message)
+          ::Twitter::Base.new(Twitter.settings[:username], 
+                              Twitter.settings[:password]).update(message)
 
-          self.info = "sent twitter update as #{Twitterer.settings[:username]}"
+          self.info = "sent twitter update as #{Twitter.settings[:username]}"
         rescue => e
           self.info = "failed to send twitter update from #{self.twitter_id}: #{e.message}"
         end
