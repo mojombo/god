@@ -34,6 +34,9 @@ module God
       end
       
       def default_run
+        # make sure we have STDIN/STDOUT redirected immediately
+        setup_logging
+
         # start attached pid watcher if necessary
         if @options[:attach]
           self.attach
