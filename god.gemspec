@@ -1,10 +1,10 @@
 Gem::Specification.new do |s|
   s.name = %q{god}
-  s.version = "0.7.11"
+  s.version = "0.7.12"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tom Preston-Werner"]
-  s.date = %q{2008-11-14}
+  s.date = %q{2008-12-10}
   s.default_executable = %q{god}
   s.description = %q{God is an easy to configure, easy to extend monitoring framework written in Ruby.}
   s.email = %q{tom@rubyisawesome.com}
