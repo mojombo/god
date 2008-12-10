@@ -372,7 +372,7 @@ module God
       messages = self.log_line(self, metric, condition, true)
       
       # notify
-      if result && condition.notify
+      if condition.notify
         self.notify(condition, messages.last)
       end
       

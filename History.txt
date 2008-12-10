@@ -1,6 +1,7 @@
-== 0.7.12 /
-  * Buf Fixes
+== 0.7.12 / 
+  * Bug Fixes
     * Fix capistrano deployability [github.com/eric]
+    * Fix event handling [brianw]
 
 == 0.7.11 / 2008-11-14
   * Bug Fixes
