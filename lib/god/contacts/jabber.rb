@@ -40,7 +40,7 @@ module God
         begin
           jabber_id = XMPP4R::JID::new "#{Jabber.settings[:jabber_id]}/God"
           jabber_client = XMPP4R::Client::new jabber_id
-          jabber_client.connect
+          jabber_client.connect Jabber.settings[:host]
           jabber_client.auth Jabber.settings[:password]
 
           body = Jabber.format.call message, priority, category, host
