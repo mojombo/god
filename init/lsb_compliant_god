@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+
+# see http://refspecs.freestandards.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
+
+PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
+DESC="god daemon"
+NAME="god"
+DAEMON="/usr/bin/#{NAME}"
+CONFIGFILE="/etc/god/god.conf"
+PIDFILE="/var/run/#{NAME}.pid"
+SCRIPTNAME="/etc/init.d/#{NAME}"
+START_FLAGS="--no-syslog -P #{PIDFILE}"
+
+ENV["PATH"] = PATH
+
+def read_pid
+  begin
+    @pid = File.read(PIDFILE).to_i
+    @pid = nil if @pid == 0
+  rescue
+    @pid = nil
+  end
+end
+
+def kill(code)
+  Process.kill(code, @pid)
+  true
+rescue
+  false
+end
+
+def running?
+  @pid && kill(0)
+end
+
+def dead?
+  @pid && !kill(0)
+end
+
+def start
+  if running?
+    puts "already running (#{@pid})"
+    exit
+  end
+
+  if dead?
+    clean_pid
+  end
+
+  puts "starting #{NAME}"
+  system("#{DAEMON} -c #{CONFIGFILE} #{START_FLAGS}")
+end
+
+def stop
+  if not running?
+    puts "not running"
+    exit
+  end
+
+	system("god quit")
+end
+
+def restart
+	if running?
+		stop
+		read_pid
+	end
+	start
+end
+
+def force_reload
+	if running?
+	  restart
+	end
+end
+
+def clean_pid
+  File.delete(PIDFILE)
+end
+
+read_pid
+case ARGV[0]
+when 'start'
+  start
+when 'stop'
+  stop
+when 'restart'
+  if not running?
+    start
+  else
+    restart
+  end
+when 'force-reload'
+  force_reload
+when 'status'
+  if running?
+    puts "running (#{@pid})"
+  elsif dead?
+    puts "dead (#{@pid})"
+    exit!(1)
+  else
+    puts "not running"
+    exit!(3)
+  end
+else
+  puts "Usage: #{SCRIPTNAME} start|stop|restart|force-reload|status"
+end
+
+exit
