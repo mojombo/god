@@ -50,7 +50,8 @@ module God
           message.set_id '1'
           message.set_subject 'God'
           jabber_client.send message
-
+          jabber_client.close
+          
           self.info = "sent jabber message to #{self.jabber_id}"
         rescue => e
           puts e.message
