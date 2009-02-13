@@ -420,7 +420,7 @@ module God
       when "restart"
         items.each { |w| jobs << Thread.new { w.move(:restart) } }
       when "stop"
-        items.each { |w| jobs << Thread.new { w.unmonitor.action(:stop) if w.state != :unmonitored } }
+        items.each { |w| jobs << Thread.new { w.action(:stop); w.unmonitor if w.state != :unmonitored } }
       when "unmonitor"
         items.each { |w| jobs << Thread.new { w.unmonitor if w.state != :unmonitored } }
       when "remove"
