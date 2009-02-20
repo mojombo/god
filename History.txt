@@ -1,3 +1,7 @@
+==
+  * Bug Fixes
+    * Auto daemonized processes are now stopped/unmonitored correctly [github.com/jcapote]
+
 == 0.7.12 / 2008-12-10
   * Bug Fixes
     * Fix capistrano deployability [github.com/eric]
