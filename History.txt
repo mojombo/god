@@ -1,4 +1,4 @@
-==
+== 0.7.13 / 2009-05-04
   * Bug Fixes
     * Auto daemonized processes are now stopped/unmonitored correctly [github.com/jcapote]
 
