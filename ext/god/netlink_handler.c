@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <linux/netlink.h>
 #include <linux/connector.h>
+#define _LINUX_TIME_H
 #include <linux/cn_proc.h>
 #include <errno.h>
 
