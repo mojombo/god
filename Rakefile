@@ -1,16 +1,33 @@
 require 'rubygems'
-require 'hoe'
+require 'rake'
 
-Hoe.new('god', '0.7.13') do |p|
-  p.rubyforge_name = 'god'
-  p.author = 'Tom Preston-Werner'
-  p.email = 'tom@rubyisawesome.com'
-  p.url = 'http://god.rubyforge.org/'
-  p.summary = 'Like monit, only awesome'
-  p.description = "God is an easy to configure, easy to extend monitoring framework written in Ruby."
-  p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
-  p.spec_extras = {:extensions => ['ext/god/extconf.rb']}
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name = "god"
+    gem.summary = 'Like monit, only awesome'
+    gem.description = "God is an easy to configure, easy to extend monitoring framework written in Ruby."
+    gem.email = "tom@mojombo.com"
+    gem.homepage = "http://god.rubyforge.org/"
+    gem.authors = ["Tom Preston-Werner"]
+    gem.require_paths = ["lib", "ext"]
+    gem.files.include("ext")
+    gem.extensions << 'ext/god/extconf.rb'
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+  end
+
+rescue LoadError
+  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
+
+require 'rake/testtask'
+Rake::TestTask.new(:test) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/test_*.rb'
+  test.verbose = true
+end
+
+task :default => :test
 
 desc "Open an irb session preloaded with this library"
 task :console do
@@ -32,4 +49,19 @@ task :coverage do
   `rm -fr coverage`
   `rcov test/test_*.rb`
   `open coverage/index.html`
+end
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  if File.exist?('VERSION.yml')
+    config = YAML.load(File.read('VERSION.yml'))
+    version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
+  else
+    version = ""
+  end
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "god #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end

@@ -148,8 +148,6 @@ class Module
 end
 
 module God
-  VERSION = '0.7.13'
-  
   LOG_BUFFER_SIZE_DEFAULT = 100
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
   DRB_PORT_DEFAULT = 17165
@@ -624,6 +622,11 @@ module God
     end
     
     self.main.join
+  end
+  
+  def self.version
+    yml = YAML.load(File.read(File.join(File.dirname(__FILE__), *%w[.. VERSION.yml])))
+    "#{yml[:major]}.#{yml[:minor]}.#{yml[:patch]}"
   end
   
   # To be called on program exit to start god
