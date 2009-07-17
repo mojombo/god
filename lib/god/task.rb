@@ -314,8 +314,8 @@ module God
     #
     # Returns nothing
     def handle_poll(condition)
-      # # lookup metric
-      # metric = nil # self.directory[condition]
+      # lookup metric
+      metric = self.directory[condition]
       # 
       # # run the test
       # result = 'foo' # condition.test
