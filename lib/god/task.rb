@@ -314,35 +314,35 @@ module God
     #
     # Returns nothing
     def handle_poll(condition)
-      # lookup metric
-      metric = self.directory[condition]
-      
-      # run the test
-      result = condition.test
-      
-      # log
-      messages = self.log_line(self, metric, condition, result)
-      
-      # notify
-      if result && condition.notify
-        self.notify(condition, messages.last)
-      end
-      
-      # after-condition
-      condition.after
-      
-      # get the destination
-      dest = 
-      if result && condition.transition
-        # condition override
-        condition.transition
-      else
-        # regular
-        metric.destination && metric.destination[result]
-      end
+      # # lookup metric
+      # metric = nil # self.directory[condition]
+      # 
+      # # run the test
+      # result = 'foo' # condition.test
+      # 
+      # # log
+      # messages = self.log_line(self, metric, condition, result)
+      # 
+      # # notify
+      # if result && condition.notify
+      #   self.notify(condition, messages.last)
+      # end
+      # 
+      # # after-condition
+      # condition.after
+      # 
+      # # get the destination
+      # dest = 
+      # if result && condition.transition
+      #   # condition override
+      #   condition.transition
+      # else
+      #   # regular
+      #   metric.destination && metric.destination[result]
+      # end
       
       # transition or reschedule
-      if dest
+      if false
         # transition
         begin
           self.move(dest)
