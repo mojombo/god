@@ -316,9 +316,9 @@ module God
     def handle_poll(condition)
       # lookup metric
       metric = self.directory[condition]
-      # 
-      # # run the test
-      # result = 'foo' # condition.test
+      
+      # run the test
+      result = condition.test
       # 
       # # log
       # messages = self.log_line(self, metric, condition, result)
