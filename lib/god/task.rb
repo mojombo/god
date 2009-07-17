@@ -408,12 +408,12 @@ module God
     #
     # Returns String[]
     def log_line(watch, metric, condition, result)
-      # status = 
-      # if self.trigger?(metric, result)
-      #   "[trigger]"
-      # else
-      #   "[ok]"
-      # end
+      status = 
+      if self.trigger?(metric, result)
+        "[trigger]"
+      else
+        "[ok]"
+      end
       
       messages = []
       
