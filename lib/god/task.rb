@@ -428,9 +428,9 @@ module God
       #   applog(watch, :info, messages.last)
       # end
       # 
-      # # log
-      # debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
-      # applog(watch, :debug, debug_message)
+      # log
+      debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      applog(watch, :debug, debug_message)
       
       messages
     end
