@@ -408,29 +408,29 @@ module God
     #
     # Returns String[]
     def log_line(watch, metric, condition, result)
-      status = 
-      if self.trigger?(metric, result)
-        "[trigger]"
-      else
-        "[ok]"
-      end
+      # status = 
+      # if self.trigger?(metric, result)
+      #   "[trigger]"
+      # else
+      #   "[ok]"
+      # end
       
       messages = []
       
-      # log info if available
-      if condition.info
-        Array(condition.info).each do |condition_info|
-          messages << "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
-          applog(watch, :info, messages.last)
-        end
-      else
-        messages << "#{watch.name} #{status} (#{condition.base_name})"
-        applog(watch, :info, messages.last)
-      end
-      
-      # log
-      debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
-      applog(watch, :debug, debug_message)
+      # # log info if available
+      # if condition.info
+      #   Array(condition.info).each do |condition_info|
+      #     messages << "#{watch.name} #{status} #{condition_info} (#{condition.base_name})"
+      #     applog(watch, :info, messages.last)
+      #   end
+      # else
+      #   messages << "#{watch.name} #{status} (#{condition.base_name})"
+      #   applog(watch, :info, messages.last)
+      # end
+      # 
+      # # log
+      # debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      # applog(watch, :debug, debug_message)
       
       messages
     end
