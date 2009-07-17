@@ -429,7 +429,8 @@ module God
       # end
       # 
       # log
-      debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      # debug_message = watch.name + ' ' + condition.base_name + " [#{result}] " + self.dest_desc(metric, condition)
+      debug_message = 'foo'
       applog(watch, :debug, debug_message)
       
       messages
