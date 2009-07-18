@@ -15,12 +15,8 @@ module God
     #
     # Returns Timeline
     def push(val)
-      if (size + 1) > @max_size
-        reverse!
-        pop
-        reverse!
-      end
-      super(val)
+      self.concat([val]) if size < @max_size
+      # shift if size > @max_size
     end
     
     alias_method :<<, :push
