@@ -58,15 +58,15 @@ module God
       # initialize watch log if necessary
       self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
       
-      # # push onto capture and timeline for the given watch
-      # @templogio.truncate(0)
-      # @templogio.rewind
-      # @templog.send(level, text % [])
-      # @mutex.synchronize do
-      #   @capture.puts(@templogio.string.dup) if @capture
-      #   self.logs[watch.name] << [Time.now, @templogio.string.dup] if watch
-      # end
-      # 
+      # push onto capture and timeline for the given watch
+      @templogio.truncate(0)
+      @templogio.rewind
+      @templog.send(level, text % [])
+      @mutex.synchronize do
+        @capture.puts(@templogio.string.dup) if @capture
+        self.logs[watch.name] << [Time.now, @templogio.string.dup] if watch
+      end
+      
       # # send to regular logger
       # self.send(level, text % [])
       # 
