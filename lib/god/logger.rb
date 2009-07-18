@@ -55,10 +55,9 @@ module God
     #
     # Returns nothing
     def log(watch, level, text)
-      p text
-      # # initialize watch log if necessary
-      # self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
-      # 
+      # initialize watch log if necessary
+      self.logs[watch.name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT) if watch
+      
       # # push onto capture and timeline for the given watch
       # @templogio.truncate(0)
       # @templogio.rewind
