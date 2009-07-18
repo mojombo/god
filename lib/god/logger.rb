@@ -64,7 +64,7 @@ module God
       @templog.send(level, text % [])
       @mutex.synchronize do
         @capture.puts(@templogio.string.dup) if @capture
-        self.logs[watch.name] << [Time.now, @templogio.string.dup] if watch
+        self.logs[watch.name] << 'foo' if watch
       end
       
       # send to regular logger
