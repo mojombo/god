@@ -21,6 +21,7 @@ module God
       self.logs = {}
       @mutex = Mutex.new
       @capture = nil
+      @spool = Time.now
       @templogio = StringIO.new
       @templog = SimpleLogger.new(@templogio)
       @templog.level = Logger::INFO
@@ -64,7 +65,10 @@ module God
       @templog.send(level, text % [])
       @mutex.synchronize do
         @capture.puts(@templogio.string.dup) if @capture
-        self.logs[watch.name] << 'foo' if watch
+        if watch && (Time.now - @spool < 2)
+          p 'spool' + rand(99).to_s
+          self.logs[watch.name] << [Time.now, @templogio.string.dup]
+        end
       end
       
       # send to regular logger
@@ -85,6 +89,7 @@ module God
       
       # get and join lines since given time
       @mutex.synchronize do
+        @spool = Time.now
         self.logs[watch_name].select do |x|
           x.first > since
         end.map do |x|
