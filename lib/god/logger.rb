@@ -21,7 +21,7 @@ module God
       self.logs = {}
       @mutex = Mutex.new
       @capture = nil
-      @spool = Time.now
+      @spool = Time.now - 10
       @templogio = StringIO.new
       @templog = SimpleLogger.new(@templogio)
       @templog.level = Logger::INFO
