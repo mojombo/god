@@ -15,7 +15,7 @@ module God
     #
     # Returns Timeline
     def push(val)
-      self.concat([val]) if size < @max_size
+      # self.concat([val]) if size < @max_size
       # shift if size > @max_size
     end
     
