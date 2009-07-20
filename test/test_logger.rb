@@ -7,7 +7,8 @@ class TestLogger < Test::Unit::TestCase
   
   # log
   
-  def test_log
+  def test_log_should_keep_logs_when_wanted
+    @log.watch_log_since('foo', Time.now)
     @log.expects(:info).with("qux")
     
     no_stdout do
@@ -31,6 +32,8 @@ class TestLogger < Test::Unit::TestCase
   
   def test_watch_log_since
     t1 = Time.now
+    
+    @log.watch_log_since('foo', t1)
     
     no_stdout do
       @log.log(stub(:name => 'foo'), :info, "one")

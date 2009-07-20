@@ -117,11 +117,12 @@ module God
             exit!
           end
           
+          puts "Please wait..."
           t = Time.at(0)
           loop do
             print @server.running_log(name, t)
             t = Time.now
-            sleep 1
+            sleep 0.25
           end
         rescue God::NoSuchWatchError
           puts "No such watch"
