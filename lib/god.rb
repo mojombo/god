@@ -657,7 +657,7 @@ module God
     
     list.select do |item|
       item =~ Regexp.new(regex)
-    end
+    end.sort_by { |x| x.size }
   end
 end
 
