@@ -1,6 +1,12 @@
 ==
+  * Minor Enhancements
+    * Only store log lines when a client wishes to see them
+    * Add an lsb-compliant init script into god/init [Woody Peterson]
   * Bug Fixes
     * Fix redefinition error for time.h and allow it to compile on Ubuntu Edgy [github.com/tbuser]
+    * Fix a memory leak in jabber by adding a call to jabber_client.close [github.com/woahdae]
+    * Make jabber code manage one connection to make it faster, use less memory,
+      and not leak [github.com/woahdae]
 
 == 0.7.13 / 2009-05-04
   * Bug Fixes
