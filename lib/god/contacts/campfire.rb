@@ -39,7 +39,8 @@ module God
       self.server_settings = {:subdomain => '',
                               :user_name => '',
                               :password => '',
-                              :room => ''}
+                              :room => '',
+                              :ssl => false}
 
       self.format = lambda do |message, host|
         <<-EOF
@@ -70,7 +71,7 @@ module God
         unless @room
           applog(nil,:debug, "initializing campfire connection using credentials: #{Campfire.server_settings.inspect}")
 
-          campfire = Tinder::Campfire.new Campfire.server_settings[:subdomain] 
+          campfire = Tinder::Campfire.new Campfire.server_settings[:subdomain], :ssl => Campfire.server_settings[:ssl]
           campfire.login Campfire.server_settings[:user_name], Campfire.server_settings[:password]
           @room = campfire.find_room_by_name(Campfire.server_settings[:room])
         end
