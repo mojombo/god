@@ -5,6 +5,7 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "god"
+    gem.rubyforge_project = "god"
     gem.summary = 'Like monit, only awesome'
     gem.description = "God is an easy to configure, easy to extend monitoring framework written in Ruby."
     gem.email = "tom@mojombo.com"
