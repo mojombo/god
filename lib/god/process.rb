@@ -52,12 +52,6 @@ module God
         applog(self, :error, "No start command was specified")
       end
       
-      # self-daemonizing processes must specify a stop command
-      if !@tracking_pid && self.stop.nil?
-        valid = false
-        applog(self, :error, "No stop command was specified")
-      end
-      
       # uid must exist if specified
       if self.uid
         begin
