@@ -164,6 +164,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://god.rubyforge.org/}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib", "ext"]
+  s.rubyforge_project = %q{god}
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Like monit, only awesome}
   s.test_files = [
