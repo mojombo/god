@@ -1,3 +1,7 @@
+==
+  * Minor Enhancements
+    * Support SSL Campfire connections [github.com/eric]
+
 == 0.7.14 / 2009-08-10
   * Minor Enhancements
     * Only store log lines when a client wishes to see them
