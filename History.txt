@@ -1,6 +1,7 @@
 ==
   * Minor Enhancements
     * Support SSL Campfire connections [github.com/eric]
+    * Allow wildcards in -c configuration file option
 
 == 0.7.14 / 2009-08-10
   * Minor Enhancements

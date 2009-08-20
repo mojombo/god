@@ -58,7 +58,7 @@ module God
         end
         
         if @options[:config]
-          unless File.exist?(@options[:config])
+          if !@options[:config].include?('*') && !File.exist?(@options[:config])
             abort "File not found: #{@options[:config]}"
           end
           
@@ -151,8 +151,12 @@ module God
             abort "No files could be loaded"
           end
         else
-          unless load_god_file(File.expand_path(config))
-            abort "File could not be loaded"
+          files = Dir.glob(config)
+          abort "No files could be loaded" if files.empty?
+          files.each do |f|
+            unless load_god_file(File.expand_path(config))
+              abort "File '#{config}' could not be loaded"
+            end
           end
         end
       end
