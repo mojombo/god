@@ -18,7 +18,7 @@ module God
       end
       
       def test
-        usage = `df | grep -i " #{self.mount_point}$" | awk '{print $5}' | sed 's/%//'`
+        usage = `df -P | grep -i " #{self.mount_point}$" | awk '{print $5}' | sed 's/%//'`
         usage.to_i > self.above
       end
     end
