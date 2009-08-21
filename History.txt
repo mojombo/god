@@ -1,4 +1,6 @@
 ==
+  * Minor Enhancements
+    * Better logging for disk_usage condition [github.com/lettherebecode]
   * Bug Fixes
     * Only sleep if driver delay is > 0 [github.com/ps2]
     * Rescue Timeout::Error exception due to smtp server timing out [github.com/ps2]
