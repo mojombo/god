@@ -1,3 +1,8 @@
+==
+  * Bug Fixes
+    * Only sleep if driver delay is > 0 [github.com/ps2]
+    * Rescue Timeout::Error exception due to smtp server timing out [github.com/ps2]
+
 == 0.7.15 / 2009-08-19
   * Minor Enhancements
     * Support SSL Campfire connections [github.com/eric]
