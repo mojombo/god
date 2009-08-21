@@ -479,11 +479,15 @@ module God
       # notify each contact
       resolved_contacts.each do |c|
         host = `hostname`.chomp rescue 'none'
-        c.notify(message, Time.now, spec[:priority], spec[:category], host)
-        
-        msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
-        
-        applog(condition.watch, :info, msg % [])
+        begin
+          c.notify(message, Time.now, spec[:priority], spec[:category], host)
+          msg = "#{condition.watch.name} #{c.info ? c.info : "notification sent for contact: #{c.name}"} (#{c.base_name})"
+          applog(condition.watch, :info, msg % [])
+        rescue Exception => e
+          applog(condition.watch, :error, "#{e.message} #{e.backtrace}")
+          msg = "#{condition.watch.name} Failed to deliver notification for contact: #{c.name} (#{c.base_name})"
+          applog(condition.watch, :error, msg % [])
+        end
       end
     end
   end
