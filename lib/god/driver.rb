@@ -90,7 +90,8 @@ module God
             Thread.stop
           else
             Thread.critical = false
-            sleep @events.first.at - Time.now
+            delay = @events.first.at - Time.now
+            sleep delay if delay > 0
             Thread.critical = true
           end
         end
