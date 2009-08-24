@@ -1,10 +1,11 @@
-==
+== 0.7.16 / 2009-08-24
   * Minor Enhancements
     * Better logging for disk_usage condition [github.com/lettherebecode]
   * Bug Fixes
     * Only sleep if driver delay is > 0 [github.com/ps2]
     * Rescue Timeout::Error exception due to smtp server timing out [github.com/ps2]
     * Disk usage condition should use `df -P` to prevent line splitting [github.com/mseppae]
+    * Always require YAML so binary works on dumb systems
 
 == 0.7.15 / 2009-08-19
   * Minor Enhancements
