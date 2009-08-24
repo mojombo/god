@@ -7,6 +7,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require 'rubygems'
 require 'optparse'
 require 'drb'
+require 'yaml'
 
 begin
   options = {:daemonize => true, :port => 17165, :syslog => true, :events => true}
