@@ -1,4 +1,4 @@
-==
+== 0.7.17 / 2009-08-25
   * Bug Fixes
     * Fix the glob and directory config loading for -c option
 
