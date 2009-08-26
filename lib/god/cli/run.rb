@@ -142,27 +142,19 @@ module God
       end
       
       def load_config(config)
-        if File.directory? config
-          files_loaded = false
-          Dir[File.expand_path('**/*.god', config)].each do |god_file|
-            files_loaded ||= load_god_file(File.expand_path(god_file))
-          end
-          unless files_loaded
-            abort "No files could be loaded"
-          end
-        else
-          files = Dir.glob(config)
-          abort "No files could be loaded" if files.empty?
-          files.each do |f|
-            unless load_god_file(File.expand_path(config))
-              abort "File '#{config}' could not be loaded"
-            end
+        files = File.directory?(config) ? Dir['**/*.god'] : Dir[config]
+        abort "No files could be found" if files.empty?
+        files.each do |god_file|
+          unless load_god_file(god_file)
+            abort "File '#{god_file}' could not be loaded"
           end
         end
       end
       
       def load_god_file(god_file)
+        applog(nil, :info, "Loading #{god_file}")
         load File.expand_path(god_file)
+        true
       rescue Exception => e
         if e.instance_of?(SystemExit)
           raise
@@ -170,7 +162,7 @@ module God
           puts "There was an error in #{god_file}"
           puts "\t" + e.message
           puts "\t" + e.backtrace.join("\n\t")
-          return false
+          false
         end
       end
       
