@@ -1,4 +1,4 @@
-==
+== 0.7.18 / 2009-09-09
   * Minor Enhancements
     * Better handling of unexpected exceptions in conditions
     * Added support for running processes in a directory other than '/' [github.com/samhendley]
