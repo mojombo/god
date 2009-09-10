@@ -318,7 +318,15 @@ module God
       metric = self.directory[condition]
       
       # run the test
-      result = condition.test
+      begin
+        result = condition.test
+      rescue Object => e
+        cname = condition.class.to_s.split('::').last
+        message = format("Unhandled exception in %s condition - (%s): %s\n%s",
+                         cname, e.class, e.message, e.backtrace.join("\n"))
+        applog(self, :error, message)
+        result = false
+      end
       
       # log
       messages = self.log_line(self, metric, condition, result)

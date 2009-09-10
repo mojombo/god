@@ -215,6 +215,22 @@ class TestTask < Test::Unit::TestCase
     end
   end
   
+  def test_handle_poll_unexpected_exception_should_reschedule
+    c = Conditions::FakePollCondition.new
+    c.watch = @task
+    c.interval = 10
+    
+    m = Metric.new(@task, {true => :up})
+    @task.directory[c] = m
+    
+    c.expects(:test).raises(StandardError)
+    @task.driver.expects(:schedule)
+    
+    no_stdout do
+      @task.handle_poll(c)
+    end
+  end
+  
   # handle_event
   
   def test_handle_event_should_move

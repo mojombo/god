@@ -167,7 +167,7 @@ module God
           rescue ThreadError => e
             # queue is empty
             break
-          rescue Exception => e
+          rescue Object => e
             message = format("Unhandled exception in driver loop - (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
             applog(nil, :fatal, message)
