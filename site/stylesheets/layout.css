@@ -23,7 +23,7 @@ a:active {
 	width: 307px;
 	height: 117px;
 	margin: 0 auto;
-	background: url(../images/god_logo1.gif);
+	background: url(../images/god_logo.png);
 }
 
 #content {
@@ -90,7 +90,7 @@ a:active {
 
 .columnleft {
 	float: left;
-	width: 325px;
+	width: 345px;
 	margin-bottom: 20px;
 }
 

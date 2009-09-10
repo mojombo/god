@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-  <title>god - process and task monitoring done right</title>
+  <title>God - A Process Monitoring Framework in Ruby</title>
   <link href="stylesheets/layout.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="javascripts/code_highlighter.js"></script>
   <script type="text/javascript" src="javascripts/ruby.js"></script>
@@ -31,7 +31,7 @@
 		<h1>A Better Way to Monitor</h1>
 		<p>God is an easy to configure, easy to extend monitoring framework written in Ruby.</p>
 		<p>Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.</p>
-		<p style="text-align: right">Tom Preston-Werner<br />tom at rubyisawesome dot com</p>
+		<p style="text-align: right">Tom Preston-Werner<br /><a href="mailto:tom@mojombo.com">tom@mojombo.com</a></p>
 		<p style="text-align: right">Google Group: <a href="http://groups.google.com/group/god-rb">http://groups.google.com/group/god-rb</a></p>
 	</div>
 
@@ -47,7 +47,7 @@
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.7.13)</h1>
+	<h1>Installation (v 0.7.17)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	
@@ -69,10 +69,10 @@
 	  <li>CentOS 4.5 (no events)</li>
 	</ul>
 
-	<h1>Finally, a Config File that Makes Sense</h1>
-	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I use at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
+	<h1>Config Files are Ruby Code!</h1>
+	<p>The easiest way to understand how god will make your life better is by looking at a sample config file. The following configuration file is what I once used at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels running:</p>
 	
-<pre><code class="ruby"># run with:  god -c /path/to/gravatar.god
+<pre><code class="ruby"># run with: god -c /path/to/mongrel.god -D
 # 
 # This is the actual config file used to keep the mongrels of
 # gravatar.com running.
@@ -207,7 +207,7 @@ end</code></pre>
   
 <p>The <code>:flapping</code> condition guards against the edge case wherein god rapidly starts or restarts your application. Things like server configuration changes or the unavailability of external services could make it impossible for my process to start. In that case, god will try to start my process over and over to no avail. The <code>:flapping</code> condition provides two levels of giving up on flapping processes. If I were to translate the options of the code above, it would be something like: If this watch is started or restarted five times withing 5 minutes, then unmonitor it...then after ten minutes, monitor it again to see if it was just a temporary problem; if the process is seen to be flapping five times within two hours, then give up completely.</p>
 
-<p>That's it! Simple, huh?</p>
+<p>That's it!</p>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -462,13 +462,13 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <h1>Getting Logs for a Single Watch</h1>
 
-<p>Sifting through the god logs for statements specific to a specific Watch can be frustrating when you have many of them. You can get the realtime logs for a single Watch via the command line:</p>
+<p>Sifting through the god logs for statements specific to a single Watch can be frustrating when you have many of them. You can get the realtime logs for a single Watch via the command line:</p>
 
 <pre>$ sudo god log local-3000</pre>
 
-<p>This will display the last 1000 lines of log for the 'local-3000' Watch and update every second with new log messages.</p>
+<p>This will display log output for the 'local-3000' Watch and update every second with new log messages.</p>
 
-<p>You can also supply a shorthand to the log command that will match one of your watches. If it happens to match several, the first match will be used:</p>
+<p>You can also supply a shorthand to the log command that will match one of your watches. If it happens to match several, the shortest match will be used:</p>
 
 <pre>$ sudo god log l3</pre>
 
@@ -536,7 +536,7 @@ end</code></pre>
 To: tom &lt;tom@example.com&gt;
 Subject: [god] mongrel-8600 [trigger] process exited (ProcessExits)
 
-Message: mongre-8600 [trigger] process exited (ProcessExits)
+Message: mongrel-8600 [trigger] process exited (ProcessExits)
 Host: candymountain.example.com
 Priority: 1
 Category: product</code></pre>
@@ -549,7 +549,7 @@ Category: product</code></pre>
 
 </div>
 <div id="footer">
-	<p>Brought to you by <a href="http://rubyisawesome.com/">Ruby is Awesome</a></p>
+	<p>Brought to you by <a href="http://tom.preston-werner.com/">Tom Preston-Werner</a></p>
 </div>
 
 <script src="http://www.google-analytics.com/urchin.js" type="text/javascript">

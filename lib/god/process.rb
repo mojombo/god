@@ -2,7 +2,8 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :log_cmd, :start, :stop, :restart, :unix_socket, :chroot, :env, :dir
+    attr_accessor :name, :uid, :gid, :log, :log_cmd, :start, :stop, :restart,
+                  :unix_socket, :chroot, :env, :dir
     
     def initialize
       self.log = '/dev/null'
