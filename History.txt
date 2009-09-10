@@ -2,6 +2,8 @@
   * Minor Enhancements
     * Better handling of unexpected exceptions in conditions
     * Added support for running processes in a directory other than '/' [github.com/samhendley]
+  * Bug Fixes
+    * Generate an actual unique identifier for email contact [github.com/underley]
 
 == 0.7.17 / 2009-08-25
   * Bug Fixes
