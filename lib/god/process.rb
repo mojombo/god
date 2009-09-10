@@ -2,7 +2,7 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :log_cmd, :start, :stop, :restart, :unix_socket, :chroot, :env
+    attr_accessor :name, :uid, :gid, :log, :log_cmd, :start, :stop, :restart, :unix_socket, :chroot, :env, :dir
     
     def initialize
       self.log = '/dev/null'
@@ -275,7 +275,8 @@ module God
         ::Process.groups = [gid_num] if self.gid
         ::Process::Sys.setgid(gid_num) if self.gid
         ::Process::Sys.setuid(uid_num) if self.uid
-        Dir.chdir "/"
+        self.dir ||= '/'
+        Dir.chdir self.dir
         $0 = command
         STDIN.reopen "/dev/null"
         if self.log_cmd
