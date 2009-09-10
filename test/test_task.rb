@@ -15,23 +15,17 @@ class TestTask < Test::Unit::TestCase
   
   def test_valid_should_return_false_if_no_name
     @task.name = nil
-    no_stdout do
-      assert !@task.valid?
-    end
+    assert !@task.valid?
   end
   
   def test_valid_should_return_false_if_no_valid_states
     @task.valid_states = nil
-    no_stdout do
-      assert !@task.valid?
-    end
+    assert !@task.valid?
   end
   
   def test_valid_should_return_false_if_no_initial_state
     @task.initial_state = nil
-    no_stdout do
-      assert !@task.valid?
-    end
+    assert !@task.valid?
   end
   
   # transition
@@ -69,14 +63,14 @@ class TestTask < Test::Unit::TestCase
     @task.foo = 'foo'
     Thread.current.stubs(:==).returns(true)
     @task.expects(:system).with('foo')
-    no_stdout { @task.action(:foo, nil) }
+    @task.action(:foo, nil)
   end
   
   def test_action_should_call_lambda_commands
     @task.foo = lambda { }
     Thread.current.stubs(:==).returns(true)
     @task.foo.expects(:call)
-    no_stdout { @task.action(:foo, nil) }
+    @task.action(:foo, nil)
   end
   
   def test_action_should_raise_not_implemented_on_non_string_or_lambda_action
@@ -142,10 +136,7 @@ class TestTask < Test::Unit::TestCase
     
     c.expects(:test).returns(false)
     @task.driver.expects(:schedule)
-    
-    no_stdout do
-      @task.handle_poll(c)
-    end
+    @task.handle_poll(c)
   end
   
   def test_handle_poll_change_should_move
@@ -158,10 +149,7 @@ class TestTask < Test::Unit::TestCase
     
     c.expects(:test).returns(true)
     @task.expects(:move).with(:up)
-    
-    no_stdout do
-      @task.handle_poll(c)
-    end
+    @task.handle_poll(c)
   end
   
   def test_handle_poll_should_use_overridden_transition
@@ -175,10 +163,7 @@ class TestTask < Test::Unit::TestCase
     @task.directory[c] = m
     
     @task.expects(:move).with(:start)
-    
-    no_stdout do
-      @task.handle_poll(c)
-    end
+    @task.handle_poll(c)
   end
   
   def test_handle_poll_should_notify_if_triggering
@@ -192,10 +177,7 @@ class TestTask < Test::Unit::TestCase
     
     c.expects(:test).returns(true)
     @task.expects(:notify)
-    
-    no_stdout do
-      @task.handle_poll(c)
-    end
+    @task.handle_poll(c)
   end
   
   def test_handle_poll_should_not_notify_if_not_triggering
@@ -209,10 +191,7 @@ class TestTask < Test::Unit::TestCase
     
     c.expects(:test).returns(false)
     @task.expects(:notify).never
-    
-    no_stdout do
-      @task.handle_poll(c)
-    end
+    @task.handle_poll(c)
   end
   
   def test_handle_poll_unexpected_exception_should_reschedule
@@ -226,9 +205,7 @@ class TestTask < Test::Unit::TestCase
     c.expects(:test).raises(StandardError)
     @task.driver.expects(:schedule)
     
-    no_stdout do
-      @task.handle_poll(c)
-    end
+    @task.handle_poll(c)
   end
   
   # handle_event
@@ -241,10 +218,7 @@ class TestTask < Test::Unit::TestCase
     @task.directory[c] = m
     
     @task.expects(:move).with(:up)
-    
-    no_stdout do
-      @task.handle_event(c)
-    end
+    @task.handle_event(c)
   end
   
   def test_handle_event_should_notify_if_triggering
@@ -256,10 +230,7 @@ class TestTask < Test::Unit::TestCase
     @task.directory[c] = m
     
     @task.expects(:notify)
-    
-    no_stdout do
-      @task.handle_event(c)
-    end
+    @task.handle_event(c)
   end
   
   def test_handle_event_should_not_notify_if_no_notify_set
@@ -270,9 +241,6 @@ class TestTask < Test::Unit::TestCase
     @task.directory[c] = m
     
     @task.expects(:notify).never
-    
-    no_stdout do
-      @task.handle_event(c)
-    end
+    @task.handle_event(c)
   end
 end

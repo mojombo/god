@@ -16,8 +16,8 @@ module God
     self.syslog ||= true
     
     # Instantiate a new Logger object
-    def initialize
-      super($stdout)
+    def initialize(io = $stdout)
+      super(io)
       self.logs = {}
       @mutex = Mutex.new
       @capture = nil

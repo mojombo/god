@@ -6,7 +6,7 @@ class TestConditionsTries < Test::Unit::TestCase
   def test_valid_should_return_false_if_times_not_set
     c = Conditions::Tries.new
     c.watch = stub(:name => 'foo')
-    no_stdout { assert !c.valid? }
+    assert !c.valid?
   end
 end
 

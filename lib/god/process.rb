@@ -25,13 +25,17 @@ module God
     
     def file_writable?(file)
       pid = fork do
-        uid_num = Etc.getpwnam(self.uid).uid if self.uid
-        gid_num = Etc.getgrnam(self.gid).gid if self.gid
+        begin
+          uid_num = Etc.getpwnam(self.uid).uid if self.uid
+          gid_num = Etc.getgrnam(self.gid).gid if self.gid
 
-        ::Dir.chroot(self.chroot) if self.chroot
-        ::Process.groups = [gid_num] if self.gid
-        ::Process::Sys.setgid(gid_num) if self.gid
-        ::Process::Sys.setuid(uid_num) if self.uid
+          ::Dir.chroot(self.chroot) if self.chroot
+          ::Process.groups = [gid_num] if self.gid
+          ::Process::Sys.setgid(gid_num) if self.gid
+          ::Process::Sys.setuid(uid_num) if self.uid
+        rescue ArgumentError, Errno::EPERM, Errno::ENOENT
+          exit(1)
+        end
 
         File.writable?(file_in_chroot(file)) ? exit(0) : exit(1)
       end
@@ -118,12 +122,12 @@ module God
       if self.chroot
         if !File.directory?(self.chroot)
           valid = false
-          LOG.log(self, :error, "CHROOT directory '#{self.chroot}' does not exist")
+          applog(self, :error, "CHROOT directory '#{self.chroot}' does not exist")
         end
 
         if !File.exist?(File.join(self.chroot, '/dev/null'))
           valid = false
-          LOG.log(self, :error, "CHROOT directory '#{self.chroot}' does not contain '/dev/null'")
+          applog(self, :error, "CHROOT directory '#{self.chroot}' does not contain '/dev/null'")
         end
       end
       

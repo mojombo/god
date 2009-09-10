@@ -7,20 +7,14 @@ class TestConditionsDiskUsage < Test::Unit::TestCase
     c = Conditions::DiskUsage.new
     c.mount_point = '/'
     c.watch = stub(:name => 'foo')
-    
-    no_stdout do
-      assert_equal false, c.valid?
-    end
+    assert_equal false, c.valid?
   end
   
   def test_valid_should_return_false_if_no_mount_point_given
     c = Conditions::DiskUsage.new
     c.above = 90
     c.watch = stub(:name => 'foo')
-    
-    no_stdout do
-      assert_equal false, c.valid?
-    end
+    assert_equal false, c.valid?
   end
   
   def test_valid_should_return_true_if_required_options_all_set

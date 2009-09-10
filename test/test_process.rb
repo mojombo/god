@@ -53,11 +53,7 @@ class TestProcessChild < Test::Unit::TestCase
     @p.log = '/tmp/foo.log'
     @p.uid = 'foobarbaz'
     
-    no_stdout do
-      no_stderr do
-        assert !@p.valid?
-      end
-    end
+    assert !@p.valid?
   end
   
   def test_valid_should_return_true_if_gid_exists
@@ -103,11 +99,7 @@ class TestProcessChild < Test::Unit::TestCase
   def test_valid_should_return_false_with_bogus_chroot
     @p.chroot = '/bogusroot'
 
-    no_stdout do
-      no_stderr do
-        assert !@p.valid?
-      end
-    end
+    assert !@p.valid?
   end
 
   def test_valid_should_return_true_with_chroot_and_valid_log
@@ -172,18 +164,7 @@ class TestProcessDaemon < Test::Unit::TestCase
   def test_valid_should_return_false_if_no_start
     @p.name = 'foo'
     @p.stop = 'baz'
-    no_stdout do
-      assert !@p.valid?
-    end
-  end
-  
-  def test_valid_should_return_false_if_self_daemonized_and_no_stop
-    @p.start = 'bar'
-    @p.pid_file = 'foo'
-    
-    no_stdout do
-      assert !@p.valid?
-    end
+    assert !@p.valid?
   end
   
   # pid

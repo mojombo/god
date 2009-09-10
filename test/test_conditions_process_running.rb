@@ -5,12 +5,8 @@ class TestConditionsProcessRunning < Test::Unit::TestCase
     [true, false].each do |r|
       c = Conditions::ProcessRunning.new
       c.running = r
-    
       c.stubs(:watch).returns(stub(:pid => 99999999, :name => 'foo'))
-    
-      # no_stdout do
-        assert_equal !r, c.test
-      # end
+      assert_equal !r, c.test
     end
   end
   

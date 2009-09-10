@@ -26,14 +26,14 @@ class TestHttpResponseCode < Test::Unit::TestCase
     c = valid_condition do |cc|
       cc.code_is_not = 500
     end
-    no_stdout { assert !c.valid? }
+    assert !c.valid?
   end
   
   def test_valid_should_return_false_if_no_host_set
     c = valid_condition do |cc|
       cc.host = nil
     end
-    no_stdout { assert !c.valid? }
+    assert !c.valid?
   end
   
   # test

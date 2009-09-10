@@ -164,9 +164,7 @@ class TestGod < Test::Unit::TestCase
     God.running = true
     
     assert_nothing_raised do
-      no_stdout do
-        God.watch { |w| w.name = 'foo'; w.start = 'bar' }
-      end
+      God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     end
   end
   
@@ -177,26 +175,20 @@ class TestGod < Test::Unit::TestCase
     w = God.watches['bar']
     w.state = :up
     w.expects(:unmonitor)
-    no_stdout do
-      God.unwatch(w)
-    end
+    God.unwatch(w)
   end
   
   def test_unwatch_should_unregister_watch
     God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     w = God.watches['bar']
     w.expects(:unregister!)
-    no_stdout do
-      God.unwatch(w)
-    end
+    God.unwatch(w)
   end
   
   def test_unwatch_should_remove_same_name_watches
     God.watch { |w| w.name = 'bar'; w.start = 'bar' }
     w = God.watches['bar']
-    no_stdout do
-      God.unwatch(w)
-    end
+    God.unwatch(w)
     assert_equal 0, God.watches.size
   end
   
@@ -207,9 +199,7 @@ class TestGod < Test::Unit::TestCase
       w.group = 'test'
     end
     w = God.watches['bar']
-    no_stdout do
-      God.unwatch(w)
-    end
+    God.unwatch(w)
     assert !God.groups[w.group].include?(w)
   end
   
@@ -239,28 +229,22 @@ class TestGod < Test::Unit::TestCase
   end
   
   def test_contact_should_abort_on_no_name
-    no_stdout do
-      assert_abort do
-        God.contact(:fake_contact) { |c| }
-      end
+    assert_abort do
+      God.contact(:fake_contact) { |c| }
     end
   end
   
   def test_contact_should_abort_on_duplicate_contact_name
     God.contact(:fake_contact) { |c| c.name = 'tom' }
-    no_stdout do
-      assert_nothing_raised do
-        God.contact(:fake_contact) { |c| c.name = 'tom' }
-      end
+    assert_nothing_raised do
+      God.contact(:fake_contact) { |c| c.name = 'tom' }
     end
   end
   
   def test_contact_should_abort_on_contact_with_same_name_as_group
     God.contact(:fake_contact) { |c| c.name = 'tom'; c.group = 'devs' }
-    no_stdout do
-      assert_nothing_raised do
-        God.contact(:fake_contact) { |c| c.name = 'devs' }
-      end
+    assert_nothing_raised do
+      God.contact(:fake_contact) { |c| c.name = 'devs' }
     end
   end
   
@@ -422,9 +406,7 @@ class TestGod < Test::Unit::TestCase
       end
     EOF
     
-    no_stdout do
-      God.running_load(code, '/foo/bar.god')
-    end
+    God.running_load(code, '/foo/bar.god')
     
     assert_equal 1, God.watches.size
   end
@@ -438,9 +420,7 @@ class TestGod < Test::Unit::TestCase
     EOF
     
     Watch.any_instance.expects(:monitor)
-    no_stdout do
-      God.running_load(code, '/foo/bar.god')
-    end
+    God.running_load(code, '/foo/bar.god')
   end
   
   def test_running_load_should_not_monitor_new_watches_with_autostart_false
@@ -453,9 +433,7 @@ class TestGod < Test::Unit::TestCase
     EOF
     
     Watch.any_instance.expects(:monitor).never
-    no_stdout do
-      God.running_load(code, '/foo/bar.god')
-    end
+    God.running_load(code, '/foo/bar.god')
   end
   
   def test_running_load_should_return_array_of_affected_watches
@@ -467,9 +445,7 @@ class TestGod < Test::Unit::TestCase
     EOF
     
     w = nil
-    no_stdout do
-      w, e = *God.running_load(code, '/foo/bar.god')
-    end
+    w, e = *God.running_load(code, '/foo/bar.god')
     assert_equal 1, w.size
     assert_equal 'foo', w.first
   end
@@ -482,9 +458,7 @@ class TestGod < Test::Unit::TestCase
       end
     EOF
     
-    no_stdout do
-      God.running_load(code, '/foo/bar.god')
-    end
+    God.running_load(code, '/foo/bar.god')
     assert_equal 0, God.pending_watches.size
   end
   
@@ -527,9 +501,7 @@ class TestGod < Test::Unit::TestCase
   
   def test_start_should_get_and_join_timer
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
-    no_stdout do
-      God.start
-    end
+    God.start
   end
   
   # at_exit

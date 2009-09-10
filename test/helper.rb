@@ -6,17 +6,17 @@ require 'set'
 
 include God
 
-if Process.uid != 0
-  abort <<-EOF
-\n
-*********************************************************************
-*                                                                   *
-*               You need to run these tests as root                 *
-*           chroot and netlink (linux only) require it              *
-*                                                                   *
-*********************************************************************
-EOF
-end
+# if Process.uid != 0
+#   abort <<-EOF
+# \n
+# *********************************************************************
+# *                                                                   *
+# *               You need to run these tests as root                 *
+# *           chroot and netlink (linux only) require it              *
+# *                                                                   *
+# *********************************************************************
+# EOF
+# end
 
 begin
   require 'mocha'
@@ -90,19 +90,7 @@ ensure
   $VERBOSE = old_verbose
 end
 
-def no_stdout
-  old_stdout = $stdout.dup
-  $stdout.reopen(File.open((PLATFORM =~ /mswin/ ? "NUL" : "/dev/null"), 'w'))
-  yield
-  $stdout.reopen(old_stdout)
-end
-
-def no_stderr
-  old_stderr = $stderr.dup
-  $stderr.reopen(File.open((PLATFORM =~ /mswin/ ? "NUL" : "/dev/null"), 'w'))
-  yield
-  $stderr.reopen(old_stderr)
-end
+LOG.instance_variable_set(:@io, StringIO.new('/dev/null'))
 
 module Kernel
   def abort(text)

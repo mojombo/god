@@ -13,9 +13,6 @@ class TestBehavior < Test::Unit::TestCase
   
   def test_complain
     Syslog.expects(:err).with('foo')
-    # Kernel.expects(:puts).with('foo')
-    no_stdout do
-      assert !Behavior.allocate.bypass.complain('foo')
-    end
+    assert !Behavior.allocate.bypass.complain('foo')
   end
 end

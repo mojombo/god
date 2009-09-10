@@ -143,7 +143,7 @@ class TestWatch < Test::Unit::TestCase
     
     metric.expects(:disable).never
     
-    no_stdout { @watch.move(:init) }
+    @watch.move(:init)
   end
   
   def test_move_should_clean_up_from_state_if_not_nil
@@ -162,11 +162,11 @@ class TestWatch < Test::Unit::TestCase
       end
     end
     
-    no_stdout { @watch.move(:init) }
+    @watch.move(:init)
     
     metric.expects(:disable)
     
-    no_stdout { @watch.move(:up) }
+    @watch.move(:up)
   end
   
   def test_move_should_call_action
@@ -175,7 +175,7 @@ class TestWatch < Test::Unit::TestCase
     
     @watch.expects(:action).with(:start)
     
-    no_stdout { @watch.move(:start) }
+    @watch.move(:start)
   end
   
   def test_move_should_move_to_up_state_if_no_start_or_restart_metric
@@ -184,7 +184,7 @@ class TestWatch < Test::Unit::TestCase
     
     [:start, :restart].each do |state|
       @watch.expects(:action)
-      no_stdout { @watch.move(state) }
+      @watch.move(state)
       assert_equal :up, @watch.state
     end
   end
@@ -207,7 +207,7 @@ class TestWatch < Test::Unit::TestCase
     
     metric.expects(:enable)
     
-    no_stdout { @watch.move(:init) }
+    @watch.move(:init)
   end
   
   # action
@@ -248,7 +248,7 @@ class TestWatch < Test::Unit::TestCase
   def test_call_action
     c = Conditions::FakePollCondition.new
     God::Process.any_instance.expects(:call_action).with(:start)
-    no_stdout { @watch.call_action(c, :start) }
+    @watch.call_action(c, :start)
   end
   
   def test_call_action_should_call_before_start_when_behavior_has_that
@@ -256,7 +256,7 @@ class TestWatch < Test::Unit::TestCase
     c = Conditions::FakePollCondition.new
     God::Process.any_instance.expects(:call_action).with(:start)
     Behaviors::FakeBehavior.any_instance.expects(:before_start)
-    no_stdout { @watch.call_action(c, :start) }
+    @watch.call_action(c, :start)
   end
   
   def test_call_action_should_call_after_start_when_behavior_has_that
@@ -264,7 +264,7 @@ class TestWatch < Test::Unit::TestCase
     c = Conditions::FakePollCondition.new
     God::Process.any_instance.expects(:call_action).with(:start)
     Behaviors::FakeBehavior.any_instance.expects(:after_start)
-    no_stdout { @watch.call_action(c, :start) }
+    @watch.call_action(c, :start)
   end
   
   # canonical_hash_form
