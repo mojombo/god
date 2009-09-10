@@ -30,7 +30,7 @@ From: god <#{self.message_settings[:from]}>
 To: #{name} <#{email}>
 Subject: [god] #{message}
 Date: #{Time.now.httpdate}
-Message-Id: <unique.message.id.string@example.com>
+Message-Id: <#{rand(1000000000).to_s(36)}.#{$$}.#{self.message_settings[:from]}>
 
 Message: #{message}
 Host: #{host}
