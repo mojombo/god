@@ -1,6 +1,7 @@
 ==
   * Minor Enhancements
     * Better handling of unexpected exceptions in conditions
+    * Added support for running processes in a directory other than '/' [github.com/samhendley]
 
 == 0.7.17 / 2009-08-25
   * Bug Fixes

@@ -72,6 +72,17 @@ module God
         end
       end
       
+      # dir must exist and be a directory if specified
+      if self.dir
+        if !File.exist?(self.dir)
+          valid = false
+          applog(self, :error, "Specified directory '#{self.dir}' does not exist")
+        elsif !File.directory?(self.dir)
+          valid = false
+          applog(self, :error, "Specified directory '#{self.dir}' is not a directory")
+        end
+      end
+      
       # pid dir must exist if specified
       if !@tracking_pid && !File.exist?(File.dirname(self.pid_file))
         valid = false
