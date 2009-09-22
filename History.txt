@@ -1,4 +1,4 @@
-==
+== 0.7.19 / 2009-09-21
   * Minor Enhancements
     * Teach `god status` to take a task name as a param and return
       an exit code of 0 if all watches are up or a non-zero exit code
