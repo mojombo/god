@@ -1,3 +1,9 @@
+==
+  * Minor Enhancements
+    * Teach `god status` to take a task name as a param and return
+      an exit code of 0 if all watches are up or a non-zero exit code
+      (equal to the number of non-up watches) if they are not.
+
 == 0.7.18 / 2009-09-09
   * Minor Enhancements
     * Better handling of unexpected exceptions in conditions

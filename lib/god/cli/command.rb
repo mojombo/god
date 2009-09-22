@@ -66,6 +66,8 @@ module God
       end
       
       def status_command
+        task = @args[1]
+        
         watches = {}
         @server.status.each do |name, status|
           g = status[:group] || ''
@@ -74,12 +76,34 @@ module God
           end
           watches[g][name] = status
         end
-        watches.keys.sort.each do |group|
-          puts "#{group}:" unless group.empty?
-          watches[group].keys.sort.each do |name|
-            state = watches[group][name][:state]
-            print "  " unless group.empty?
-            puts "#{name}: #{state}"
+        if task
+          failcount = 0
+          if watches[task]
+            puts "#{task}:"
+            watches[task].keys.sort.each do |name|
+              state = watches[task][name][:state]
+              failcount += 1 if state != :up
+              print "  " unless task.empty?
+              puts "#{name}: #{state}"
+            end
+          elsif watches['']
+            watches[''].keys.sort.each do |name|
+              state = watches[''][name][:state]
+              failcount += 1 if state != :up
+              puts "#{name}: #{state}"
+            end
+          else
+            failcount = 1
+          end
+          exit!(failcount)
+        else
+          watches.keys.sort.each do |group|
+            puts "#{group}:" unless group.empty?
+            watches[group].keys.sort.each do |name|
+              state = watches[group][name][:state]
+              print "  " unless group.empty?
+              puts "#{name}: #{state}"
+            end
           end
         end
       end

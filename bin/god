@@ -33,7 +33,7 @@ begin
       remove <task or group name>        remove task or group from god
       load <file>                        load a config into a running god
       log <task name>                    show realtime log for given task
-      status                             show status of each task
+      status [task or group name]        show status
       signal <task or group name> <sig>  signal all matching tasks
       quit                               stop god
       terminate                          stop god and all tasks
