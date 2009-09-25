@@ -1,3 +1,8 @@
+==
+  * Minor Enhancements
+    * Rewrite `god status` command to be not as horrible. Add ability to get
+      status for individual tasks.
+
 == 0.7.19 / 2009-09-21
   * Minor Enhancements
     * Teach `god status` to take a task name as a param and return

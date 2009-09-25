@@ -1,6 +1,6 @@
 God.watch do |w|
   w.name = 'child-polls'
-  w.start = File.join(GOD_ROOT, *%w[test configs child_polls simple_server.rb]) + ' ' + ENV['RAILS_ENV']
+  w.start = File.join(GOD_ROOT, *%w[test configs child_polls simple_server.rb])
   w.interval = 5
   w.grace = 2
   

@@ -66,46 +66,47 @@ module God
       end
       
       def status_command
-        task = @args[1]
-        
-        watches = {}
-        @server.status.each do |name, status|
+        exitcode = 0
+        statuses = @server.status
+        groups = {}
+        statuses.each do |name, status|
           g = status[:group] || ''
-          unless watches.has_key?(g)
-            watches[g] = {}
-          end
-          watches[g][name] = status
+          groups[g] ||= {}
+          groups[g][name] = status
         end
-        if task
-          failcount = 0
-          if watches[task]
-            puts "#{task}:"
-            watches[task].keys.sort.each do |name|
-              state = watches[task][name][:state]
-              failcount += 1 if state != :up
-              print "  " unless task.empty?
+        
+        if item = @args[1]
+          if single = statuses[item]
+            # specified task (0 -> up, 1 -> unmonitored, 2 -> other)
+            state = single[:state]
+            puts "#{item}: #{state}"
+            exitcode = state == :up ? 0 : (state == :unmonitored ? 1 : 2) 
+          elsif groups[item]
+            # specified group (0 -> up, N -> other)
+            puts "#{item}:"
+            groups[item].keys.sort.each do |name|
+              state = groups[item][name][:state]
+              print "  "
               puts "#{name}: #{state}"
-            end
-          elsif watches['']
-            watches[''].keys.sort.each do |name|
-              state = watches[''][name][:state]
-              failcount += 1 if state != :up
-              puts "#{name}: #{state}"
+              exitcode += 1 unless state == :up
             end
           else
-            failcount = 1
+            puts "Task or Group '#{item}' not found."
+            exit(1)
           end
-          exit!(failcount)
         else
-          watches.keys.sort.each do |group|
+          # show all groups and watches
+          groups.keys.sort.each do |group|
             puts "#{group}:" unless group.empty?
-            watches[group].keys.sort.each do |name|
-              state = watches[group][name][:state]
+            groups[group].keys.sort.each do |name|
+              state = groups[group][name][:state]
               print "  " unless group.empty?
               puts "#{name}: #{state}"
             end
           end
         end
+        
+        exit(exitcode)
       end
       
       def signal_command
