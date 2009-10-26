@@ -2,9 +2,17 @@ module God
   module System
   
     class Process
+      def self.fetch_system_poller
+        @@poller ||= if SlashProcPoller.usable?
+		       SlashProcPoller
+		     else
+		       PortablePoller
+		     end
+      end
+
       def initialize(pid)
         @pid = pid.to_i
-        @poller = fetch_system_poller.new(@pid)
+        @poller = self.class.fetch_system_poller.new(@pid)
       end
       
       # Return true if this process is running, false otherwise
