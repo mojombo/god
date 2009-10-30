@@ -10,6 +10,9 @@ require 'drb'
 require 'yaml'
 
 begin
+  # Save ARGV in case someone wants to use it later
+  ORIGINAL_ARGV = ARGV.dup
+
   options = {:daemonize => true, :port => 17165, :syslog => true, :events => true}
 
   opts = OptionParser.new do |opts|
