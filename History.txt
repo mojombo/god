@@ -1,4 +1,4 @@
-==
+== 0.7.21 / 2009-09-29
   * Minor Enhancements
     * Cache some frequent lookups to reduce object creation [github.com/eric]
     * Try to make SimpleLogger less leaky [github.com/eric]
