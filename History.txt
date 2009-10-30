@@ -1,3 +1,8 @@
+==
+  * Minor Enhancements
+    * Cache some frequent lookups to reduce object creation [github.com/eric]
+    * Try to make SimpleLogger less leaky [github.com/eric]
+
 == 0.7.20 / 2009-09-24
   * Minor Enhancements
     * Rewrite `god status` command to be not as horrible. Add ability to get
