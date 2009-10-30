@@ -1,4 +1,8 @@
-== 0.7.21 / 2009-09-29
+== 0.7.22 / 2009-10-29
+  * Minor Enhancements
+    * Save ARGV so we can get access to it later if we want [github.com/eric]
+
+== 0.7.21 / 2009-10-29
   * Minor Enhancements
     * Cache some frequent lookups to reduce object creation [github.com/eric]
     * Try to make SimpleLogger less leaky [github.com/eric]
