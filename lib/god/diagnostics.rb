@@ -12,25 +12,25 @@ end
 class BleakHouseDiagnostic
   LOG_FILE = File.join(File.dirname(__FILE__), *%w[.. .. logs bleak.log])
   
-  class << self
-    attr_accessor :logger
-  end
-  
   def self.install
-    require 'bleak_house'
-    self.logger = BleakHouse::Logger.new
-    File.delete(LOG_FILE) rescue nil
+    require 'snapshot'
+    self.spin
   end
   
-  def self.snapshot(name)
-    self.logger.snapshot(LOG_FILE, name, false) if self.logger
+  def self.snapshot
+    @count ||= 0
+    filename = "/tmp/god-bleak-%s-%03i.dump" % [Process.pid,@count]
+    STDERR.puts "** BleakHouse: working..."
+    BleakHouse.ext_snapshot(filename, 3)
+    STDERR.puts "** BleakHouse: complete\n** Bleakhouse: Run 'bleak #{filename}' to analyze."
+    @count += 1
   end
   
-  def self.spin(delay = 1)
+  def self.spin(delay = 60)
     Thread.new do
       loop do
-        self.snapshot
         sleep(delay)
+        self.snapshot
       end
     end
   end
