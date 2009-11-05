@@ -182,6 +182,13 @@ module God
     def clear_events
       @events.clear
     end
+
+    # Shutdown the DriverEventQueue threads
+    #
+    # Returns nothing
+    def shutdown
+      @events.shutdown
+    end
     
     # Queue an asynchronous message
     #   +name+ is the Symbol name of the operation

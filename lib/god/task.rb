@@ -299,7 +299,7 @@ module God
     end
     
     def unregister!
-      # override if necessary
+      driver.shutdown
     end
     
     ###########################################################################
