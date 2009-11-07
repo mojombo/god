@@ -114,7 +114,7 @@ module God
     # Returns String
     def finish_capture
       @mutex.synchronize do
-        cap = @capture.string
+        cap = @capture.string if @capture
         @capture = nil
         cap
       end
