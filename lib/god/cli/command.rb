@@ -215,6 +215,7 @@ module God
             puts "killing process"
             
             ::Process.kill('KILL', pid)
+            ::Process.waitpid2(pid) rescue Errno::ECHILD
           rescue => e
             puts e.message
             puts e.backtrace.join("\n")
