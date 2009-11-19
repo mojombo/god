@@ -534,6 +534,9 @@ module God
       watches = self.pending_watches.dup
       self.pending_watches.clear
       self.pending_watch_states.clear
+
+      # make sure we quit capturing when we're done
+      LOG.finish_capture
     rescue Exception => e
       # don't ever let running_load take down god
       errors << LOG.finish_capture
