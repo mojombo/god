@@ -177,6 +177,7 @@ module God
     
     def unregister!
       God.registry.remove(@process)
+      super
     end
   end
   
