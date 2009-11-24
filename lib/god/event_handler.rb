@@ -92,7 +92,7 @@ module God
           end
           
           ::Process.kill('KILL', pid)
-          ::Process.waitpid2(pid) rescue Errno::ECHILD
+          ::Process.waitpid(pid)
           
           sleep(0.1)
           
