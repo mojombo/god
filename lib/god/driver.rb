@@ -1,3 +1,5 @@
+require 'monitor'
+
 module God
   class TimedEvent
     include Comparable
@@ -57,8 +59,8 @@ module God
     def initialize
       @shutdown = false
       @events = []
-      @mutex = Mutex.new
-      @resource = ConditionVariable.new
+      @monitor = Monitor.new
+      @resource = @monitor.new_cond
       @events.taint
       self.taint
     end
@@ -68,7 +70,7 @@ module God
     #
     def shutdown
       @shutdown = true
-      @mutex.synchronize do
+      @monitor.synchronize do
         @resource.broadcast
       end
     end
@@ -77,13 +79,13 @@ module God
     # Sleep until the queue has something due
     #
     def pop
-      @mutex.synchronize do
+      @monitor.synchronize do
         if @events.empty?
           raise ThreadError, "queue empty" if @shutdown
-          @resource.wait(@mutex)
+          @resource.wait
         else !@events.first.due?
           delay = @events.first.at - Time.now
-          @resource.wait(@mutex, delay) if delay > 0
+          @resource.wait(delay) if delay > 0
         end
 
         @events.shift
@@ -98,7 +100,7 @@ module God
     # happen sooner than the next pending event
     #
     def push(event)
-      @mutex.synchronize do
+      @monitor.synchronize do
         @events << event
         @events.sort!
 
