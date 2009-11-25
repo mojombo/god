@@ -64,7 +64,7 @@ module God
         @mutex.synchronize do
           @templogio.truncate(0)
           @templogio.rewind
-          @templog.send(level, text % [])
+          @templog.send(level, text)
 
           message = @templogio.string.dup
 
@@ -77,7 +77,7 @@ module God
       end
 
       # send to regular logger
-      self.send(level, text % [])
+      self.send(level, text)
 
       # send to syslog
       Syslog.send(SYSLOG_EQUIVALENTS[level], text) if Logger.syslog
