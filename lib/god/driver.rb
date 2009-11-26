@@ -104,6 +104,8 @@ module God
         @events << event
         @events.sort!
 
+        # If we've sorted the events and found the one we're adding is at
+        # the front, it will likely need to run before the next due date
         @resource.signal if @events.first == event
       end
     end
