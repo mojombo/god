@@ -10,7 +10,6 @@
 #   end
 
 module XMPP4R
-  require 'rubygems'
   require 'xmpp4r'
   include Jabber
 end

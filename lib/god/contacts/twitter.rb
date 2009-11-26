@@ -10,7 +10,6 @@
 #     c.group     = 'developers'
 #   end
 
-require 'rubygems'
 require 'twitter'
 
 module God

@@ -1,8 +1,5 @@
 $:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
 
-# rubygems
-require 'rubygems'
-
 # core
 require 'stringio'
 require 'fileutils'
