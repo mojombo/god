@@ -156,6 +156,13 @@ module God
       end
     end
     
+    # Check if we're in the driver context
+    #
+    # Returns true if in driver thread
+    def in_driver_context?
+      Thread.current == @thread
+    end
+
     # Clear all events for this Driver
     # 
     # Returns nothing

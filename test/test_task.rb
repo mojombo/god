@@ -61,20 +61,20 @@ class TestTask < Test::Unit::TestCase
   
   def test_action_should_send_string_commands_to_system
     @task.foo = 'foo'
-    Thread.current.stubs(:==).returns(true)
+    @task.driver.stubs(:in_driver_context?).returns(true)
     @task.expects(:system).with('foo')
     @task.action(:foo, nil)
   end
   
   def test_action_should_call_lambda_commands
     @task.foo = lambda { }
-    Thread.current.stubs(:==).returns(true)
+    @task.driver.stubs(:in_driver_context?).returns(true)
     @task.foo.expects(:call)
     @task.action(:foo, nil)
   end
   
   def test_action_should_raise_not_implemented_on_non_string_or_lambda_action
-    Thread.current.stubs(:==).returns(true)
+    @task.driver.stubs(:in_driver_context?).returns(true)
     assert_raise NotImplementedError do
       @task.foo = 7
       @task.action(:foo, nil)

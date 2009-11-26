@@ -126,7 +126,7 @@ class TestWatch < Test::Unit::TestCase
   # move
   
   def test_move_should_not_clean_up_if_from_state_is_nil
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     metric = nil
@@ -147,7 +147,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_clean_up_from_state_if_not_nil
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     metric = nil
@@ -170,7 +170,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_call_action
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     @watch.expects(:action).with(:start)
@@ -179,7 +179,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_move_to_up_state_if_no_start_or_restart_metric
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     [:start, :restart].each do |state|
@@ -190,7 +190,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_move_should_enable_destination_metric
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     metric = nil
@@ -213,7 +213,7 @@ class TestWatch < Test::Unit::TestCase
   # action
   
   def test_action_should_pass_start_and_stop_actions_to_call_action
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     c = Conditions::FakePollCondition.new
@@ -224,7 +224,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_action_should_do_stop_then_start_if_no_restart_command
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     c = Conditions::FakePollCondition.new
@@ -234,7 +234,7 @@ class TestWatch < Test::Unit::TestCase
   end
   
   def test_action_should_restart_to_call_action_if_present
-    Thread.current.stubs(:==).returns(true)
+    @watch.driver.stubs(:in_driver_context?).returns(true)
     @watch.driver.expects(:message).never
     
     @watch.restart = lambda { }
