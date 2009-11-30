@@ -1,3 +1,23 @@
+== 0.8.0 / 2009-11-30
+  * Minor Enhancements
+    * Rubygems decontamination
+    * Use Monitor instead of Mutex to provide ability to wait with a timeout
+    * Only generate log messages when they're being used
+    * Remove usage of Thread.critical in DriverEventQueue
+    * Update to work with latest bleak-house
+    * Cache some frequent lookups to reduce object creation
+    * Changing the @io.print call in SimpleLogger to not concatenate
+      the formatted results before printing
+  * Bug fixes
+    * Make sure we don't leak hash slots when processes die
+    * Make sure the driver is shutdown on Task#unregister!
+    * Fix memory leak when issuing "god load" successfully
+    * Fix defunct process
+
+== NOTE
+  At this point I will stop giving credit in the history. Look at the author
+  and committer in the commit for that info.
+
 == 0.7.22 / 2009-10-29
   * Minor Enhancements
     * Save ARGV so we can get access to it later if we want [github.com/eric]
