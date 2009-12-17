@@ -547,6 +547,69 @@ module God
     names = watches.map { |x| x.name }
     [names, errors]
   end
+
+  # Reload a config file into a running god instance. Rescues any exceptions
+  # that the config may raise and reports these back to the caller.
+  # All watchers that were not present in the file will be unloaded based on
+  # the method specified in +action+.
+  #   +code+ is a String containing the config file
+  #   +filename+ is the filename of the config file
+  #   +action+ is a String containing 'stop' or 'remove'
+  #
+  # Returns [String[]:loaded_names, String[]:unloaded_names, String:errors]
+  def self.running_reload(code, filename, action)
+    errors           = ""
+    loaded_watches   = []
+    unloaded_watches = []
+    jobs             = []
+
+    begin
+      LOG.start_capture
+
+      Gem.clear_paths
+      eval(code, root_binding, filename)
+      self.pending_watches.each do |w|
+        if previous_state = self.pending_watch_states[w.name]
+          w.monitor unless previous_state == :unmonitored
+        else
+          w.monitor if w.autostart?
+        end
+      end
+      loaded_watches = self.pending_watches.map { |w| w.name }
+      self.pending_watches.clear
+      self.pending_watch_states.clear
+
+      self.watches.each do |name, watch|
+        next if loaded_watches.include?(name)
+
+        case action
+        when 'stop'
+          jobs << Thread.new(watch) { |w| w.action(:stop); self.unwatch(w) }
+        when 'remove'
+          jobs << Thread.new { |w| self.unwatch(w) }
+        else
+          raise "Unknown action: #{action}"
+        end
+
+        unloaded_watches << name
+      end
+
+      # make sure we quit capturing when we're done
+      LOG.finish_capture
+    rescue Exception => e
+      # don't ever let running_load take down god
+      errors << LOG.finish_capture
+
+      unless e.instance_of?(SystemExit)
+        errors << e.message << "\n"
+        errors << e.backtrace.join("\n")
+      end
+    end
+
+    jobs.each { |t| t.join }
+
+    [loaded_watches, unloaded_watches, errors]
+  end
   
   # Load the given file(s) according to the given glob.
   #   +glob+ is the glob-enabled path to load
