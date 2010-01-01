@@ -1,4 +1,4 @@
-#if defined(__FreeBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__APPLE__) || defined(__OpenBSD__) || defined(__NetBSD__)
 
 #include <ruby.h>
 #include <sys/event.h>
