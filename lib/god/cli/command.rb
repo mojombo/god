@@ -172,7 +172,7 @@ module God
           puts 'Stopped all watches'
         else
           t.kill; STDOUT.puts
-          puts 'Could not stop all watches within 10 seconds'
+          puts "Could not stop all watches within #{@server.terminate_timeout} seconds"
         end
         
         begin
