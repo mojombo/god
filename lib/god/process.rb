@@ -2,7 +2,7 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :log_cmd, :start, :stop, :restart,
+    attr_accessor :name, :uid, :gid, :log, :log_cmd, :err_log, :err_log_cmd, :start, :stop, :restart,
                   :unix_socket, :chroot, :env, :dir
     
     def initialize
@@ -300,7 +300,13 @@ module God
         else
           STDOUT.reopen file_in_chroot(self.log), "a"        
         end
-        STDERR.reopen STDOUT
+        if err_log_cmd
+          STDERR.reopen IO.popen(err_log_cmd, "a") 
+        elsif err_log && (log_cmd || err_log != log)
+          STDERR.reopen file_in_chroot(err_log), "a"        
+        else
+          STDERR.reopen STDOUT
+        end
         
         # close any other file descriptors
         3.upto(256){|fd| IO::new(fd).close rescue nil}
