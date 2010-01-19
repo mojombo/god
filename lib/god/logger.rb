@@ -1,11 +1,6 @@
 module God
   
   class Logger < SimpleLogger
-    SYSLOG_EQUIVALENTS = {:fatal => :crit,
-                          :error => :err,
-                          :warn => :debug,
-                          :info => :debug,
-                          :debug => :debug}
     
     attr_accessor :logs
     
@@ -38,9 +33,16 @@ module God
       begin
         require 'syslog'
         
+        self.class.const_set("SYSLOG_EQUIVALENTS",{:fatal => Syslog::LOG_CRIT,
+                          :error => Syslog::LOG_ERR,
+                          :warn => Syslog::LOG_WARNING,
+                          :info => Syslog::LOG_INFO,
+                          :debug => Syslog::LOG_DEBUG})
+ 
         # Ensure that Syslog is open
         begin
           Syslog.open('god')
+          Syslog.mask =  Syslog.LOG_UPTO(SYSLOG_EQUIVALENTS[God.log_level])
         rescue RuntimeError
           Syslog.reopen('god')
         end
@@ -80,7 +82,7 @@ module God
       self.send(level, text)
 
       # send to syslog
-      Syslog.send(SYSLOG_EQUIVALENTS[level], text) if Logger.syslog
+      Syslog.log(SYSLOG_EQUIVALENTS[level], text) if Logger.syslog
     end
     
     # Get all log output for a given Watch since a certain Time.
