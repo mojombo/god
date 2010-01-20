@@ -161,7 +161,10 @@ module God
                        :pid_file_directory,
                        :log_file,
                        :log_level,
-                       :use_events
+                       :use_events,
+                       :socket_user,
+                       :socket_group,
+                       :socket_perms
     
     # internal
     attr_accessor :inited,
@@ -184,6 +187,9 @@ module God
   self.log_buffer_size = nil
   self.pid_file_directory = nil
   self.log_level = nil
+  self.socket_user = nil
+  self.socket_group = nil
+  self.socket_perms = 0755
   
   # Initialize internal data.
   #
@@ -602,7 +608,7 @@ module God
     self.internal_init
     
     # instantiate server
-    self.server = Socket.new(self.port)
+    self.server = Socket.new(self.port, self.socket_user, self.socket_group, self.socket_perms)
     
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }
