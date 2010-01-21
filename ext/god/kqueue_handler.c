@@ -1,4 +1,4 @@
-#if defined(__FreeBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__APPLE__) || defined(__OpenBSD__) || defined(__NetBSD__)
 
 #include <ruby.h>
 #include <sys/event.h>
@@ -41,6 +41,8 @@ kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
 {
   struct kevent new_event;
   ID event;
+
+  (void)event;      //!< Silence warning about unused var, should be removed?
   
   u_int fflags = NUM2UINT(mask);
   
@@ -48,7 +50,7 @@ kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
          EV_ADD | EV_ENABLE, fflags, 0, 0);
   
   if (-1 == kevent(kq, &new_event, 1, NULL, 0, NULL)) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
   
   num_events = NUM_EVENTS;
@@ -74,14 +76,14 @@ kqh_handle_events()
   events = (struct kevent*)malloc(num_to_fetch * sizeof(struct kevent));
   
   if (NULL == events) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
   
   nevents = kevent(kq, NULL, 0, events, num_to_fetch, NULL);
   
   if (-1 == nevents) {
     free(events);
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   } else {
     for (i = 0; i < nevents; i++) {
       if (events[i].fflags & NOTE_EXIT) {

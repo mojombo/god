@@ -37,7 +37,7 @@ nlh_handle_events()
   FD_SET(nl_sock, &fds);
     
   if (0 > rb_thread_select(nl_sock + 1, &fds, NULL, NULL, NULL)) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
   
   /* If there were no events detected, return */
@@ -47,13 +47,13 @@ nlh_handle_events()
   
   /* if there are events, make calls */  
   if (-1 == recv(nl_sock, buff, sizeof(buff), 0)) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
   
   hdr = (struct nlmsghdr *)buff;
   
   if (NLMSG_ERROR == hdr->nlmsg_type) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   } else if (NLMSG_DONE == hdr->nlmsg_type) {    
     
     event = (struct proc_event *)((struct cn_msg *)NLMSG_DATA(hdr))->data;
@@ -114,7 +114,7 @@ connect_to_netlink()
   nl_sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
   
   if (-1 == nl_sock) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
   
   bzero(&sa_nl, sizeof(sa_nl));
@@ -123,7 +123,7 @@ connect_to_netlink()
   sa_nl.nl_pid    = getpid();
   
   if (-1 == bind(nl_sock, (struct sockaddr *)&sa_nl, sizeof(sa_nl))) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
   
   /* Fill header */
@@ -145,7 +145,7 @@ connect_to_netlink()
   *(int*)msg->data = PROC_CN_MCAST_LISTEN;
   
   if (-1 == send(nl_sock, hdr, hdr->nlmsg_len, 0)) {
-    rb_raise(rb_eStandardError, strerror(errno));
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
 }
 
