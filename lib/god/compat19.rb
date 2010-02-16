@@ -1,13 +1,10 @@
 
 require 'monitor'
 
+
+# Taken from http://redmine.ruby-lang.org/repositories/entry/ruby-19/lib/monitor.rb
+
 module MonitorMixin
-  #
-  # FIXME: This isn't documented in Nutshell.
-  #
-  # Since MonitorMixin.new_cond returns a ConditionVariable, and the example
-  # above calls while_wait and signal, this class should be documented.
-  #
   class ConditionVariable
     def wait(timeout = nil)
       @monitor.__send__(:mon_check_owner)
@@ -19,5 +16,21 @@ module MonitorMixin
         @monitor.__send__(:mon_enter_for_cond, count)
       end
     end
+  end
+end
+
+
+# Taken from http://redmine.ruby-lang.org/repositories/entry/ruby-19/lib/thread.rb
+
+class ConditionVariable
+  def wait(mutex, timeout=nil)
+    begin
+      # TODO: mutex should not be used
+      @waiters_mutex.synchronize do
+        @waiters.push(Thread.current)
+      end
+      mutex.sleep timeout
+    end
+    self
   end
 end
