@@ -63,6 +63,11 @@ begin
   require 'god/contacts/campfire'
 rescue LoadError
 end
+begin
+  require 'god/contacts/prowl'
+rescue LoadError
+end
+
 
 require 'god/socket'
 require 'god/driver'
