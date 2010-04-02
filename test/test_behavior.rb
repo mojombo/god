@@ -12,7 +12,7 @@ class TestBehavior < Test::Unit::TestCase
   end
   
   def test_complain
-    Syslog.expects(:err).with('foo')
+    SysLogger.expects(:log).with(:error, 'foo')
     assert !Behavior.allocate.bypass.complain('foo')
   end
 end

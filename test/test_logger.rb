@@ -19,7 +19,7 @@ class TestLogger < Test::Unit::TestCase
   end
   
   def test_log_should_send_to_syslog
-    Syslog.expects(:crit).with('foo')
+    SysLogger.expects(:log).with(:fatal, 'foo')
     @log.log(stub(:name => 'foo'), :fatal, "foo")
   end
   
