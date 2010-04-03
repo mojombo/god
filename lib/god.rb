@@ -87,6 +87,12 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 # App wide logging system
 LOG = God::Logger.new
 
+if God::Logger.syslog
+  LOG.info("Syslog enabled.")
+else
+  LOG.info("Syslog disabled.")
+end
+
 def applog(watch, level, text)
   LOG.log(watch, level, text)
 end

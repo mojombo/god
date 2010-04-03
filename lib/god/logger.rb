@@ -8,7 +8,7 @@ module God
       attr_accessor :syslog
     end
     
-    self.syslog ||= true
+    self.syslog = defined?(Syslog)
     
     # Instantiate a new Logger object
     def initialize(io = $stdout)
@@ -20,22 +20,12 @@ module God
       @templogio = StringIO.new
       @templog = SimpleLogger.new(@templogio)
       @templog.level = Logger::INFO
-      load_syslog
     end
+    
     
     def level=(lev)
-      SysLogger.level = lev if Logger.syslog
+      SysLogger.level = SimpleLogger::CONSTANT_TO_SYMBOL[lev] if Logger.syslog
       super(lev)
-    end
-    
-    # If Logger.syslog is true then attempt to load the syslog bindings. If syslog
-    # cannot be loaded, then set Logger.syslog to false and continue.
-    #
-    # Returns nothing
-    def load_syslog
-      require File.join(File.dirname(__FILE__), *%w[sys_logger]) if Logger.syslog
-    rescue Exception => e
-      Logger.syslog = false
     end
     
     # Log a message

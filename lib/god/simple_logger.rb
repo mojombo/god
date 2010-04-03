@@ -13,6 +13,12 @@ module God
                  ERROR => 'ERROR',
                  FATAL => 'FATAL'}
     
+    CONSTANT_TO_SYMBOL = { DEBUG => :debug,
+                           INFO => :info,
+                           WARN => :warn,
+                           ERROR => :error,
+                           FATAL => :fatal }
+    
     attr_accessor :datetime_format, :level
     
     def initialize(io)
