@@ -1,5 +1,10 @@
 require 'monitor'
 
+# ruby 1.9 specific fixes
+unless RUBY_VERSION < '1.9'
+  require 'god/compat19'
+end
+
 module God
   class TimedEvent
     include Comparable
