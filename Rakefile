@@ -2,7 +2,19 @@ require 'rubygems'
 require 'rake'
 require 'date'
 
+#############################################################################
+#
+# The name of the package
+#
+#############################################################################
+
 NAME = 'god'
+
+#############################################################################
+#
+# Helper functions
+#
+#############################################################################
 
 def source_version
   line = File.read("lib/#{NAME}.rb")[/^\s*VERSION = .*/]
@@ -17,6 +29,14 @@ def gem_file
   "#{NAME}-#{source_version}.gem"
 end
 
+#############################################################################
+#
+# Standard tasks
+#
+#############################################################################
+
+task :default => :test
+
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
@@ -24,12 +44,32 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-task :default => :test
+desc "Generate and open coverage stats via rcov"
+task :coverage do
+  require 'rcov'
+  sh "rm -fr coverage"
+  sh "rcov test/test_*.rb"
+  sh "open coverage/index.html"
+end
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "#{NAME} #{source_version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end
 
 desc "Open an irb session preloaded with this library"
 task :console do
   sh "irb -rubygems -r ./lib/#{NAME}.rb"
 end
+
+#############################################################################
+#
+# Custom tasks (add your own tasks here)
+#
+#############################################################################
 
 desc "Upload site to Rubyforge"
 task :site do
@@ -41,20 +81,11 @@ task :site_edge do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
 end
 
-desc "Run rcov"
-task :coverage do
-  `rm -fr coverage`
-  `rcov test/test_*.rb`
-  `open coverage/index.html`
-end
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "#{NAME} #{source_version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
+#############################################################################
+#
+# Packaging tasks
+#
+#############################################################################
 
 if defined?(Gem)
   task :release => :build do
