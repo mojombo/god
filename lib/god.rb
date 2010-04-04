@@ -647,8 +647,7 @@ module God
   end
   
   def self.version
-    yml = YAML.load(File.read(File.join(File.dirname(__FILE__), *%w[.. VERSION.yml])))
-    "#{yml[:major]}.#{yml[:minor]}.#{yml[:patch]}"
+    God::VERSION
   end
   
   # To be called on program exit to start god
