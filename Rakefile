@@ -50,7 +50,7 @@ if defined?(Gem)
   task :release => :build do
     sh "git commit --allow-empty -a -m 'up to #{source_version}'"
     sh "git tag v#{source_version}"
-    sh "git push origin master"
+    sh "git push origin master --tags"
     sh "gem push pkg/god-#{source_version}.gem"
   end
 
