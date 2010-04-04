@@ -87,12 +87,6 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 # App wide logging system
 LOG = God::Logger.new
 
-if God::Logger.syslog
-  LOG.info("Syslog enabled.")
-else
-  LOG.info("Syslog disabled.")
-end
-
 def applog(watch, level, text)
   LOG.log(watch, level, text)
 end
@@ -606,6 +600,12 @@ module God
         dirs = PID_FILE_DIRECTORY_DEFAULTS.map { |x| File.expand_path(x) }
         abort "No pid file directory exists, could be created, or is writable at any of #{dirs.join(', ')}"
       end
+    end
+    
+    if God::Logger.syslog
+      LOG.info("Syslog enabled.")
+    else
+      LOG.info("Syslog disabled.")
     end
     
     applog(nil, :info, "Using pid file directory: #{self.pid_file_directory}")
