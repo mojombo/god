@@ -36,6 +36,12 @@ God.contact(:twitter) do |c|
   c.group     = 'developers'
 end
 
+God.contact(:prowl) do |c|
+  c.name = 'tom3'
+  c.apikey = 'd31c1f31f7af0f69e263c2f12167263127eab608'
+  c.group = 'developers'
+end
+
 God.watch do |w|
   w.name = "contact"
   w.interval = 5.seconds
@@ -65,7 +71,7 @@ God.watch do |w|
   # start if process is not running
   w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
-      c.notify = {:contacts => ['tom2', 'foobar'], :priority => 1, :category => 'product'}
+      c.notify = {:contacts => ['tom2', 'tom3', 'foobar'], :priority => 1, :category => 'product'}
     end
   end
   

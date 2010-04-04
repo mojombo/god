@@ -1,5 +1,3 @@
-# Rafael Magaña <raf.magana@gmail.com>
-# 
 # For Prowl notifications you need the 'prowly' gem
 #   (gem install prowly)
 #
@@ -33,11 +31,13 @@ require 'prowly'
 module God
   module Contacts
     class Prowl < Contact
-      
+
       attr_accessor :apikey
-      
+
       def valid?
         valid = true
+        valid &= complain("Attribute 'apikey' must be specified", self) if self.apikey.nil?
+        valid
       end
 
       def notify(message, time, priority, category, host)
@@ -56,19 +56,21 @@ module God
             self.info = "failed to send prowl notification to #{self.name}: #{result.message}"
           end
         end
+      rescue Object => e
+        self.info = "failed to send prowl notification to #{self.name}: #{e.message}"
       end
-      
+
       private
+
       def map_priority(priority)
-        prowl_priority = case priority
-                           when 1 then Prowly::Notification::Priority::EMERGENCY
-                           when 2 then Prowly::Notification::Priority::HIGH
-                           when 3 then Prowly::Notification::Priority::NORMAL
-                           when 4 then Prowly::Notification::Priority::MODERATE
-                           when 5 then Prowly::Notification::Priority::VERY_LOW
-                           else Prowly::Notification::Priority::NORMAL
-                        end
-        prowl_priority
+        case priority
+           when 1 then Prowly::Notification::Priority::EMERGENCY
+           when 2 then Prowly::Notification::Priority::HIGH
+           when 3 then Prowly::Notification::Priority::NORMAL
+           when 4 then Prowly::Notification::Priority::MODERATE
+           when 5 then Prowly::Notification::Priority::VERY_LOW
+           else Prowly::Notification::Priority::NORMAL
+        end
       end
     end
   end
