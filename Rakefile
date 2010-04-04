@@ -59,7 +59,7 @@ if defined?(Gem)
       split("\n").
       sort.
       reject { |file| file =~ /^\./ }.
-      reject { |file| file =~ /^(ideas|init)/ }.
+      reject { |file| file =~ /^(ideas|init|site)/ }.
       map { |file| "    #{file}" }.
       join("\n")
     # piece file back together and write...
