@@ -47,6 +47,12 @@ Rake::RDocTask.new do |rdoc|
 end
 
 if defined?(Gem)
+  task 'build' do
+    sh 'mkdir -p pkg'
+    sh 'gem build god.gemspec'
+    sh 'mv *.gem pkg'
+  end
+
   task 'god.gemspec' do |f|
     # read spec file and split out manifest section
     spec = File.read(f.name)
