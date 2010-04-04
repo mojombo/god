@@ -1,18 +1,29 @@
 Gem::Specification.new do |s|
-  s.name = %q{god}
-  s.version = '0.9.0'
-
+  s.specification_version = 2 if s.respond_to? :specification_version=
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Tom Preston-Werner"]
-  s.date = %q{2009-11-30}
-  s.default_executable = %q{god}
-  s.description = %q{God is an easy to configure, easy to extend monitoring framework written in Ruby.}
-  s.email = %q{tom@mojombo.com}
+
+  s.name    = 'god'
+  s.version = '0.9.0'
+  s.date    = '2009-11-30'
+
+  s.summary     = "Process monitoring framework."
+  s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
+
+  s.authors  = ["Tom Preston-Werner", "Kevin Clark", "Eric Lindvall"]
+  s.email    = 'god-rb@googlegroups.com'
+  s.homepage = 'http://god.rubyforge.org/'
+
+  s.rubyforge_project = 'god'
+  s.rubygems_version = '1.3.5'
+  s.require_paths = %w[lib ext]
+
   s.executables = ["god"]
-  s.extensions = ["ext/god/extconf.rb", "ext/god/extconf.rb"]
-  s.extra_rdoc_files = [
-    "README.txt"
-  ]
+  s.default_executable = 'god'
+  s.extensions = %w[ext/god/extconf.rb]
+
+  s.rdoc_options = ["--charset=UTF-8"]
+  s.extra_rdoc_files = %w[README.txt]
+
   # = MANIFEST =
   s.files = %w[
     Announce.txt
@@ -140,64 +151,6 @@ Gem::Specification.new do |s|
     test/test_webhook.rb
   ]
   # = MANIFEST =
-  s.homepage = %q{http://god.rubyforge.org/}
-  s.rdoc_options = ["--charset=UTF-8"]
-  s.require_paths = ["lib", "ext"]
-  s.rubyforge_project = %q{god}
-  s.rubygems_version = %q{1.3.5}
-  s.summary = %q{Like monit, only awesome}
-  s.test_files = [
-    "test/configs/child_events/simple_server.rb",
-     "test/configs/child_polls/simple_server.rb",
-     "test/configs/complex/simple_server.rb",
-     "test/configs/contact/simple_server.rb",
-     "test/configs/daemon_events/simple_server.rb",
-     "test/configs/daemon_events/simple_server_stop.rb",
-     "test/configs/daemon_polls/simple_server.rb",
-     "test/configs/degrading_lambda/tcp_server.rb",
-     "test/configs/real.rb",
-     "test/configs/stress/simple_server.rb",
-     "test/configs/test.rb",
-     "test/helper.rb",
-     "test/suite.rb",
-     "test/test_behavior.rb",
-     "test/test_campfire.rb",
-     "test/test_condition.rb",
-     "test/test_conditions_disk_usage.rb",
-     "test/test_conditions_http_response_code.rb",
-     "test/test_conditions_process_running.rb",
-     "test/test_conditions_tries.rb",
-     "test/test_contact.rb",
-     "test/test_dependency_graph.rb",
-     "test/test_driver.rb",
-     "test/test_email.rb",
-     "test/test_event_handler.rb",
-     "test/test_god.rb",
-     "test/test_handlers_kqueue_handler.rb",
-     "test/test_jabber.rb",
-     "test/test_logger.rb",
-     "test/test_metric.rb",
-     "test/test_process.rb",
-     "test/test_registry.rb",
-     "test/test_socket.rb",
-     "test/test_sugar.rb",
-     "test/test_system_portable_poller.rb",
-     "test/test_system_process.rb",
-     "test/test_task.rb",
-     "test/test_timeline.rb",
-     "test/test_trigger.rb",
-     "test/test_watch.rb",
-     "test/test_webhook.rb"
-  ]
 
-  if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
-    s.specification_version = 3
-
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
-    else
-    end
-  else
-  end
+  s.test_files = s.files.select { |path| path =~ /^test\/test_.*\.rb/ }
 end
-
