@@ -1,3 +1,17 @@
+==
+  * Minor Enhancements
+    * Allow kqueue for OpenBSD and NetBSD
+    * Add err_log and err_log_cmd
+    * Add God.terminate_timeout option
+    * Respect --log-level in Syslog
+    * Add configuration parameters to set permissions on socket
+    * Add Scout contact
+    * Add Prowl contact
+  * Bug Fixes
+    * Fix interleaved log messages
+  * Experimental
+    * Ruby 1.9 support
+
 == 0.8.0 / 2009-11-30
   * Minor Enhancements
     * Rubygems decontamination
