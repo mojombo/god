@@ -54,15 +54,15 @@ if defined?(Gem)
     sh "gem push pkg/god-#{source_version}.gem"
   end
 
-  task :build => 'god.gemspec' do
+  task :build => :gemspec do
     sh 'mkdir -p pkg'
     sh 'gem build god.gemspec'
     sh 'mv *.gem pkg'
   end
 
-  task 'god.gemspec' do |f|
+  task :gemspec do
     # read spec file and split out manifest section
-    spec = File.read(f.name)
+    spec = File.read('god.gemspec')
     head, manifest, tail = spec.split("  # = MANIFEST =\n")
     # replace version and date
     head.sub!(/\.version = '.*'/, ".version = '#{source_version}'")
@@ -78,7 +78,7 @@ if defined?(Gem)
     # piece file back together and write...
     manifest = "  s.files = %w[\n#{files}\n  ]\n"
     spec = [head, manifest, tail].join("  # = MANIFEST =\n")
-    File.open(f.name, 'w') { |io| io.write(spec) }
-    puts "updated #{f.name}"
+    File.open('god.gemspec', 'w') { |io| io.write(spec) }
+    puts "updated god.gemspec"
   end
 end
