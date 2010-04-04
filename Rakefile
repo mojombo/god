@@ -2,9 +2,19 @@ require 'rubygems'
 require 'rake'
 require 'date'
 
+NAME = 'god'
+
 def source_version
-  line = File.read('lib/god.rb')[/^\s*VERSION = .*/]
+  line = File.read("lib/#{NAME}.rb")[/^\s*VERSION = .*/]
   line.match(/.*VERSION = '(.*)'/)[1]
+end
+
+def gemspec_file
+  "#{NAME}.gemspec"
+end
+
+def gem_file
+  "#{NAME}-#{source_version}.gem"
 end
 
 require 'rake/testtask'
@@ -18,7 +28,7 @@ task :default => :test
 
 desc "Open an irb session preloaded with this library"
 task :console do
-  sh "irb -rubygems -r ./lib/god.rb"
+  sh "irb -rubygems -r ./lib/#{NAME}.rb"
 end
 
 desc "Upload site to Rubyforge"
@@ -41,7 +51,7 @@ end
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "god #{source_version}"
+  rdoc.title = "#{NAME} #{source_version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
@@ -55,22 +65,24 @@ if defined?(Gem)
     sh "git commit --allow-empty -a -m 'up to #{source_version}'"
     sh "git tag v#{source_version}"
     sh "git push origin master --tags"
-    sh "gem push pkg/god-#{source_version}.gem"
+    sh "gem push pkg/#{NAME}-#{source_version}.gem"
   end
 
   task :build => :gemspec do
-    sh 'mkdir -p pkg'
-    sh 'gem build god.gemspec'
-    sh 'mv *.gem pkg'
+    sh "mkdir -p pkg"
+    sh "gem build #{gemspec_file}"
+    sh "mv #{gem_file} pkg"
   end
 
   task :gemspec do
     # read spec file and split out manifest section
-    spec = File.read('god.gemspec')
+    spec = File.read(gemspec_file)
     head, manifest, tail = spec.split("  # = MANIFEST =\n")
+
     # replace version and date
     head.sub!(/\.version = '.*'/, ".version = '#{source_version}'")
     head.sub!(/\.date = '.*'/, ".date = '#{Date.today.to_s}'")
+
     # determine file list from git ls-files
     files = `git ls-files`.
       split("\n").
@@ -79,10 +91,11 @@ if defined?(Gem)
       reject { |file| file =~ /^(ideas|init|site)/ }.
       map { |file| "    #{file}" }.
       join("\n")
-    # piece file back together and write...
+
+    # piece file back together and write
     manifest = "  s.files = %w[\n#{files}\n  ]\n"
     spec = [head, manifest, tail].join("  # = MANIFEST =\n")
-    File.open('god.gemspec', 'w') { |io| io.write(spec) }
-    puts "updated god.gemspec"
+    File.open(gemspec_file, 'w') { |io| io.write(spec) }
+    puts "Updated #{gemspec_file}"
   end
 end
