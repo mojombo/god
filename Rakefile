@@ -48,6 +48,10 @@ end
 
 if defined?(Gem)
   task :release => :build do
+    unless `git branch` =~ /^\* master$/
+      puts "You must be on the master branch to release!"
+      exit!
+    end
     sh "git commit --allow-empty -a -m 'up to #{source_version}'"
     sh "git tag v#{source_version}"
     sh "git push origin master --tags"
