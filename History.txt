@@ -1,4 +1,4 @@
-==
+== 0.9.0 / 2010-04-03
   * Minor Enhancements
     * Allow kqueue for OpenBSD and NetBSD
     * Add err_log and err_log_cmd
