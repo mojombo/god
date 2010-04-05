@@ -31,9 +31,6 @@ Gem::Specification.new do |s|
     README.txt
     Rakefile
     bin/god
-    examples/events.god
-    examples/gravatar.god
-    examples/single.god
     ext/god/.gitignore
     ext/god/extconf.rb
     ext/god/kqueue_handler.c
