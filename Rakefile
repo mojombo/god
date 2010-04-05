@@ -104,7 +104,7 @@ task :build => :gemspec do
   sh "mv #{gem_file} pkg"
 end
 
-task :gemspec do
+task :gemspec => :validate do
   # read spec file and split out manifest section
   spec = File.read(gemspec_file)
   head, manifest, tail = spec.split("  # = MANIFEST =\n")
@@ -127,4 +127,16 @@ task :gemspec do
   spec = [head, manifest, tail].join("  # = MANIFEST =\n")
   File.open(gemspec_file, 'w') { |io| io.write(spec) }
   puts "Updated #{gemspec_file}"
+end
+
+task :validate do
+  libfiles = Dir['lib/*'] - ["lib/#{NAME}.rb", "lib/#{NAME}"]
+  unless libfiles.empty?
+    puts "Directory `lib` should only contain a `#{NAME}.rb` file and `#{NAME}` dir."
+    exit!
+  end
+  unless Dir['VERSION*'].empty?
+    puts "A `VERSION` file at root level violates Gem best practices."
+    exit!
+  end
 end
