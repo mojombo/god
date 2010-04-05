@@ -17,8 +17,8 @@ NAME = 'god'
 #############################################################################
 
 def source_version
-  line = File.read("lib/#{NAME}.rb")[/^\s*VERSION = .*/]
-  line.match(/.*VERSION = '(.*)'/)[1]
+  line = File.read("lib/#{NAME}.rb")[/^\s*VERSION\s*=\s*.*/]
+  line.match(/.*VERSION\s*=\s*['"](.*)['"]/)[1]
 end
 
 def gemspec_file
@@ -87,46 +87,44 @@ end
 #
 #############################################################################
 
-if defined?(Gem)
-  task :release => :build do
-    unless `git branch` =~ /^\* master$/
-      puts "You must be on the master branch to release!"
-      exit!
-    end
-    sh "git commit --allow-empty -a -m 'up to #{source_version}'"
-    sh "git tag v#{source_version}"
-    sh "git push origin master --tags"
-    sh "gem push pkg/#{NAME}-#{source_version}.gem"
+task :release => :build do
+  unless `git branch` =~ /^\* master$/
+    puts "You must be on the master branch to release!"
+    exit!
   end
+  sh "git commit --allow-empty -a -m 'up to #{source_version}'"
+  sh "git tag v#{source_version}"
+  sh "git push origin master --tags"
+  sh "gem push pkg/#{NAME}-#{source_version}.gem"
+end
 
-  task :build => :gemspec do
-    sh "mkdir -p pkg"
-    sh "gem build #{gemspec_file}"
-    sh "mv #{gem_file} pkg"
-  end
+task :build => :gemspec do
+  sh "mkdir -p pkg"
+  sh "gem build #{gemspec_file}"
+  sh "mv #{gem_file} pkg"
+end
 
-  task :gemspec do
-    # read spec file and split out manifest section
-    spec = File.read(gemspec_file)
-    head, manifest, tail = spec.split("  # = MANIFEST =\n")
+task :gemspec do
+  # read spec file and split out manifest section
+  spec = File.read(gemspec_file)
+  head, manifest, tail = spec.split("  # = MANIFEST =\n")
 
-    # replace version and date
-    head.sub!(/\.version = '.*'/, ".version = '#{source_version}'")
-    head.sub!(/\.date = '.*'/, ".date = '#{Date.today.to_s}'")
+  # replace version and date
+  head.sub!(/\.version = '.*'/, ".version = '#{source_version}'")
+  head.sub!(/\.date = '.*'/, ".date = '#{Date.today.to_s}'")
 
-    # determine file list from git ls-files
-    files = `git ls-files`.
-      split("\n").
-      sort.
-      reject { |file| file =~ /^\./ }.
-      reject { |file| file =~ /^(ideas|init|site)/ }.
-      map { |file| "    #{file}" }.
-      join("\n")
+  # determine file list from git ls-files
+  files = `git ls-files`.
+    split("\n").
+    sort.
+    reject { |file| file =~ /^\./ }.
+    reject { |file| file =~ /^(ideas|init|site)/ }.
+    map { |file| "    #{file}" }.
+    join("\n")
 
-    # piece file back together and write
-    manifest = "  s.files = %w[\n#{files}\n  ]\n"
-    spec = [head, manifest, tail].join("  # = MANIFEST =\n")
-    File.open(gemspec_file, 'w') { |io| io.write(spec) }
-    puts "Updated #{gemspec_file}"
-  end
+  # piece file back together and write
+  manifest = "  s.files = %w[\n#{files}\n  ]\n"
+  spec = [head, manifest, tail].join("  # = MANIFEST =\n")
+  File.open(gemspec_file, 'w') { |io| io.write(spec) }
+  puts "Updated #{gemspec_file}"
 end
