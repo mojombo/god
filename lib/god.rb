@@ -157,6 +157,8 @@ module God
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
   LOG_LEVEL_DEFAULT = :info
   TERMINATE_TIMEOUT_DEFAULT = 10
+  STOP_TIMEOUT_DEFAULT = 10
+  STOP_SIGNAL_DEFAULT = 'TERM'
   
   class << self
     # user configurable

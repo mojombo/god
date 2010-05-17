@@ -1,3 +1,9 @@
+==
+  * Minor Enhancements
+    * Add stop_timeout and stop_signal options to Watch
+  * Bug Fixes
+    * Stop command string was being ignored
+
 == 0.9.0 / 2010-04-03
   * Minor Enhancements
     * Allow kqueue for OpenBSD and NetBSD
