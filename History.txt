@@ -1,4 +1,8 @@
-==
+== 0.10.1 / 2010-05-17
+  * Bug Fixes
+    * Fix date in gemspec
+
+== 0.10.0 / 2010-05-17
   * Minor Enhancements
     * Add stop_timeout and stop_signal options to Watch
   * Bug Fixes
