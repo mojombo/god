@@ -47,7 +47,7 @@
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.7.17)</h1>
+	<h1>Installation (v 0.10.1)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	
@@ -211,38 +211,6 @@ end</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
-<h1>Changing UID/GID for processes</h1>
-
-<p>It is possible to have god run your start/stop/restart commands as a specific user/group. This can be done by setting the <code>uid</code> and/or <code>gid</code> attributes of a watch.</p>
-
-<pre><code class="ruby">  God.watch do |w|
-    ...
-    
-    w.uid = 'tom'
-    w.gid = 'devs'
-    
-    ...
-  end</code></pre>
-    
-</p>This only works for commands specified as a string. Lambda commands are unaffected.</p>
-
-
-<!-- ------------------------------------------------------------------------- -->
-
-<h1>Lambda commands</h1>
-
-<p>In addition to specifying start/stop/restart commands as strings (to be executed via the shell), you can specify a lambda that will be called.</p>
-
-<pre><code class="ruby">  God.watch do |w|
-    ...
-    
-    w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
-    
-    ...
-  end</code></pre>
-
-<!-- ------------------------------------------------------------------------- -->
-
 <h1>Starting and Controlling God</h1>
 
 <p>To start the god monitoring process as a daemon simply run the <code>god</code> executable passing in the path to the config file (you need to sudo if you're using events on Linux or want to use the setuid/setgid functionality):</p>
@@ -256,24 +224,6 @@ end</code></pre>
 <p>You can start/restart/stop/monitor/unmonitor your Watches with the same utility like so:</p>
 
 <pre>$ sudo god stop gravatar2-mongrel-8200</pre>
-
-<!-- ------------------------------------------------------------------------- -->
-
-<h1>Grouping Watches</h1>
-
-<p>Watches can be assigned to groups. These groups can then be controlled together from the command line.</p>
-
-<pre><code class="ruby">  God.watch do |w|
-    ...
-    
-    w.group = 'mongrels'
-    
-    ...
-  end</code></pre>
-    
-<p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
-
-<pre>$ sudo god stop mongrels</pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -415,6 +365,141 @@ end
   end</code></pre>
 
 <p>Notice that I can have multiple transitions with the same start state. In this case, I want to have the <code>memory_usage</code> and <code>cpu_usage</code> poll conditions going at the same time that I listen for the process exit event. In the case of runaway CPU or memory usage, however, I want to transition to the <code>restart</code> state. When a Watch enters the <code>restart</code> state it will either call the <code>restart</code> command that you specified, or if none has been set, call the <code>stop</code> and then <code>start</code> commands.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Grouping Watches</h1>
+
+<p>Watches can be assigned to groups. These groups can then be controlled together from the command line.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.group = 'mongrels'
+    
+    ...
+  end</code></pre>
+    
+<p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
+
+<pre>$ sudo god stop mongrels</pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Redirecting STDOUT and STDERR of your Process</h1>
+
+<p>By default, the STDOUT stream for your process is redirected to <code>/dev/null</code>. To get access to this output, you can redirect the stream either to a file or to a command.<p>
+  
+<p>To redirect STDOUT to a file, set the <code>log</code> attribute to a file path. The file will be written in append mode and created if it does not exist.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.log = '/var/log/myprocess.log'
+    
+    ...
+  end</code></pre>
+
+<p>To redirect STDOUT to a command that will be run for you, set the <code>log_cmd</code> attribute to a command.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.log_cmd = '/usr/bin/logger'
+    
+    ...
+  end</code></pre>
+
+<p>By default, STDERR is redirected to STDOUT. You can redirect it to a file or a command just like STDOUT by setting the <code>err_log</code> or <code>err_log_cmd</code> attributes respectively.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Changing UID/GID for processes</h1>
+
+<p>It is possible to have god run your start/stop/restart commands as a specific user/group. This can be done by setting the <code>uid</code> and/or <code>gid</code> attributes of a watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.uid = 'tom'
+    w.gid = 'devs'
+    
+    ...
+  end</code></pre>
+    
+</p>This only works for commands specified as a string. Lambda commands are unaffected.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Setting the Working Directory</h1>
+
+<p>By default, God sets the working directory to / before running your process. You can change this by setting the <code>dir</code> attribute on the watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.dir = '/var/www/myapp'
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Setting environment variables</h1>
+
+<p>You can set any number of environment variables you wish via the <code>env</code> attribute of a watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.env = { 'RAILS_ROOT' = "/var/www/myapp",
+              'RAILS_ENV' = "production" }
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Using chroot to Change the File System Root</h1>
+
+<p>If you want your process to run chrooted, simply use the <code>chroot</code> attribute on the watch. The specified directory must exist and have a /dev/null.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.chroot = '/var/myroot'
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Lambda commands</h1>
+
+<p>In addition to specifying start/stop/restart commands as strings (to be executed via the shell), you can specify a lambda that will be called.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Customizing the Default Stop Lambda</h1>
+
+<p>If you do not provide a stop command, God will attempt to stop your process by first sending a SIGTERM. It will then wait for ten seconds for the process to exit. If after this time it still has not exited, it will be sent a SIGKILL. You can customize the stop signal and/or the time to wait for the process to exit by setting the <code>stop_signal</code> and <code>stop_timeout</code> attributes on the watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.stop_signal = 'QUIT'
+    w.stop_timeout = 20.seconds
+    
+    ...
+  end</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
