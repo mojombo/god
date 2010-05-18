@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
   s.name    = 'god'
-  s.version = '0.9.0'
+  s.version = '0.10.0'
   s.date    = '2009-11-30'
 
   s.summary     = "Process monitoring framework."
@@ -120,6 +120,8 @@ Gem::Specification.new do |s|
     test/configs/matias/matias.god
     test/configs/real.rb
     test/configs/running_load/running_load.god
+    test/configs/stop_options/simple_server.rb
+    test/configs/stop_options/stop_options.god
     test/configs/stress/simple_server.rb
     test/configs/stress/stress.god
     test/configs/task/logs/.placeholder
