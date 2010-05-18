@@ -2,15 +2,15 @@ Gem::Specification.new do |s|
   s.specification_version = 2 if s.respond_to? :specification_version=
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
-  s.name    = 'god'
+  s.name = 'god'
   s.version = '0.10.0'
-  s.date    = '2009-11-30'
+  s.date = '2010-05-17'
 
-  s.summary     = "Process monitoring framework."
+  s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
 
-  s.authors  = ["Tom Preston-Werner", "Kevin Clark", "Eric Lindvall"]
-  s.email    = 'god-rb@googlegroups.com'
+  s.authors = ["Tom Preston-Werner", "Kevin Clark", "Eric Lindvall"]
+  s.email = 'god-rb@googlegroups.com'
   s.homepage = 'http://god.rubyforge.org/'
 
   s.rubyforge_project = 'god'
