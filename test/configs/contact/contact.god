@@ -1,4 +1,6 @@
-God::Contacts::Email.message_settings = {:from => 'support@gravatar.com'}
+God::Contacts::Email.message_settings = {
+  :from => 'support@gravatar.com'
+}
 
 God::Contacts::Email.server_settings = {
   :address => "smtp.aa.powerset.com",
@@ -11,6 +13,13 @@ God::Contacts::Twitter.settings = {
   # feel free to use it for testing your conditions
   :username => 'mojombo@gmail.com',
   :password  => 'gok9we3ot1av2e'
+}
+
+God::Contacts::Campfire.server_settings = {
+   :subdomain => "github",
+   :token => "421975cc0cb46e12fb4ff9983076c6ff39f4f68e",
+   :room => "Notices",
+   :ssl => true
 }
 
 God.contact(:email) do |c|
@@ -32,8 +41,8 @@ God.contact(:email) do |c|
 end
 
 God.contact(:twitter) do |c|
-  c.name      = 'tom2'
-  c.group     = 'developers'
+  c.name = 'tom2'
+  c.group = 'developers'
 end
 
 God.contact(:prowl) do |c|
@@ -42,25 +51,29 @@ God.contact(:prowl) do |c|
   c.group = 'developers'
 end
 
+God.contact(:campfire) do |c|
+  c.name = 'tom4'
+end
+
 God.watch do |w|
   w.name = "contact"
   w.interval = 5.seconds
   w.start = "ruby " + File.join(File.dirname(__FILE__), *%w[simple_server.rb])
   w.log = "/Users/tom/contact.log"
-  
+
   # determine the state on startup
   w.transition(:init, { true => :up, false => :start }) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end
   end
-  
+
   # determine when process has finished starting
   w.transition([:start, :restart], :up) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end
-    
+
     # failsafe
     on.condition(:tries) do |c|
       c.times = 2
@@ -71,10 +84,10 @@ God.watch do |w|
   # start if process is not running
   w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
-      c.notify = {:contacts => ['tom2', 'tom3', 'foobar'], :priority => 1, :category => 'product'}
+      c.notify = {:contacts => ['tom2', 'tom3', 'tom4', 'foobar'], :priority => 1, :category => 'product'}
     end
   end
-  
+
   # lifecycle
   w.lifecycle do |on|
     on.condition(:flapping) do |c|

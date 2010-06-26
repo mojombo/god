@@ -26,7 +26,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('twitter', [">= 0.3.7"])
   s.add_development_dependency('prowly', [">= 0.2.1"])
-  s.add_development_dependency('tinder', [">= 1.3.1", "< 2.0.0"])
   s.add_development_dependency('xmpp4r', [">= 0.4.0"])
   s.add_development_dependency('dike', [">= 0.0.3"])
   s.add_development_dependency('snapshot', [">= 1.0.0", "< 2.0.0"])
