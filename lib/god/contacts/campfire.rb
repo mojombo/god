@@ -1,30 +1,11 @@
-# notify campfire using tinder http://tinder.rubyforge.org
+# Send a notice to a Campfire room (http://campfirenow.com).
 #
-#  Example: set up a new campfire notifier
-#
-#  Credentials
-#
-#  God::Contacts::Campfire.server_settings = {
-#     :subdomain => "awesome",
-#     :token => "421975cc0cb46e12fb4ff9983076c6ff39f4f68e",
-#     :room => "Awesome Room",
-#     :ssl => true
-#  }
-#
-#  Register a new notifier
-#
-#  God.contact(:campfire) do |c|
-#     c.name = 'campfire'
-#  end
-#
-#  Define a transition for the process running event
-#
-#   w.transition(:up, :start) do |on|
-#     on.condition(:process_running) do |c|
-#        c.running = true
-#        c.notify = 'campfire'
-#     end
-#   end
+#  subdomain - The String subdomain of the Campfire account. If your URL is
+#              "foo.campfirenow.com" then your subdomain is "foo".
+#  token     - The String token used for authentication.
+#  room      - The String room name to which the message should be sent.
+#  ssl       - A Boolean determining whether or not to use SSL
+#              (default: false).
 
 require 'net/http'
 require 'net/https'
@@ -94,30 +75,38 @@ module God
 
     class Campfire < Contact
       class << self
-        attr_accessor :server_settings, :format
+        attr_accessor :subdomain, :token, :room, :ssl
+        attr_accessor :format
       end
 
-      self.server_settings = { :subdomain => '',
-                               :token => '',
-                               :room => '',
-                               :ssl => false }
+      self.ssl = false
 
       self.format = lambda do |message, time, priority, category, host|
         "[#{time.strftime('%H:%M:%S')}] #{host} - #{message}"
+      end
+
+      attr_accessor :subdomain, :token, :room, :ssl
+
+      def valid?
+        valid = true
+        valid &= complain("Attribute 'subdomain' must be specified", self) unless arg(:subdomain)
+        valid &= complain("Attribute 'token' must be specified", self) unless arg(:token)
+        valid &= complain("Attribute 'room' must be specified", self) unless arg(:room)
+        valid
       end
 
       def notify(message, time, priority, category, host)
         body = Campfire.format.call(message, time, priority, category, host)
 
         conn = Marshmallow::Connection.new(
-          :subdomain => Campfire.server_settings[:subdomain],
-          :token => Campfire.server_settings[:token],
-          :ssl => Campfire.server_settings[:ssl]
+          :subdomain => arg(:subdomain),
+          :token => arg(:token),
+          :ssl => arg(:ssl)
         )
 
-        conn.speak(Campfire.server_settings[:room], body)
+        conn.speak(arg(:room), body)
 
-        self.info = "notified campfire: #{Campfire.server_settings[:subdomain]}"
+        self.info = "notified campfire: #{arg(:subdomain)}"
       rescue Object => e
         applog(nil, :info, "failed to notify campfire: #{e.message}")
         applog(nil, :debug, e.backtrace.join("\n"))

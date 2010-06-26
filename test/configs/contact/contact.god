@@ -1,58 +1,62 @@
-God::Contacts::Email.message_settings = {
-  :from => 'support@gravatar.com'
-}
+# God::Contacts::Email.message_settings = {
+#   :from => 'support@gravatar.com'
+# }
+# 
+# God::Contacts::Email.server_settings = {
+#   :address => "smtp.aa.powerset.com",
+#   :port => 25,
+#   :domain => "powerset.com"
+# }
+# 
+# God::Contacts::Twitter.settings = {
+#   # this is for my 'mojombo2' twitter test account
+#   # feel free to use it for testing your conditions
+#   :username => 'mojombo@gmail.com',
+#   :password  => 'gok9we3ot1av2e'
+# }
 
-God::Contacts::Email.server_settings = {
-  :address => "smtp.aa.powerset.com",
-  :port => 25,
-  :domain => "powerset.com"
-}
+# God::Contacts::Campfire.defaults do |d|
+#   d.subdomain = 'github'
+#   d.token = 'f890cb46e983068e421975cc12fb76c6ff3f4f4f'
+#   d.room = 'Notices'
+#   d.ssl = true
+# end
 
-God::Contacts::Twitter.settings = {
-  # this is for my 'mojombo2' twitter test account
-  # feel free to use it for testing your conditions
-  :username => 'mojombo@gmail.com',
-  :password  => 'gok9we3ot1av2e'
-}
-
-God::Contacts::Campfire.server_settings = {
-   :subdomain => "github",
-   :token => "421975cc0cb46e12fb4ff9983076c6ff39f4f68e",
-   :room => "Notices",
-   :ssl => true
-}
-
-God.contact(:email) do |c|
-  c.name = 'tom'
-  c.email = 'tom@mojombo.com'
-  c.group = 'developers'
-end
-
-God.contact(:email) do |c|
-  c.name = 'vanpelt'
-  c.email = 'vanpelt@example.com'
-  c.group = 'developers'
-end
-
-God.contact(:email) do |c|
-  c.name = 'kevin'
-  c.email = 'kevin@example.com'
-  c.group = 'platform'
-end
-
-God.contact(:twitter) do |c|
-  c.name = 'tom2'
-  c.group = 'developers'
-end
-
-God.contact(:prowl) do |c|
-  c.name = 'tom3'
-  c.apikey = 'd31c1f31f7af0f69e263c2f12167263127eab608'
-  c.group = 'developers'
-end
+# God.contact(:email) do |c|
+#   c.name = 'tom'
+#   c.email = 'tom@mojombo.com'
+#   c.group = 'developers'
+# end
+# 
+# God.contact(:email) do |c|
+#   c.name = 'vanpelt'
+#   c.email = 'vanpelt@example.com'
+#   c.group = 'developers'
+# end
+# 
+# God.contact(:email) do |c|
+#   c.name = 'kevin'
+#   c.email = 'kevin@example.com'
+#   c.group = 'platform'
+# end
+# 
+# God.contact(:twitter) do |c|
+#   c.name = 'tom2'
+#   c.group = 'developers'
+# end
+# 
+# God.contact(:prowl) do |c|
+#   c.name = 'tom3'
+#   c.apikey = 'd31c1f31f7af0f69e263c2f12167263127eab608'
+#   c.group = 'developers'
+# end
 
 God.contact(:campfire) do |c|
   c.name = 'tom4'
+  c.subdomain = 'github'
+  c.token = 'f890cb46e983068e421975cc12fb76c6ff3f4f4f'
+  c.room = 'Notices'
+  c.ssl = true
 end
 
 God.watch do |w|
@@ -84,7 +88,7 @@ God.watch do |w|
   # start if process is not running
   w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
-      c.notify = {:contacts => ['tom2', 'tom3', 'tom4', 'foobar'], :priority => 1, :category => 'product'}
+      c.notify = {:contacts => ['tom4'], :priority => 1, :category => 'product'}
     end
   end
 
