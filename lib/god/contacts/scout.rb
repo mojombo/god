@@ -1,33 +1,19 @@
-# Configure your Scout client key:
+# Send a notice to Scout (http://scoutapp.com/).
 #
-#   God::Contacts::Scout.client_key = '1qpw29ie38ur37yt5
-#
-# A client key is configured per god process. Inside this God process,
-# you can create multiple Scout 'contacts' - which are actually Scout
-# plugins. This allows you to use Scout's UI to configure who gets
-# notifications for each plugin, and to disable notifications when you
-# go on vacation, etc.
-#
-#   God.contact(:scout) do |c|
-#     c.name      = 'scout_delayed_job_plugin'
-#     c.plugin_id = '12345
-#   end
-#
-#   God.contact(:scout) do |c|
-#     c.name      = 'scout_apache_plugin'
-#     c.plugin_id = '54312
-#   end
+# client_key - The String client key.
+# plugin_id  - The String plugin id.
 
 require 'net/http'
 require 'uri'
 
 module God
   module Contacts
+
     class Scout < Contact
       class << self
-        attr_accessor :client_key, :format
+        attr_accessor :client_key, :plugin_id
+        attr_accessor :format
       end
-      attr_accessor :plugin_id
 
       self.format = lambda do |message, priority, category, host|
         text  = "Message: #{message}\n"
@@ -37,28 +23,33 @@ module God
         return text
       end
 
+      attr_accessor :client_key, :plugin_id
+
       def valid?
         valid = true
+        valid &= complain("Attribute 'client_key' must be specified", self) unless arg(:client_key)
+        valid &= complain("Attribute 'plugin_id' must be specified", self) unless arg(:plugin_id)
+        valid
       end
 
       def notify(message, time, priority, category, host)
-        begin
-          data = {
-            :client_key => Scout.client_key,
-            :plugin_id => plugin_id,
-            :format => 'xml',
-            'alert[subject]' => message,
-            'alert[body]' => Scout.format.call(message, priority, category, host)
-          }
+        data = {
+          :client_key => arg(:client_key),
+          :plugin_id => arg(:plugin_id),
+          :format => 'xml',
+          'alert[subject]' => message,
+          'alert[body]' => Scout.format.call(message, priority, category, host)
+        }
 
-          uri = URI.parse('http://scoutapp.com/alerts/create')
-          Net::HTTP.post_form(uri, data)
+        uri = URI.parse('http://scoutapp.com/alerts/create')
+        Net::HTTP.post_form(uri, data)
 
-          self.info = "sent scout alert to plugin ##{plugin_id}"
-        rescue => e
-          self.info = "failed to send scout alert to plugin ##{plugin_id}: #{e.message}"
-        end
+        self.info = "sent scout alert to plugin ##{plugin_id}"
+      rescue => e
+        applog(nil, :info, "failed to send scout alert to plugin ##{plugin_id}: #{e.message}")
+        applog(nil, :debug, e.backtrace.join("\n"))
       end
     end
+
   end
 end
