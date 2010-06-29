@@ -1,30 +1,6 @@
-# For Prowl notifications you need the 'prowly' gem
-#   (gem install prowly)
+# Send a notice to Prowl (http://prowl.weks.net/).
 #
-# Configure your watches like this:
-#
-#   God.contact(:prowl) do |c|
-#     c.name      = 'georgette'
-#     c.apikey    = 'ffffffffffffffffffffffffffffffffffffffff'
-#     c.group     = 'developers'
-#   end
-#
-#
-#   God.contact(:prowl) do |c|
-#     c.name      = 'johnny'
-#     c.apikey    = 'ffffffffffffffffffffffffffffffffffffffff'
-#     c.group     = 'developers'
-#   end
-#
-#
-#  Define a transition for the process running event
-#
-#   w.transition(:up, :start) do |on|
-#     on.condition(:process_running) do |c|
-#        c.running = true
-#        c.notify = 'developers'
-#     end
-#   end
+# apikey - The String API key.
 
 require 'prowly'
 
@@ -32,7 +8,9 @@ module God
   module Contacts
     class Prowl < Contact
 
-      attr_accessor :apikey
+      class << self
+        attr_accessor :apikey
+      end
 
       def valid?
         valid = true
@@ -40,27 +18,26 @@ module God
         valid
       end
 
-      def notify(message, time, priority, category, host)
-        begin
-          result = Prowly.notify do |n|
-            n.apikey      = self.apikey
-            n.priority    = map_priority(priority.to_i)
-            n.application = category || "God"
-            n.event       = "on " + host.to_s
-            n.description = message.to_s + " at " + time.to_s
-          end
+      attr_accessor :apikey
 
-          if result.succeeded?
-            self.info = "sent prowl notification to #{self.name}"
-          else
-            self.info = "failed to send prowl notification to #{self.name}: #{result.message}"
-          end
+      def notify(message, time, priority, category, host)
+        result = Prowly.notify do |n|
+          n.apikey      = arg(:apikey)
+          n.priority    = map_priority(priority.to_i)
+          n.application = category || "God"
+          n.event       = "on " + host.to_s
+          n.description = message.to_s + " at " + time.to_s
+        end
+
+        if result.succeeded?
+          self.info = "sent prowl notification to #{self.name}"
+        else
+          self.info = "failed to send prowl notification to #{self.name}: #{result.message}"
         end
       rescue Object => e
-        self.info = "failed to send prowl notification to #{self.name}: #{e.message}"
+        applog(nil, :info, "failed to send prowl notification to #{self.name}: #{e.message}")
+        applog(nil, :debug, e.backtrace.join("\n"))
       end
-
-      private
 
       def map_priority(priority)
         case priority
