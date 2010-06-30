@@ -1,7 +1,7 @@
 # Send a notice to a Jabber address.
 #
 # host     - The String hostname of the Jabber server.
-# port     - The Integer port of the Jabber server.
+# port     - The Integer port of the Jabber server (default: 5222).
 # from_jid - The String Jabber ID of the sender.
 # password - The String password of the sender.
 # to_jid   - The String Jabber ID of the recipient.
