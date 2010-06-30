@@ -1,124 +1,70 @@
-# To add Jabber notifications you must have xmpp4r gem installed.
-# Configure your watches like this:
+# Send a notice to a Jabber address.
 #
-#   God::Contacts::Jabber.settings = { :jabber_id => 'sender@example.com',
-#                                      :password  => 'secret' }
-#   God.contact(:jabber) do |c|
-#     c.name      = 'Tester'
-#     c.jabber_id = 'receiver@example.com'
-#     c.group     = 'developers'
-#   end
+# host     - The String hostname of the Jabber server.
+# port     - The Integer port of the Jabber server.
+# from_jid - The String Jabber ID of the sender.
+# password - The String password of the sender.
+# to_jid   - The String Jabber ID of the recipient.
+# subject  - The String subject of the message (default: "God Notification").
 
-module XMPP4R
-  require 'xmpp4r'
-  include Jabber
-end
+require 'xmpp4r'
 
 module God
   module Contacts
-    class Jabber < Contact      
+
+    class Jabber < Contact
       class << self
-        attr_accessor :settings, :format, :client
+        attr_accessor :host, :port, :from_jid, :password, :to_jid, :subject
+        attr_accessor :format
       end
-      
-      self.format = lambda do |message, priority, category, host|
+
+      self.port = 5222
+      self.subject = 'God Notification'
+
+      self.format = lambda do |message, time, priority, category, host|
         text  = "Message: #{message}\n"
         text += "Host: #{host}\n"         if host
         text += "Priority: #{priority}\n" if priority
         text += "Category: #{category}\n" if category
-        return text
+        text
       end
-      
-      attr_accessor :jabber_id
-      
+
+      attr_accessor :host, :port, :from_jid, :password, :to_jid, :subject
+
       def valid?
         valid = true
+        valid &= complain("Attribute 'host' must be specified", self) unless arg(:host)
+        valid &= complain("Attribute 'port' must be specified", self) unless arg(:port)
+        valid &= complain("Attribute 'from_jid' must be specified", self) unless arg(:from_jid)
+        valid &= complain("Attribute 'to_jid' must be specified", self) unless arg(:to_jid)
+        valid &= complain("Attribute 'password' must be specified", self) unless arg(:password)
+        valid
       end
-      
+
       def notify(message, time, priority, category, host)
-        connect
-        
-        body = Jabber.format.call message, priority, category, host
-        
-        message = XMPP4R::Message::new self.jabber_id, body
-        message.set_type :normal
-        message.set_id '1'
-        message.set_subject 'God'
-        
-        self.send!(message)
-        
-        self.info = "sent jabber message to #{self.jabber_id}"
-      rescue => e
-        puts e.message
-        puts e.backtrace.join("\n")
-        
-        self.info = "failed to send jabber message to #{self.jabber_id}: #{e.message}"
-      end
-      
-      def send!(msg)
-        attempts = 0
-        begin
-          attempts += 1
-          client.send(msg)
-        rescue Errno::EPIPE, IOError => e
-          sleep 1
-          disconnect!
-          reconnect!
-          retry unless attempts > 3
-          raise e
-        rescue Errno::ECONNRESET => e
-          sleep (attempts^2) * 60 + 60
-          disconnect!
-          reconnect!
-          retry unless attempts > 3
-          raise e
+        body = Jabber.format.call(message, time, priority, category, host)
+
+        message = ::Jabber::Message.new(arg(:to_jid), body)
+        message.set_type(:normal)
+        message.set_id('1')
+        message.set_subject(arg(:subject))
+
+        jabber_id = ::Jabber::JID.new("#{arg(:from_jid)}/God")
+
+        client = ::Jabber::Client.new(jabber_id)
+        client.connect(arg(:host), arg(:port))
+        client.auth(arg(:password))
+        client.send(message)
+        client.close
+
+        self.info = "sent jabber message to #{self.to_jid}"
+      rescue Object => e
+        if e.respond_to?(:message)
+          applog(nil, :info, "failed to send jabber message to #{arg(:to_jid)}: #{e.message}")
+        else
+          applog(nil, :info, "failed to send jabber message to #{arg(:to_jid)}: #{e.class}")
         end
-      end
-      
-      def connect
-        connect! unless connected?
-      end
-      
-      def connected?
-        connected = client.respond_to?(:is_connected?) && client.is_connected?
-        return connected
-      end
-      
-      def connect!
-        disconnect! if connected?
-
-        @connect_mutex ||= Mutex.new
-        # don't try to connect if another thread is already connecting.
-        return if @connect_mutex.locked?
-        @connect_mutex.lock
-        
-        jabber_id = XMPP4R::JID::new "#{Jabber.settings[:jabber_id]}/God"
-        jabber_client = XMPP4R::Client::new jabber_id
-        jabber_client.connect Jabber.settings[:host]
-        jabber_client.auth Jabber.settings[:password]
-        self.client = jabber_client
-        
-        @connect_mutex.unlock
-      end
-      
-      def disconnect!
-        if client.respond_to?(:is_connected?) && client.is_connected?
-          begin
-            client.close
-          rescue Errno::EPIPE, IOError => e
-            self.info "Failed to disconnect: #{e}"
-            nil
-          end
-        end
-        client = nil
-      end
-
-      def client
-        Jabber.client
-      end
-
-      def client=(jc)
-        Jabber.client = jc
+        applog(nil, :debug, e.backtrace.join("\n"))
       end
 
     end
