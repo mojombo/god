@@ -47,7 +47,7 @@
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.10.1)</h1>
+	<h1>Installation (v 0.11.0)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	
@@ -561,43 +561,37 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <h1>Notifications</h1>
 
-<p>God has an extensible notification framework built in that makes it easy to have notifications sent when conditions are triggered. There are three steps to enabling notifications.</p>
+<p>God has an extensible notification framework built in that makes it easy to have notifications sent when conditions are triggered. Each notification type has a set of configuration parameters that must be set. These parameters may be set globally via Contact Defaults or individually via Contact Instances.</p>
 
-<p>Step 1: Set the options for the notification subsystem(s) that you'll be using. Let's look at how to setup email notifications.</p>
+<p><b>Contact Defaults</b> - Some parameters are unlikely to change on a per-contact basis. You should set those parameters via the defaults mechanism.</p>
 
-<pre><code class="ruby">God::Contacts::Email.message_settings = {
-  :from => 'god@example.com'
-}
+<pre><code class="ruby">God::Contacts::Email.defaults do |d|
+  d.from_email = 'god@example.com'
+  d.from_name = 'God'
+  d.delivery_method = :sendmail
+end</code></pre>
 
-God::Contacts::Email.server_settings = {
-  :address => "smtp.example.com",
-  :port => 25,
-  :domain => "example.com",
-  :authentication => :plain,
-  :user_name => "john",
-  :password => "s3kr3ts"
-}</code></pre>
-
-<p>Step 2: Configure some contacts.</p>
+<p><b>Contact Instances</b> - Each contact must have a unique <code>name</code> set. You may optionally assign each contact to a <code>group</code>.</p>
 
 <pre><code class="ruby">God.contact(:email) do |c|
   c.name = 'tom'
-  c.email = 'tom@example.com'
+  c.group = 'developers'
+  c.to_email = 'tom@example.com'
 end
 
 God.contact(:email) do |c|
   c.name = 'vanpelt'
-  c.email = 'vanpelt@example.com'
   c.group = 'developers'
+  c.to_email = 'vanpelt@example.com'
 end
 
 God.contact(:email) do |c|
   c.name = 'kevin'
-  c.email = 'kevin@example.com'
   c.group = 'developers'
+  c.to_email = 'kevin@example.com'
 end</code></pre>
 
-<p>Step 3: Attach to a condition:</p>
+<p><b>Condition Attachment</b> - To have a specific contact notified when a condition is triggered, simply set the condition's <code>notify</code> attribute to the name of the individual contact.</p>
 
 <pre><code class="ruby">  w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
@@ -617,7 +611,7 @@ end</code></pre>
 
 <p>The above notification will arrive as an email similar to the following.</p>
 
-<pre><code>From: god &lt;god@example.com&gt;
+<pre><code>From: God &lt;god@example.com&gt;
 To: tom &lt;tom@example.com&gt;
 Subject: [god] mongrel-8600 [trigger] process exited (ProcessExits)
 
@@ -625,6 +619,146 @@ Message: mongrel-8600 [trigger] process exited (ProcessExits)
 Host: candymountain.example.com
 Priority: 1
 Category: product</code></pre>
+
+<h1>Available Notification Types</h1>
+
+<h2>Campfire</h2>
+
+<p>Send a notice to a Campfire room (<a href="http://campfirenow.com">http://campfirenow.com</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Campfire.defaults do |d|
+  ...
+end
+
+God.contact(:campfire) do |c|
+  ...
+end</code></pre>
+
+<pre><code>subdomain - The String subdomain of the Campfire account. If your URL is
+            "foo.campfirenow.com" then your subdomain is "foo".
+token     - The String token used for authentication.
+room      - The String room name to which the message should be sent.
+ssl       - A Boolean determining whether or not to use SSL
+            (default: false).</code></pre>
+
+<h2>Email</h2>
+
+<p>Send a notice to an email address.</p>
+
+<pre><code class="ruby">God::Contacts::Email.defaults do |d|
+  ...
+end
+
+God.contact(:email) do |c|
+  ...
+end</code></pre>
+
+<pre><code>to_email        - The String email address to which the email will be sent.
+to_name         - The String name corresponding to the recipient.
+from_email      - The String email address from which the email will be sent.
+from_name       - The String name corresponding to the sender.
+delivery_method - The Symbol delivery method. [ :smtp | :sendmail ]
+                  (default: :smtp).
+
+=== SMTP Options (when delivery_method = :smtp) ===
+server_host     - The String hostname of the SMTP server (default: localhost).
+server_port     - The Integer port of the SMTP server (default: 25).
+server_auth     - The Boolean of whether or not to use authentication
+                  (default: false).
+
+=== SMTP Auth Options (when server_auth = true) ===
+server_domain   - The String domain.
+server_user     - The String username.
+server_password - The String password.
+
+=== Sendmail Options (when delivery_method = :sendmail) ===
+sendmail_path   - The String path to the sendmail executable
+                  (default: "/usr/sbin/sendmail").
+sendmail_args   - The String args to send to sendmail (default "-i -t").</code></pre>
+
+<h2>Jabber</h2>
+
+<p>Send a notice to a Jabber address.</p>
+
+<pre><code class="ruby">God::Contacts::Jabber.defaults do |d|
+  ...
+end
+
+God.contact(:jabber) do |c|
+  ...
+end</code></pre>
+
+<pre><code>host     - The String hostname of the Jabber server.
+port     - The Integer port of the Jabber server.
+from_jid - The String Jabber ID of the sender.
+password - The String password of the sender.
+to_jid   - The String Jabber ID of the recipient.
+subject  - The String subject of the message (default: "God Notification").</code></pre>
+
+<h2>Prowl</h2>
+
+<p>Send a notice to Prowl (<a href="http://prowl.weks.net/">http://prowl.weks.net/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Prowl.defaults do |d|
+  ...
+end
+
+God.contact(:prowl) do |c|
+  ...
+end</code></pre>
+
+<pre><code>apikey - The String API key.</code></pre>
+
+<h2>Scout</h2>
+
+<p>Send a notice to Scout (<a href="http://scoutapp.com/">http://scoutapp.com/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Scout.defaults do |d|
+  ...
+end
+
+God.contact(:scout) do |c|
+  ...
+end</code></pre>
+
+<pre><code>client_key - The String client key.
+plugin_id  - The String plugin id.
+</code></pre>
+
+<h2>Twitter</h2>
+
+<p>Send a notice to a Twitter account (<a href="http://twitter.com/">http://twitter.com/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Twitter.defaults do |d|
+  ...
+end
+
+God.contact(:twitter) do |c|
+  ...
+end</code></pre>
+
+<pre><code>consumer_token  - The String OAuth consumer token (defaults to God's
+                  existing consumer token).
+consumer_secret - The String OAuth consumer secret (defaults to God's
+                  existing consumer secret).
+access_token    - The String OAuth access token.
+access_secret   - The String OAuth access secret.</code></pre>
+
+<h2>Webhook</h2>
+
+<p>Send a notice to a webhook (<a href="http://www.webhooks.org/">http://www.webhooks.org/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Webhook.defaults do |d|
+  ...
+end
+
+God.contact(:webhook) do |c|
+  ...
+end</code></pre>
+
+<pre><code>url    - The String webhook URL.
+format - The Symbol format [ :form | :json ] (default: :form).
+</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 

@@ -112,6 +112,12 @@ h1 {
 	clear: both;
 }
 
+h2 {
+	font: bold 1.25em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	color: #f36e21;
+	margin: 1.5em 0 .5em 0;
+}
+
 p {
 	margin-bottom: 1em;
 }
