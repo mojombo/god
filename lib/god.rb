@@ -48,30 +48,6 @@ require 'god/conditions/disk_usage'
 require 'god/conditions/complex'
 require 'god/conditions/file_mtime'
 
-require 'god/contact'
-require 'god/contacts/email'
-require 'god/contacts/webhook'
-begin
-  require 'god/contacts/twitter'
-rescue LoadError
-end
-begin
-  require 'god/contacts/jabber'
-rescue LoadError
-end
-begin
-  require 'god/contacts/campfire'
-rescue LoadError
-end
-begin
-  require 'god/contacts/prowl'
-rescue LoadError
-end
-begin
-  require 'god/contacts/scout'
-rescue LoadError
-end
-
 require 'god/socket'
 require 'god/driver'
 
@@ -89,6 +65,25 @@ require 'god/cli/version'
 require 'god/cli/command'
 
 require 'god/diagnostics'
+
+CONTACT_DEPS = { }
+CONTACT_LOAD_SUCCESS = { }
+
+def load_contact(name)
+  require "god/contacts/#{name}"
+  CONTACT_LOAD_SUCCESS[name] = true
+rescue LoadError
+  CONTACT_LOAD_SUCCESS[name] = false
+end
+
+require 'god/contact'
+load_contact(:campfire)
+load_contact(:email)
+load_contact(:jabber)
+load_contact(:prowl)
+load_contact(:scout)
+load_contact(:twitter)
+load_contact(:webhook)
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
@@ -354,6 +349,16 @@ module God
   # Returns nothing
   def self.contact(kind)
     self.internal_init
+    
+    # verify contact has been loaded
+    if CONTACT_LOAD_SUCCESS[kind] == false
+      applog(nil, :error, "A required dependency for the #{kind} contact is unavailable.")
+      applog(nil, :error, "Run the following commands to install the dependencies:")
+      CONTACT_DEPS[kind].each do |d|
+        applog(nil, :error, "  [sudo] gem install #{d}")
+      end
+      abort
+    end
     
     # create the contact
     begin

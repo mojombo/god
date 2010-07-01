@@ -5,7 +5,11 @@
 
 require 'net/http'
 require 'uri'
-require 'json'
+
+CONTACT_DEPS[:webhook] = ['json']
+CONTACT_DEPS[:webhook].each do |d|
+  require d
+end
 
 module God
   module Contacts

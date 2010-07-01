@@ -9,7 +9,11 @@
 
 require 'net/http'
 require 'net/https'
-require 'json'
+
+CONTACT_DEPS[:campfire] = ['json']
+CONTACT_DEPS[:campfire].each do |d|
+  require d
+end
 
 module Marshmallow
   class Connection

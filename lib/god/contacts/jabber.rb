@@ -7,7 +7,10 @@
 # to_jid   - The String Jabber ID of the recipient.
 # subject  - The String subject of the message (default: "God Notification").
 
-require 'xmpp4r'
+CONTACT_DEPS[:jabber] = ['xmpp4r']
+CONTACT_DEPS[:jabber].each do |d|
+  require d
+end
 
 module God
   module Contacts

@@ -2,7 +2,10 @@
 #
 # apikey - The String API key.
 
-require 'prowly'
+CONTACT_DEPS[:prowl] = ['prowly']
+CONTACT_DEPS[:prowl].each do |d|
+  require d
+end
 
 module God
   module Contacts

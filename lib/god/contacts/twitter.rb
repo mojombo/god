@@ -7,7 +7,10 @@
 # access_token    - The String OAuth access token.
 # access_secret   - The String OAuth access secret.
 
-require 'twitter'
+CONTACT_DEPS[:twitter] = ['twitter']
+CONTACT_DEPS[:twitter].each do |d|
+  require d
+end
 
 module God
   module Contacts
