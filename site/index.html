@@ -559,7 +559,7 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
-<h1>Notifications</h1>
+<h1><a name="notifications">Notifications</a></h1>
 
 <p>God has an extensible notification framework built in that makes it easy to have notifications sent when conditions are triggered. Each notification type has a set of configuration parameters that must be set. These parameters may be set globally via Contact Defaults or individually via Contact Instances.</p>
 
@@ -678,7 +678,9 @@ sendmail_args   - The String args to send to sendmail (default "-i -t").</code><
 
 <h2>Jabber</h2>
 
-<p>Send a notice to a Jabber address.</p>
+<p>Send a notice to a Jabber address (<a href="http://jabber.org/">http://jabber.org/</a>).</p>
+
+<p>Google Mail addresses should work. If you need a non-Gmail address, you can sign up for one at <a href="http://register.jabber.org">http://register.jabber.org/</a>.</p>
 
 <pre><code class="ruby">God::Contacts::Jabber.defaults do |d|
   ...
@@ -728,6 +730,38 @@ plugin_id  - The String plugin id.
 <h2>Twitter</h2>
 
 <p>Send a notice to a Twitter account (<a href="http://twitter.com/">http://twitter.com/</a>).</p>
+
+<p>In order to use the Twitter notification, you will need to authorize God via OAuth and then get the OAuth token and secret for your account. The easiest way to do this is with a Ruby gem called <code>twurl</code>. Install it like so:
+
+<pre><code>[sudo] gem install twurl</code></pre>
+
+Then, run the following:
+
+<pre><code>twurl auth --consumer-key gOhjax6s0L3mLeaTtBWPw \
+           --consumer-secret yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA</code></pre>
+
+<p>This will return a URL. Copy it to your clipboard. Make sure you are logged into Twitter with the account that will used for the notifications, and then paste the URL into a new browser window. At the end of the authentication process, you will be given a PIN. Copy this PIN and paste it back to the command line prompt. Once this is complete, you need to find your access token and secret:</p>
+
+<pre><code>cat ~/.twurlrc</code></pre>
+
+<p>This will output the contents of the config file from which you can grab your access token and secret:</p>
+
+<pre><code>---
+profiles:
+  mojombo:
+    gOhjax6s0L3mLeaTtBWPw:
+      <b style="color: red;">token: 17376380-KXA91nCrgaQ4HxUXMmZtM38gB56qS3hx1NYbjT6mQ</b>
+      consumer_key: gOhjax6s0L3mLeaTtBWPw
+      username: mojombo
+      consumer_secret: yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA
+      <b style="color: red;">secret: EBWFQBCtuMwCDeU4OXlc3LwGyY8OdWAV0Jg5KVB0</b>
+configuration:
+  default_profile:
+  - mojombo
+  - gOhjax6s0L3mLeaTtBWPw
+</code></pre>
+
+<p>The access token and secret (highlighted in red above) are what you need to use as parameters to the Twitter notification.</p>
 
 <pre><code class="ruby">God::Contacts::Twitter.defaults do |d|
   ...
