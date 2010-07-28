@@ -4,7 +4,7 @@ module God
     
     attr_accessor :name, :uid, :gid, :log, :log_cmd, :err_log, :err_log_cmd,
                   :start, :stop, :restart, :unix_socket, :chroot, :env, :dir,
-                  :stop_timeout, :stop_signal
+                  :stop_timeout, :stop_signal, :umask
     
     def initialize
       self.log = '/dev/null'
@@ -30,6 +30,7 @@ module God
     def file_writable?(file)
       pid = fork do
         begin
+          File.umask self.umask if self.umask
           uid_num = Etc.getpwnam(self.uid).uid if self.uid
           gid_num = Etc.getgrnam(self.gid).gid if self.gid
 
@@ -286,6 +287,7 @@ module God
     # Returns nothing
     def spawn(command)
       fork do
+        File.umask self.umask if self.umask
         uid_num = Etc.getpwnam(self.uid).uid if self.uid
         gid_num = Etc.getgrnam(self.gid).gid if self.gid
 

@@ -18,7 +18,7 @@ module God
                               :err_log_cmd, :err_log_cmd=, :alive?, :pid,
                               :unix_socket, :unix_socket=, :chroot, :chroot=,
                               :env, :env=, :signal, :stop_timeout=,
-                              :stop_signal=
+                              :stop_signal=, :umask, :umask=
     # 
     def initialize
       super
