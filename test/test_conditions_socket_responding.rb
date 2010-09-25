@@ -57,7 +57,7 @@ class TestConditionsSocketResponding < Test::Unit::TestCase
     c.socket = 'tcp:127.0.0.1:443'
     assert_equal c.family, 'tcp'
     assert_equal c.addr, '127.0.0.1'
-    assert_equal c.port, '443'
+    assert_equal c.port, 443
     # path should not be set for tcp sockets
     assert_equal c.path, nil
   end
@@ -68,24 +68,39 @@ class TestConditionsSocketResponding < Test::Unit::TestCase
     assert_equal c.family, 'unix'
     assert_equal c.path, '/tmp/process.sock'
     # path should not be set for unix domain sockets
-    assert_equal c.port, nil
+    assert_equal c.port, 0
   end
 
   # test
 
-#  def test_test_should_return_true_if_socket_is_listening
-#    c = Conditions::SocketResponding.new
-#    c.port = 3000
+  def test_test_tcp_should_return_true_if_socket_is_listening
+    c = Conditions::SocketResponding.new
 
-#    c.expects(:`).returns(0)
-#    assert_equal true, c.test
-#  end
+    TCPSocket.expects(:new).returns(0)
+    assert_equal true, c.test
+  end
 
-#  def test_test_should_return_false_if_no_socket_is_listening
-#    c = Conditions::SocketResponding.new
-#    c.port = 80
+  def test_test_tcp_should_return_false_if_no_socket_is_listening
+    c = Conditions::SocketResponding.new
 
-#    c.expects(:`).returns(-1)
-#    assert_equal false, c.test
-#  end
+    TCPSocket.expects(:new).returns(nil)
+    assert_equal false, c.test
+  end
+
+  def test_test_unix_should_return_true_if_socket_is_listening
+    c = Conditions::SocketResponding.new
+    c.socket = 'unix:/some/path'
+
+    UNIXSocket.expects(:new).returns(0)
+    assert_equal true, c.test
+  end
+
+  def test_test_unix_should_return_false_if_no_socket_is_listening
+
+    c = Conditions::SocketResponding.new
+    c.socket = 'unix:/some/path'
+
+    UNIXSocket.expects(:new).returns(nil)
+    assert_equal false, c.test
+  end
 end
