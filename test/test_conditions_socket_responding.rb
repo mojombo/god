@@ -73,38 +73,50 @@ class TestConditionsSocketResponding < Test::Unit::TestCase
 
   # test
 
-  def test_test_tcp_should_return_true_if_socket_is_listening
+  def test_test_tcp_should_return_false_if_socket_is_listening
     c = Conditions::SocketResponding.new
     c.prepare
 
     TCPSocket.expects(:new).returns(0)
-    assert_equal true, c.test
+    assert_equal false, c.test
   end
 
-  def test_test_tcp_should_return_false_if_no_socket_is_listening
+  def test_test_tcp_should_return_true_if_no_socket_is_listening
     c = Conditions::SocketResponding.new
     c.prepare
 
     TCPSocket.expects(:new).returns(nil)
-    assert_equal false, c.test
+    assert_equal true, c.test
   end
 
-  def test_test_unix_should_return_true_if_socket_is_listening
+  def test_test_unix_should_return_false_if_socket_is_listening
     c = Conditions::SocketResponding.new
     c.socket = 'unix:/some/path'
 
     c.prepare
     UNIXSocket.expects(:new).returns(0)
-    assert_equal true, c.test
+    assert_equal false, c.test
   end
 
-  def test_test_unix_should_return_false_if_no_socket_is_listening
+  def test_test_unix_should_return_true_if_no_socket_is_listening
 
     c = Conditions::SocketResponding.new
     c.socket = 'unix:/some/path'
     c.prepare
 
     UNIXSocket.expects(:new).returns(nil)
+    assert_equal true, c.test
+  end
+
+  def test_test_unix_should_return_true_if_socket_is_listening_2_times
+
+    c = Conditions::SocketResponding.new
+    c.socket = 'unix:/some/path'
+    c.times = [2, 2]
+    c.prepare
+
+    UNIXSocket.expects(:new).returns(nil).times(2)
     assert_equal false, c.test
+    assert_equal true, c.test
   end
 end

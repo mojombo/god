@@ -107,13 +107,13 @@ module God
           s = TCPSocket.new(self.addr, self.port)
          rescue SystemCallError
          end 
-         status = s.nil? ? false : true
+         status = s.nil?
        elsif self.family == 'unix'
          begin
           s = UNIXSocket.new(self.path)
          rescue SystemCallError
          end 
-         status = s.nil? ? false : true
+         status = s.nil?
        else
          status = false
        end
