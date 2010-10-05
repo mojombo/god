@@ -11,6 +11,7 @@ module God
     # Parameters
     # Required
     #   +family+ is the family of socket: either 'tcp' or 'unix'
+    #   --one of port or path--
     #   +port+ is the port (required if +family+ is 'tcp')
     #   +path+ is the path (required if +family+ is 'unix')
     #
@@ -96,7 +97,7 @@ module God
         if self.family == 'unix' and self.path.nil?
           valid &= complain("Attribute 'path' must be specified for unix sockets", self)
         end
-        valid = false unless %w{tcp unix}.match(self.family)
+        valid = false unless %w{tcp unix}.member?(self.family)
         valid
       end
       
@@ -106,15 +107,24 @@ module God
           s = TCPSocket.new(self.addr, self.port)
          rescue SystemCallError
          end 
-         s.nil? ? false : true
+         status = s.nil? ? false : true
        elsif self.family == 'unix'
          begin
           s = UNIXSocket.new(self.path)
          rescue SystemCallError
          end 
-         s.nil? ? false : true
+         status = s.nil? ? false : true
        else
-         false
+         status = false
+       end
+       @timeline.push(status)
+       history = "[" + @timeline.map {|s| s ? '*' : ''}.join(',') + "]"
+       if @timeline.select { |x| x }.size >= self.times.first
+        self.info = "socket out of bounds #{history}"
+        return true
+       else
+        self.info = "socket within bounds #{history}"
+        return false
        end
       end
     end
