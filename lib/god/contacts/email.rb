@@ -49,7 +49,7 @@ module God
       self.server_port = 25
       self.sendmail_path = '/usr/sbin/sendmail'
       self.sendmail_args = '-i -t'
-	  self.authtype = :plain
+	  self.server_authtype = :plain
 	  
       self.format = lambda do |name, from_email, from_name, to_email, to_name, message, time, priority, category, host|
         <<-EOF
