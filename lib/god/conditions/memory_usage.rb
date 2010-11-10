@@ -14,6 +14,9 @@ module God
     #             the condition should trigger. You can also use the sugar
     #             methods #kilobytes, #megabytes, and #gigabytes to clarify
     #             this amount (see examples).
+    #   Optional
+    #     +family+ should be true in order to include the memory usage of all
+    #              child processes.
     #
     # Examples
     #
@@ -31,12 +34,13 @@ module God
     #     c.pid_file = "/var/run/mongrel.3000.pid"
     #   end
     class MemoryUsage < PollCondition
-      attr_accessor :above, :times, :pid_file
+      attr_accessor :above, :times, :pid_file, :family
       
       def initialize
         super
         self.above = nil
         self.times = [1, 1]
+        self.family = false
       end
       
       def prepare
@@ -64,7 +68,11 @@ module God
       
       def test
         process = System::Process.new(self.pid)
-        @timeline.push(process.memory)
+        if self.family
+          @timeline.push(process.family_memory)
+        else
+          @timeline.push(process.memory)
+        end
         
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}kb" }.join(", ") + "]"
         
