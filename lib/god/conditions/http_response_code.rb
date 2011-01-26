@@ -24,6 +24,7 @@ module God
     #     +times+ is the number of times after which to trigger (default 1)
     #             e.g. 3 (times in a row) or [3, 5] (three out of fives times)
     #     +timeout+ is the time to wait for a connection (default 60.seconds)
+    #     +ssl+ should the connection use ssl (default false)
     #
     # Examples
     #
@@ -69,6 +70,7 @@ module God
                     :times,        # e.g. 3 or [3, 5]
                     :host,         # e.g. www.example.com
                     :port,         # e.g. 8080
+                    :ssl,          # e.g. true or false
                     :timeout,      # e.g. 60.seconds
                     :path,         # e.g. '/'
                     :headers       # e.g. {'Host' => 'myvirtual.mydomain.com'}
@@ -80,6 +82,7 @@ module God
         self.headers = {}
         self.times = [1, 1]
         self.timeout = 60.seconds
+        self.ssl = false
       end
 
       def prepare
@@ -110,7 +113,10 @@ module God
       def test
         response = nil
 
-        Net::HTTP.start(self.host, self.port) do |http|
+        connection = Net::HTTP.new(self.host, self.port)
+        connection.use_ssl = self.ssl
+
+        connection.start do |http|
           http.read_timeout = self.timeout
           response = http.get(self.path, self.headers)
         end
