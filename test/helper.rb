@@ -1,5 +1,7 @@
-unless $LOAD_PATH.include?(File.dirname(__FILE__) + '/../lib')
-  $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
+begin
+  require 'bundler/setup'
+rescue LoadError
+  puts 'although not required, bundler is recommened for running the tests'
 end
 
 require 'god/sys_logger'
@@ -8,6 +10,7 @@ require 'god'
 God::EventHandler.load
 
 require 'test/unit'
+require 'mocha'
 require 'set'
 
 include God
@@ -23,9 +26,6 @@ if Process.uid != 0
 *********************************************************************
 EOF
 end
-
-require 'rubygems'
-require 'mocha'
 
 module God
   module Conditions

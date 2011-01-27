@@ -1,12 +1,11 @@
-require 'rubygems'
 require 'rake'
 require 'date'
 
-#############################################################################
-#
-# The name of the package
-#
-#############################################################################
+begin
+  require 'bundler/setup'
+rescue LoadError
+  puts 'although not required, bundler is recommened for running the tests'
+end
 
 NAME = 'god'
 
