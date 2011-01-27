@@ -1,0 +1,22 @@
+tidy up logging
+    remove the applog method, move to God.log
+    add a logger class method to God (remove the LOG var)
+
+tidy up requires
+    require 'god/system/all'
+    require 'god/behaviors/all'
+    require 'god/conditions/all'
+
+tidy up the whole load_contact crap
+
+move kernel and module extensions to their own files
+
+move the log_level_map to the logger
+
+change $run to $run_god
+
+make sure the global namespace is not polluted
+
+change root_binding global method to a God.root_binding method
+
+move version to a separate file
