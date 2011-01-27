@@ -1,3 +1,5 @@
+require 'god/condition'
+
 module God
   module Conditions
 
