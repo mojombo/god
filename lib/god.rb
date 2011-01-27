@@ -25,11 +25,6 @@ require 'god/configurable'
 
 require 'god/task'
 
-require 'god/behavior'
-require 'god/behaviors/clean_pid_file'
-require 'god/behaviors/clean_unix_socket'
-require 'god/behaviors/notify_when_flapping'
-
 require 'god/condition'
 require 'god/conditions/process_running'
 require 'god/conditions/process_exits'
@@ -44,6 +39,7 @@ require 'god/conditions/http_response_code'
 require 'god/conditions/disk_usage'
 require 'god/conditions/complex'
 require 'god/conditions/file_mtime'
+require 'god/behaviors/all'
 
 require 'god/socket'
 require 'god/driver'

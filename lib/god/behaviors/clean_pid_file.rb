@@ -1,3 +1,5 @@
+require 'god/behavior'
+
 module God
   module Behaviors
     
