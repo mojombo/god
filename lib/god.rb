@@ -10,6 +10,10 @@ ensure
 end
 
 
+# c extensions
+require 'god/god'
+
+
 # internal requires
 require 'god/errors'
 require 'god/simple_logger'
