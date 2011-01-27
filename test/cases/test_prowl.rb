@@ -1,5 +1,4 @@
-#!/usr/bin/env ruby
-require File.dirname(__FILE__) + '/helper'
+require 'helper'
 
 class TestProwl < Test::Unit::TestCase
   def test_live_notify

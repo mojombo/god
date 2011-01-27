@@ -1,5 +1,4 @@
-#!/usr/bin/env ruby
-require File.dirname(__FILE__) + '/helper'
+require 'helper'
 
 class TestJabber < Test::Unit::TestCase
 
