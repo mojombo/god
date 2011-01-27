@@ -8,3 +8,5 @@ logs
 .*.sw?
 .DS_Store
 Gemfile.lock
+tmp
+lib/god/*.bundle

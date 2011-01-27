@@ -34,11 +34,14 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rcov',    [">= 0.9.8"])
   s.add_development_dependency('daemons', [">= 1.0.10", "< 2.0.0"])
   s.add_development_dependency('mocha',   ["~> 0.9.10"])
+  s.add_development_dependency('rake-compiler', ["~> 0.7.5"])
 
   # = MANIFEST =
   s.files = %w[
     Announce.txt
+    Gemfile
     History.txt
+    Improvements
     README.txt
     Rakefile
     bin/god
@@ -49,6 +52,7 @@ Gem::Specification.new do |s|
     god.gemspec
     lib/god.rb
     lib/god/behavior.rb
+    lib/god/behaviors/all.rb
     lib/god/behaviors/clean_pid_file.rb
     lib/god/behaviors/clean_unix_socket.rb
     lib/god/behaviors/notify_when_flapping.rb
@@ -57,6 +61,7 @@ Gem::Specification.new do |s|
     lib/god/cli/version.rb
     lib/god/compat19.rb
     lib/god/condition.rb
+    lib/god/conditions/all.rb
     lib/god/conditions/always.rb
     lib/god/conditions/complex.rb
     lib/god/conditions/cpu_usage.rb
@@ -102,34 +107,6 @@ Gem::Specification.new do |s|
     lib/god/timeline.rb
     lib/god/trigger.rb
     lib/god/watch.rb
-    test/configs/child_events/child_events.god
-    test/configs/child_events/simple_server.rb
-    test/configs/child_polls/child_polls.god
-    test/configs/child_polls/simple_server.rb
-    test/configs/complex/complex.god
-    test/configs/complex/simple_server.rb
-    test/configs/contact/contact.god
-    test/configs/contact/simple_server.rb
-    test/configs/daemon_events/daemon_events.god
-    test/configs/daemon_events/simple_server.rb
-    test/configs/daemon_events/simple_server_stop.rb
-    test/configs/daemon_polls/daemon_polls.god
-    test/configs/daemon_polls/simple_server.rb
-    test/configs/degrading_lambda/degrading_lambda.god
-    test/configs/degrading_lambda/tcp_server.rb
-    test/configs/lifecycle/lifecycle.god
-    test/configs/matias/matias.god
-    test/configs/real.rb
-    test/configs/running_load/running_load.god
-    test/configs/stop_options/simple_server.rb
-    test/configs/stop_options/stop_options.god
-    test/configs/stress/simple_server.rb
-    test/configs/stress/stress.god
-    test/configs/task/logs/.placeholder
-    test/configs/task/task.god
-    test/configs/test.rb
-    test/helper.rb
-    test/suite.rb
     test/cases/test_behavior.rb
     test/cases/test_campfire.rb
     test/cases/test_condition.rb
@@ -159,6 +136,34 @@ Gem::Specification.new do |s|
     test/cases/test_trigger.rb
     test/cases/test_watch.rb
     test/cases/test_webhook.rb
+    test/configs/child_events/child_events.god
+    test/configs/child_events/simple_server.rb
+    test/configs/child_polls/child_polls.god
+    test/configs/child_polls/simple_server.rb
+    test/configs/complex/complex.god
+    test/configs/complex/simple_server.rb
+    test/configs/contact/contact.god
+    test/configs/contact/simple_server.rb
+    test/configs/daemon_events/daemon_events.god
+    test/configs/daemon_events/simple_server.rb
+    test/configs/daemon_events/simple_server_stop.rb
+    test/configs/daemon_polls/daemon_polls.god
+    test/configs/daemon_polls/simple_server.rb
+    test/configs/degrading_lambda/degrading_lambda.god
+    test/configs/degrading_lambda/tcp_server.rb
+    test/configs/lifecycle/lifecycle.god
+    test/configs/matias/matias.god
+    test/configs/real.rb
+    test/configs/running_load/running_load.god
+    test/configs/stop_options/simple_server.rb
+    test/configs/stop_options/stop_options.god
+    test/configs/stress/simple_server.rb
+    test/configs/stress/stress.god
+    test/configs/task/logs/.placeholder
+    test/configs/task/task.god
+    test/configs/test.rb
+    test/helper.rb
+    test/suite.rb
   ]
   # = MANIFEST =
 

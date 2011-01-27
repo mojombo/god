@@ -7,6 +7,7 @@ rescue LoadError
   puts 'although not required, bundler is recommened for running the tests'
 end
 
+
 # The name of the package
 NAME = 'god'
 
@@ -33,6 +34,20 @@ end
 
 #############################################################################
 #
+# C Extension tasks
+#
+#############################################################################
+
+require "rake/extensiontask"
+Rake::ExtensionTask.new('god') do |extension|
+  extension.lib_dir = "lib/god"
+end
+
+task :build => [:clean, :compile]
+
+
+#############################################################################
+#
 # Standard tasks
 #
 #############################################################################
@@ -41,7 +56,7 @@ task :default => :test
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
+  test.libs << 'test'
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
 end
@@ -69,7 +84,7 @@ end
 #
 #############################################################################
 
-task :release => :build do
+task :release => :gem_build do
   unless `git branch` =~ /^\* master$/
     puts "You must be on the master branch to release!"
     exit!
@@ -80,7 +95,7 @@ task :release => :build do
   sh "gem push pkg/#{NAME}-#{source_version}.gem"
 end
 
-task :build => :gemspec do
+task :gem_build => :gemspec do
   sh "mkdir -p pkg"
   sh "gem build #{gemspec_file}"
   sh "mv #{gem_file} pkg"
