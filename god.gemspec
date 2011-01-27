@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('i18n',    ["~> 0.5.0"]) # included due to an issue with activesupport
   s.add_development_dependency('prowly',  [">= 0.2.1"])
   s.add_development_dependency('xmpp4r',  [">= 0.4.0"])
+  s.add_development_dependency('json',    ["~> 1.5.1"])
   s.add_development_dependency('dike',    [">= 0.0.3"])
   s.add_development_dependency('snapshot', [">= 1.0.0", "< 2.0.0"])
   s.add_development_dependency('rcov',    [">= 0.9.8"])
