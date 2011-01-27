@@ -59,26 +59,6 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-desc "Open an irb session preloaded with this library"
-task :console do
-  sh "irb -rubygems -r ./lib/#{NAME}.rb"
-end
-
-#############################################################################
-#
-# Custom tasks (add your own tasks here)
-#
-#############################################################################
-
-desc "Upload site to Rubyforge"
-task :site do
-  sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god"
-end
-
-desc "Upload site to Rubyforge"
-task :site_edge do
-  sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
-end
 
 #############################################################################
 #
