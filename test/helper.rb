@@ -1,6 +1,10 @@
-require 'rubygems'
-require File.join(File.dirname(__FILE__), *%w[.. lib god sys_logger])
-require File.join(File.dirname(__FILE__), *%w[.. lib god])
+unless $LOAD_PATH.include?(File.dirname(__FILE__) + '/../lib')
+  $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
+end
+
+require 'god/sys_logger'
+require 'god'
+
 God::EventHandler.load
 
 require 'test/unit'
@@ -20,17 +24,8 @@ if Process.uid != 0
 EOF
 end
 
-begin
-  require 'mocha'
-rescue LoadError
-  unless gems ||= false
-    require 'rubygems'
-    gems = true
-    retry
-  else
-    abort "=> You need the Mocha gem to run these tests."
-  end
-end
+require 'rubygems'
+require 'mocha'
 
 module God
   module Conditions
