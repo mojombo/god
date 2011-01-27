@@ -130,35 +130,35 @@ Gem::Specification.new do |s|
     test/configs/test.rb
     test/helper.rb
     test/suite.rb
-    test/test_behavior.rb
-    test/test_campfire.rb
-    test/test_condition.rb
-    test/test_conditions_disk_usage.rb
-    test/test_conditions_http_response_code.rb
-    test/test_conditions_process_running.rb
-    test/test_conditions_tries.rb
-    test/test_contact.rb
-    test/test_dependency_graph.rb
-    test/test_driver.rb
-    test/test_email.rb
-    test/test_event_handler.rb
-    test/test_god.rb
-    test/test_handlers_kqueue_handler.rb
-    test/test_jabber.rb
-    test/test_logger.rb
-    test/test_metric.rb
-    test/test_process.rb
-    test/test_prowl.rb
-    test/test_registry.rb
-    test/test_socket.rb
-    test/test_sugar.rb
-    test/test_system_portable_poller.rb
-    test/test_system_process.rb
-    test/test_task.rb
-    test/test_timeline.rb
-    test/test_trigger.rb
-    test/test_watch.rb
-    test/test_webhook.rb
+    test/cases/test_behavior.rb
+    test/cases/test_campfire.rb
+    test/cases/test_condition.rb
+    test/cases/test_conditions_disk_usage.rb
+    test/cases/test_conditions_http_response_code.rb
+    test/cases/test_conditions_process_running.rb
+    test/cases/test_conditions_tries.rb
+    test/cases/test_contact.rb
+    test/cases/test_dependency_graph.rb
+    test/cases/test_driver.rb
+    test/cases/test_email.rb
+    test/cases/test_event_handler.rb
+    test/cases/test_god.rb
+    test/cases/test_handlers_kqueue_handler.rb
+    test/cases/test_jabber.rb
+    test/cases/test_logger.rb
+    test/cases/test_metric.rb
+    test/cases/test_process.rb
+    test/cases/test_prowl.rb
+    test/cases/test_registry.rb
+    test/cases/test_socket.rb
+    test/cases/test_sugar.rb
+    test/cases/test_system_portable_poller.rb
+    test/cases/test_system_process.rb
+    test/cases/test_task.rb
+    test/cases/test_timeline.rb
+    test/cases/test_trigger.rb
+    test/cases/test_watch.rb
+    test/cases/test_webhook.rb
   ]
   # = MANIFEST =
 
