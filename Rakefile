@@ -7,7 +7,9 @@ rescue LoadError
   puts 'although not required, bundler is recommened for running the tests'
 end
 
+# The name of the package
 NAME = 'god'
+
 
 #############################################################################
 #
@@ -27,6 +29,7 @@ end
 def gem_file
   "#{NAME}-#{source_version}.gem"
 end
+
 
 #############################################################################
 #
