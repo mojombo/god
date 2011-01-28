@@ -1,10 +1,11 @@
 god
 ===
 
-  by Tom Preston-Werner
-     Kevin Clark (kqueue/netlink support)
-
-  http://god.rubyforge.org
+> Tom Preston-Werner
+>
+> Kevin Clark (kqueue/netlink support)
+>
+> http://god.rubyforge.org
 
 Description:
 ------------
