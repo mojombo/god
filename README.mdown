@@ -1,0 +1,82 @@
+god
+===
+
+  by Tom Preston-Werner
+     Kevin Clark (kqueue/netlink support)
+
+  http://god.rubyforge.org
+
+Description:
+------------
+
+God is an easy to configure, easy to extend monitoring framework written
+in Ruby.
+
+Keeping your server processes and tasks running should be a simple part of
+your deployment process. God aims to be the simplest, most powerful
+monitoring application available.
+
+Links:
+------
+
+[See the online documentation](http://god.rubyforge.org)
+
+[Sign up for the God mailing list](http://groups.google.com/group/god-rb)
+
+Install:
+--------
+
+Installing God is as simple as:
+
+    gem install god
+
+Its recommended that you use RVM with its own gemset as this will make sure God is isolated in its own safe environment.
+
+Contribute:
+-----------
+
+Latest code is available at http://github.com/mojombo/god
+
+The 'master' branch can be cloned with:
+
+    git clone git://github.com/mojombo/god.git
+
+Although not required, its recommended that you use Bundler as this will set up the environment correctly.
+
+Before running the tests, make sure you run:
+
+    rake build
+
+which will compile and install the God c extensions for event handling.
+
+When running the tests, make sure you either use `rvmsudo` (if you have RVM installed) or `sudo -E`, the `-E` will make sure your environment is taken with you, including all the paths to your gems and rubies.
+
+Please don't forget to add tests so we can be sure things don't break on other systems or in future versions.
+
+And don't forget to send a pull request!
+
+License:
+--------
+
+(The MIT License)
+
+Copyright (c) 2007 Tom Preston-Werner
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
