@@ -5,7 +5,7 @@ class TestWebhook < Test::Unit::TestCase
     @webhook = God::Contacts::Webhook.new
   end
 
-  def test_notify
+  test "notify" do
     @webhook.url = 'http://example.com/switch'
     Net::HTTP.any_instance.expects(:request).returns(Net::HTTPSuccess.new('a', 'b', 'c'))
 

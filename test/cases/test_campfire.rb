@@ -1,15 +1,16 @@
 require 'helper'
 
 class TestCampfire < Test::Unit::TestCase
+
   def setup
     @campfire = God::Contacts::Campfire.new
   end
 
-  def test_exists
+  test "exists" do
     God::Contacts::Campfire
   end
 
-  def test_notify
+  test "notify" do
     @campfire.subdomain = 'github'
     @campfire.token = 'abc'
     @campfire.room = 'danger'
@@ -19,4 +20,5 @@ class TestCampfire < Test::Unit::TestCase
     Marshmallow::Connection.any_instance.expects(:speak).with('danger', body)
     @campfire.notify('msg', time, 'prio', 'cat', 'host')
   end
+
 end

@@ -1,19 +1,20 @@
 require 'helper'
 
 class TestContact < Test::Unit::TestCase
-  def test_exists
+
+  test "exists" do
     God::Contact
   end
 
   # generate
 
-  def test_generate_should_raise_on_invalid_kind
+  test "generate should raise on invalid kind" do
     assert_raise(NoSuchContactError) do
       Contact.generate(:invalid)
     end
   end
 
-  def test_generate_should_abort_on_invalid_contact
+  test "generate should abort on invalid contact" do
     assert_abort do
       Contact.generate(:invalid_contact)
     end
@@ -21,79 +22,79 @@ class TestContact < Test::Unit::TestCase
 
   # normalize
 
-  def test_normalize_should_accept_a_string
+  test "normalize should accept a string" do
     input = 'tom'
-    output = {:contacts => ['tom']}
+    output = { :contacts => ['tom'] }
     assert_equal(output, Contact.normalize(input))
   end
 
-  def test_normalize_should_accept_an_array_of_strings
+  test "normalize should accept an array of strings" do
     input = ['tom', 'kevin']
-    output = {:contacts => ['tom', 'kevin']}
+    output = { :contacts => ['tom', 'kevin'] }
     assert_equal(output, Contact.normalize(input))
   end
 
-  def test_normalize_should_accept_a_hash_with_contacts_string
-    input = {:contacts => 'tom'}
-    output = {:contacts => ['tom']}
+  test "normalize should accept a hash with contacts string" do
+    input = { :contacts => 'tom' }
+    output = { :contacts => ['tom'] }
     assert_equal(output, Contact.normalize(input))
   end
 
-  def test_normalize_should_accept_a_hash_with_contacts_array_of_strings
-    input = {:contacts => ['tom', 'kevin']}
-    output = {:contacts => ['tom', 'kevin']}
+  test "normalize should accept a hash with contacts array of strings" do
+    input = { :contacts => ['tom', 'kevin'] }
+    output = { :contacts => ['tom', 'kevin'] }
     assert_equal(output, Contact.normalize(input))
   end
 
-  def test_normalize_should_stringify_priority
-    input = {:contacts => 'tom', :priority => 1}
-    output = {:contacts => ['tom'], :priority => '1'}
+  test "normalize should stringify priority" do
+    input = { :contacts => 'tom', :priority => 1 }
+    output = { :contacts => ['tom'], :priority => '1' }
     assert_equal(output, Contact.normalize(input))
   end
 
-  def test_normalize_should_stringify_category
-    input = {:contacts => 'tom', :category => :product}
-    output = {:contacts => ['tom'], :category => 'product'}
+  test "normalize should stringify category" do
+    input = { :contacts => 'tom', :category => :product }
+    output = { :contacts => ['tom'], :category => 'product' }
     assert_equal(output, Contact.normalize(input))
   end
 
-  def test_normalize_should_raise_on_non_string_array_hash
+  test "normalize should raise on non string array hash" do
     input = 1
     assert_raise ArgumentError do
       Contact.normalize(input)
     end
   end
 
-  def test_normalize_should_raise_on_non_string_array_contacts_key
+  test "normalize should raise on non string array contacts key" do
     input = {:contacts => 1}
     assert_raise ArgumentError do
       Contact.normalize(input)
     end
   end
 
-  def test_normalize_should_raise_on_non_string_containing_array
+  test "normalize should raise on non string containing array" do
     input = [1]
     assert_raise ArgumentError do
       Contact.normalize(input)
     end
   end
 
-  def test_normalize_should_raise_on_non_string_containing_array_contacts_key
-    input = {:contacts => [1]}
+  test "normalize should raise on non string containing array contacts key" do
+    input = { :contacts => [1] }
     assert_raise ArgumentError do
       Contact.normalize(input)
     end
   end
 
-  def test_normalize_should_raise_on_absent_contacts_key
+  test "normalize should raise on absent contacts key" do
     input = {}
     assert_raise ArgumentError do
       Contact.normalize(input)
     end
   end
 
-  def test_normalize_should_raise_on_extra_keys
-    input = {:contacts => ['tom'], :priority => 1, :category => 'product', :extra => 'foo'}
+  test "normalize should raise on extra keys" do
+    input = { :contacts => ['tom'], :priority => 1, :category => 'product', :extra => 'foo' }
     assert_raise ArgumentError do
       Contact.normalize(input)
     end
@@ -101,9 +102,10 @@ class TestContact < Test::Unit::TestCase
 
   # notify
 
-  def test_notify_should_be_abstract
+  test "notify should be abstract" do
     assert_raise(AbstractMethodNotOverriddenError) do
       Contact.new.notify(:a, :b, :c, :d, :e)
     end
   end
+
 end

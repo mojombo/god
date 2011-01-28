@@ -6,7 +6,7 @@ class TestJabber < Test::Unit::TestCase
     @jabber = God::Contacts::Jabber.new
   end
 
-  def test_notify
+  test "notify" do
     @jabber.host = 'talk.google.com'
     @jabber.from_jid = 'god@jabber.org'
     @jabber.password = 'secret'
@@ -25,4 +25,5 @@ class TestJabber < Test::Unit::TestCase
     @jabber.notify('msg', Time.now, 'prio', 'cat', 'host')
     assert_equal "sent jabber message to dev@jabber.org", @jabber.info
   end
+
 end
