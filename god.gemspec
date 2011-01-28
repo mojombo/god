@@ -25,8 +25,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = %w[README.txt]
 
   s.add_development_dependency('twitter', [">= 0.3.7"])
-  s.add_development_dependency('tinder',  ["~> 1.4.3"])
-  s.add_development_dependency('i18n',    ["~> 0.5.0"]) # included due to an issue with activesupport
   s.add_development_dependency('prowly',  [">= 0.2.1"])
   s.add_development_dependency('xmpp4r',  [">= 0.4.0"])
   s.add_development_dependency('json',    ["~> 1.5.1"])

@@ -1,5 +1,4 @@
 require 'helper'
-require 'tinder'
 
 class TestCampfire < Test::Unit::TestCase
   def setup
