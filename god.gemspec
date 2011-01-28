@@ -24,16 +24,17 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.extra_rdoc_files = %w[README.txt]
 
-  s.add_development_dependency('twitter', [">= 0.3.7"])
-  s.add_development_dependency('prowly',  [">= 0.2.1"])
-  s.add_development_dependency('xmpp4r',  [">= 0.4.0"])
-  s.add_development_dependency('json',    ["~> 1.5.1"])
-  s.add_development_dependency('dike',    [">= 0.0.3"])
-  s.add_development_dependency('snapshot', [">= 1.0.0", "< 2.0.0"])
-  s.add_development_dependency('rcov',    [">= 0.9.8"])
-  s.add_development_dependency('daemons', [">= 1.0.10", "< 2.0.0"])
-  s.add_development_dependency('mocha',   ["~> 0.9.10"])
+  s.add_development_dependency('test-unit', ["~> 2.1.2"])
+  s.add_development_dependency('mocha',     ["~> 0.9.10"])
   s.add_development_dependency('rake-compiler', ["~> 0.7.5"])
+  s.add_development_dependency('rcov',      [">= 0.9.8"])
+  s.add_development_dependency('daemons',   [">= 1.0.10", "< 2.0.0"])
+  s.add_development_dependency('twitter',   [">= 0.3.7"])
+  s.add_development_dependency('prowly',    [">= 0.2.1"])
+  s.add_development_dependency('xmpp4r',    [">= 0.4.0"])
+  s.add_development_dependency('json',      ["~> 1.5.1"])
+  s.add_development_dependency('dike',      [">= 0.0.3"])
+  s.add_development_dependency('snapshot',  [">= 1.0.0", "< 2.0.0"])
 
   # = MANIFEST =
   s.files = %w[
