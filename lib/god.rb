@@ -13,6 +13,9 @@ end
 # c extensions
 require 'god/god'
 
+# core ext
+require 'god/core_ext/kernel'
+require 'god/core_ext/module'
 
 # internal requires
 require 'god/errors'
@@ -90,45 +93,6 @@ def root_binding
   binding
 end
 
-module Kernel
-  alias_method :abort_orig, :abort
-
-  def abort(text = nil)
-    $run = false
-    applog(nil, :error, text) if text
-    exit(1)
-  end
-
-  alias_method :exit_orig, :exit
-
-  def exit(code = 0)
-    $run = false
-    exit_orig(code)
-  end
-end
-
-class Module
-  def safe_attr_accessor(*args)
-    args.each do |arg|
-      define_method((arg.to_s + "=").intern) do |other|
-        if !self.running && self.inited
-          abort "God.#{arg} must be set before any Tasks are defined"
-        end
-
-        if self.running && self.inited
-          applog(nil, :warn, "God.#{arg} can't be set while god is running")
-          return
-        end
-
-        instance_variable_set(('@' + arg.to_s).intern, other)
-      end
-
-      define_method(arg) do
-        instance_variable_get(('@' + arg.to_s).intern)
-      end
-    end
-  end
-end
 
 module God
   VERSION = '0.11.0'
