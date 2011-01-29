@@ -34,7 +34,9 @@ module God
         attr_accessor :to_email, :to_name, :from_email, :from_name,
                       :delivery_method, :server_host, :server_port,
                       :server_auth, :server_domain, :server_user,
-                      :server_password, :sendmail_path, :sendmail_args
+                      :server_password, :sendmail_path, :sendmail_args,
+                      :enable_starttls_auto, :enable_starttls
+
         attr_accessor :format
       end
 
@@ -65,7 +67,8 @@ Category: #{category}
       attr_accessor :to_email, :to_name, :from_email, :from_name,
                     :delivery_method, :server_host, :server_port,
                     :server_auth, :server_domain, :server_user,
-                    :server_password, :sendmail_path, :sendmail_args
+                    :server_password, :sendmail_path, :sendmail_args,
+                    :enable_starttls_auto, :enable_starttls
 
       def valid?
         valid = true
@@ -102,7 +105,12 @@ Category: #{category}
       end
 
       def notify_smtp(mail)
-        args = [arg(:server_host), arg(:server_port)]
+        smtp = Net::SMTP.new arg(:server_host), arg(:server_port)
+
+        smtp.enable_starttls_auto if arg(:enable_starttls_auto)
+        smtp.enable_starttls      if arg(:enable_starttls)
+
+        args = []
         if arg(:server_auth)
           args << arg(:server_domain)
           args << arg(:server_user)
@@ -110,7 +118,7 @@ Category: #{category}
           args << arg(:server_auth)
         end
 
-        Net::SMTP.start(*args) do |smtp|
+        smtp.start(*args) do |smtp|
           smtp.send_message(mail, arg(:from_email), arg(:to_email))
         end
       end

@@ -33,4 +33,24 @@ class TestEmail < Test::Unit::TestCase
     assert_equal "sent email to dev@example.com via sendmail", @email.info
   end
 
+  test "supports enable_starttls" do
+    @email.delivery_method = :smtp
+    Net::SMTP.any_instance.stubs(:start)
+
+    @email.enable_starttls = true
+    Net::SMTP.any_instance.expects(:enable_starttls)
+
+    @email.notify('msg', Time.now, 'prio', 'cat', 'host')
+  end
+
+  test "supports enable_starttls_auto" do
+    @email.delivery_method = :smtp
+    Net::SMTP.any_instance.stubs(:start)
+
+    @email.enable_starttls_auto = true
+    Net::SMTP.any_instance.expects(:enable_starttls_auto)
+
+    @email.notify('msg', Time.now, 'prio', 'cat', 'host')
+  end
+
 end
