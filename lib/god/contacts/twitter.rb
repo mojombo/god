@@ -43,8 +43,8 @@ module God
 
         self.info = "sent twitter update"
       rescue => e
-        applog(nil, :info, "failed to send twitter update: #{e.message}")
-        applog(nil, :debug, e.backtrace.join("\n"))
+        God.log(nil, :info, "failed to send twitter update: #{e.message}")
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
     end
   end

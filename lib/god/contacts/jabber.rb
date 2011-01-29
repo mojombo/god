@@ -62,12 +62,9 @@ module God
 
         self.info = "sent jabber message to #{self.to_jid}"
       rescue Object => e
-        if e.respond_to?(:message)
-          applog(nil, :info, "failed to send jabber message to #{arg(:to_jid)}: #{e.message}")
-        else
-          applog(nil, :info, "failed to send jabber message to #{arg(:to_jid)}: #{e.class}")
-        end
-        applog(nil, :debug, e.backtrace.join("\n"))
+        info_message = (e.respond_to?(:message) ? e.message : e.class)
+        God.log(nil, :info, info_message)
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
 
     end

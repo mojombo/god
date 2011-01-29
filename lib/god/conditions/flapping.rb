@@ -97,25 +97,16 @@ module God
             # give up
             Thread.new do
               sleep 1
-
-              # log
-              msg = "#{self.watch.name} giving up"
-              applog(self.watch, :info, msg)
+              God.log(self.watch, :info, "#{self.watch.name} giving up")
             end
           else
             # try again later
             Thread.new do
               sleep 1
 
-              # log
-              msg = "#{self.watch.name} auto-reenable monitoring in #{self.retry_in} seconds"
-              applog(self.watch, :info, msg)
-
+              God.log(self.watch, :info, "#{self.watch.name} auto-reenable monitoring in #{self.retry_in} seconds")
               sleep self.retry_in
-
-              # log
-              msg = "#{self.watch.name} auto-reenabling monitoring"
-              applog(self.watch, :info, msg)
+              God.log(self.watch, :info, "#{self.watch.name} auto-reenabling monitoring")
 
               if self.watch.state == :unmonitored
                 self.watch.monitor

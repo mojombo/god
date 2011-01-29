@@ -2,6 +2,7 @@ module God
   module CoreExt
 
     module Module
+
       def safe_attr_accessor(*args)
         args.each do |arg|
           define_method((arg.to_s + "=").intern) do |other|
@@ -10,7 +11,7 @@ module God
             end
 
             if self.running && self.inited
-              applog(nil, :warn, "God.#{arg} can't be set while god is running")
+              God.log(nil, :warn, "God.#{arg} can't be set while god is running")
               return
             end
 
@@ -22,6 +23,7 @@ module God
           end
         end
       end
+
     end
 
   end

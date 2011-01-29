@@ -19,11 +19,15 @@ class TestGod < Test::Unit::TestCase
     end
   end
 
-  # applog
+  # God.log
 
-  def test_applog
-    LOG.expects(:log).with(nil, :debug, 'foo')
-    applog(nil, :debug, 'foo')
+  def test_god_log
+    God.logger.expects(:log).with(nil, :debug, 'foo')
+    God.log(nil, :debug, 'foo')
+  end
+
+  def test_reuse_same_god_logger
+    assert_equal God.logger, God.logger
   end
 
   # internal_init
@@ -385,7 +389,7 @@ class TestGod < Test::Unit::TestCase
   def test_running_log_should_call_watch_log_since_on_main_log
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     t = Time.now
-    LOG.expects(:watch_log_since).with('foo', t)
+    God.logger.expects(:watch_log_since).with('foo', t)
     God.running_log('foo', t)
   end
 

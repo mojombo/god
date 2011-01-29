@@ -87,7 +87,7 @@ ensure
   $VERBOSE = old_verbose
 end
 
-LOG.instance_variable_set(:@io, StringIO.new('/dev/null'))
+God.logger.instance_variable_set(:@io, StringIO.new('/dev/null'))
 
 module Kernel
   def abort(text)

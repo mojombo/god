@@ -49,8 +49,7 @@ module God
             self.watch.trigger(self)
           end
 
-          msg = "#{self.watch.name} registered 'proc_exit' event for pid #{pid}"
-          applog(self.watch, :info, msg)
+          God.log(self.watch, :info, "#{self.watch.name} registered 'proc_exit' event for pid #{pid}")
         rescue StandardError
           raise EventRegistrationFailedError.new
         end
@@ -61,11 +60,10 @@ module God
         if pid
           EventHandler.deregister(pid, :proc_exit)
 
-          msg = "#{self.watch.name} deregistered 'proc_exit' event for pid #{pid}"
-          applog(self.watch, :info, msg)
+          God.log(self.watch, :info, "#{self.watch.name} deregistered 'proc_exit' event for pid #{pid}")
         else
           pid_file_location = self.pid_file || self.watch.pid_file
-          applog(self.watch, :error, "#{self.watch.name} could not deregister: no cached PID or PID file #{pid_file_location} (#{self.base_name})")
+          God.log(self.watch, :error, "#{self.watch.name} could not deregister: no cached PID or PID file #{pid_file_location} (#{self.base_name})")
         end
       end
     end

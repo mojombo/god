@@ -46,8 +46,8 @@ module God
 
         self.info = "sent scout alert to plugin ##{plugin_id}"
       rescue => e
-        applog(nil, :info, "failed to send scout alert to plugin ##{plugin_id}: #{e.message}")
-        applog(nil, :debug, e.backtrace.join("\n"))
+        God.log(nil, :info, "failed to send scout alert to plugin ##{plugin_id}: #{e.message}")
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
     end
 

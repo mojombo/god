@@ -107,8 +107,8 @@ module God
 
         self.info = "notified campfire: #{arg(:subdomain)}"
       rescue Object => e
-        applog(nil, :info, "failed to notify campfire: #{e.message}")
-        applog(nil, :debug, e.backtrace.join("\n"))
+        God.log(nil, :info, "failed to notify campfire: #{e.message}")
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
     end
 

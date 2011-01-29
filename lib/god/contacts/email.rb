@@ -97,8 +97,8 @@ Category: #{category}
 
         self.info = "sent email to #{arg(:to_email)} via #{arg(:delivery_method).to_s}"
       rescue Object => e
-        applog(nil, :info, "failed to send email to #{arg(:to_email)} via #{arg(:delivery_method).to_s}: #{e.message}")
-        applog(nil, :debug, e.backtrace.join("\n"))
+        God.log(nil, :info, "failed to send email to #{arg(:to_email)} via #{arg(:delivery_method).to_s}: #{e.message}")
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
 
       def notify_smtp(mail)

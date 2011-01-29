@@ -63,7 +63,7 @@ module God
           rescue Exception => e
             message = format("Unhandled exception (%s): %s\n%s",
                              e.class, e.message, e.backtrace.join("\n"))
-            applog(nil, :fatal, message)
+            God.log(nil, :fatal, message)
           end
         end
       end

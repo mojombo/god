@@ -63,8 +63,8 @@ module God
             self.info = "failed to send webhook to #{arg(:url)}: #{res.error!}"
         end
       rescue Object => e
-        applog(nil, :info, "failed to send email to #{arg(:url)}: #{e.message}")
-        applog(nil, :debug, e.backtrace.join("\n"))
+        God.log(nil, :info, "failed to send email to #{arg(:url)}: #{e.message}")
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
 
     end

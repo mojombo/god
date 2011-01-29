@@ -38,8 +38,8 @@ module God
           self.info = "failed to send prowl notification to #{self.name}: #{result.message}"
         end
       rescue Object => e
-        applog(nil, :info, "failed to send prowl notification to #{self.name}: #{e.message}")
-        applog(nil, :debug, e.backtrace.join("\n"))
+        God.log(nil, :info, "failed to send prowl notification to #{self.name}: #{e.message}")
+        God.log(nil, :debug, e.backtrace.join("\n"))
       end
 
       def map_priority(priority)

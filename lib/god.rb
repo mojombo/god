@@ -73,13 +73,6 @@ load_contact(:twitter)
 load_contact(:webhook)
 
 
-# App wide logging system
-LOG = God::Logger.new
-
-def applog(watch, level, text)
-  LOG.log(watch, level, text)
-end
-
 # The $run global determines whether god should be started when the
 # program would normally end. This should be set to true if when god
 # should be started (e.g. `god -c <config file>`) and false otherwise
@@ -134,6 +127,14 @@ module God
                   :main
   end
 
+  def self.logger
+    @logger ||= God::Logger.new
+  end
+
+  def self.log(watch, level, text)
+    self.logger.log(watch, level, text)
+  end
+
   # initialize class instance variables
   self.pid = nil
   self.host = nil
@@ -173,12 +174,15 @@ module God
     self.setup
 
     # log level
-    log_level_map = {:debug => Logger::DEBUG,
-                     :info => Logger::INFO,
-                     :warn => Logger::WARN,
-                     :error => Logger::ERROR,
-                     :fatal => Logger::FATAL}
-    LOG.level = log_level_map[self.log_level]
+    log_level_map = {
+      :debug => Logger::DEBUG,
+      :info => Logger::INFO,
+      :warn => Logger::WARN,
+      :error => Logger::ERROR,
+      :fatal => Logger::FATAL
+    }
+
+    self.logger.level = log_level_map[self.log_level]
 
     # init has been executed
     self.inited = true
@@ -256,9 +260,9 @@ module God
 
     # log
     if self.running && existing_watch
-      applog(t, :info, "#{t.name} Reloaded config")
+      self.log(t, :info, "#{t.name} Reloaded config")
     elsif self.running
-      applog(t, :info, "#{t.name} Loaded config")
+      self.log(t, :info, "#{t.name} Loaded config")
     end
   end
 
@@ -281,7 +285,7 @@ module God
       self.groups[watch.group].delete(watch)
     end
 
-    applog(watch, :info, "#{watch.name} unwatched")
+    self.log(watch, :info, "#{watch.name} unwatched")
   end
 
   # Instantiate a new Contact of the given kind and send it to the block.
@@ -299,10 +303,10 @@ module God
 
     # verify contact has been loaded
     if CONTACT_LOAD_SUCCESS[kind] == false
-      applog(nil, :error, "A required dependency for the #{kind} contact is unavailable.")
-      applog(nil, :error, "Run the following commands to install the dependencies:")
+      self.log(nil, :error, "A required dependency for the #{kind} contact is unavailable.")
+      self.log(nil, :error, "Run the following commands to install the dependencies:")
       CONTACT_DEPS[kind].each do |d|
-        applog(nil, :error, "  [sudo] gem install #{d}")
+        self.log(nil, :error, "  [sudo] gem install #{d}")
       end
       abort
     end
@@ -328,7 +332,7 @@ module God
 
     # warn and noop if the contact has been defined before
     if self.contacts[c.name] || self.contact_groups[c.name]
-      applog(nil, :warn, "Contact name '#{c.name}' already used for a Contact or Contact Group")
+      self.log(nil, :warn, "Contact name '#{c.name}' already used for a Contact or Contact Group")
       return
     end
 
@@ -476,7 +480,7 @@ module God
       raise NoSuchWatchError.new
     end
 
-    LOG.watch_log_since(matches.first, since)
+    self.logger.watch_log_since(matches.first, since)
   end
 
   # Load a config file into a running god instance. Rescues any exceptions
@@ -490,7 +494,7 @@ module God
     watches = []
 
     begin
-      LOG.start_capture
+      self.logger.start_capture
 
       Gem.clear_paths
       eval(code, root_binding, filename)
@@ -506,10 +510,10 @@ module God
       self.pending_watch_states.clear
 
       # make sure we quit capturing when we're done
-      LOG.finish_capture
+      self.logger.finish_capture
     rescue Exception => e
       # don't ever let running_load take down god
-      errors << LOG.finish_capture
+      errors << self.logger.finish_capture
 
       unless e.instance_of?(SystemExit)
         errors << e.message << "\n"
@@ -566,12 +570,12 @@ module God
     end
 
     if God::Logger.syslog
-      LOG.info("Syslog enabled.")
+      self.logger.info("Syslog enabled.")
     else
-      LOG.info("Syslog disabled.")
+      self.logger.info("Syslog disabled.")
     end
 
-    applog(nil, :info, "Using pid file directory: #{self.pid_file_directory}")
+    self.log(nil, :info, "Using pid file directory: #{self.pid_file_directory}")
   end
 
   # Initialize and startup the machinery that makes god work.
