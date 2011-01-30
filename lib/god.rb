@@ -18,6 +18,8 @@ require 'god/core_ext/kernel'
 require 'god/core_ext/module'
 
 # internal requires
+require 'god/clean_room'
+
 require 'god/errors'
 require 'god/simple_logger'
 require 'god/logger'
@@ -80,11 +82,6 @@ load_contact(:webhook)
 $run ||= nil
 
 GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
-
-# Return the binding of god's root level
-def root_binding
-  binding
-end
 
 
 module God
@@ -497,7 +494,7 @@ module God
       self.logger.start_capture
 
       Gem.clear_paths
-      eval(code, root_binding, filename)
+      eval(code, CleanRoom.safe_binding, filename)
       self.pending_watches.each do |w|
         if previous_state = self.pending_watch_states[w.name]
           w.monitor unless previous_state == :unmonitored
