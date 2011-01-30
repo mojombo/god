@@ -8,36 +8,23 @@ module God
       end
       # Memory usage in kilobytes (resident set size)
       def memory
-        ps_int('rss')
+        ps_command('rss').to_i
       end
 
       # Percentage memory usage
       def percent_memory
-        ps_float('%mem')
+        ps_command('%mem').to_f
       end
 
       # Percentage CPU usage
       def percent_cpu
-        ps_float('%cpu')
+        ps_command('%cpu').to_f
       end
 
       private
 
-      def ps_int(keyword)
-        `ps -o #{keyword}= -p #{@pid}`.to_i
-      end
-
-      def ps_float(keyword)
-        `ps -o #{keyword}= -p #{@pid}`.to_f
-      end
-
-      def ps_string(keyword)
-        `ps -o #{keyword}= -p #{@pid}`.strip
-      end
-
-      def time_string_to_seconds(text)
-        _, minutes, seconds, useconds = *text.match(/(\d+):(\d{2}).(\d{2})/)
-        (minutes.to_i * 60) + seconds.to_i
+      def ps_command(keyword)
+        `ps -o #{keyword}= -p #{@pid}`
       end
 
     end

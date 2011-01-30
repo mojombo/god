@@ -1,17 +1,28 @@
 require 'helper'
 
 class TestSystemPortablePoller < Test::Unit::TestCase
+
   def setup
-    pid = Process.pid
-    @process = System::PortablePoller.new(pid)
+    @poller = System::PortablePoller.new(100)
   end
 
-  def test_time_string_to_seconds
-    assert_equal 0, @process.bypass.time_string_to_seconds('0:00:00')
-    assert_equal 0, @process.bypass.time_string_to_seconds('0:00:55')
-    assert_equal 27, @process.bypass.time_string_to_seconds('0:27:32')
-    assert_equal 75, @process.bypass.time_string_to_seconds('1:15:13')
-    assert_equal 735, @process.bypass.time_string_to_seconds('12:15:13')
+  def test_memory
+    System::PortablePoller.any_instance.stubs(:ps_command).with('rss').returns("   608\n")
+
+    assert_equal 608, @poller.memory
   end
+
+  def test_percent_memory
+    System::PortablePoller.any_instance.stubs(:ps_command).with('%mem').returns(" 10.0\n")
+
+    assert_equal 10.0, @poller.percent_memory
+  end
+
+  def test_percent_cpu
+    System::PortablePoller.any_instance.stubs(:ps_command).with('%cpu').returns(" 10.0\n")
+
+    assert_equal 10.0, @poller.percent_cpu
+  end
+
 end
 
