@@ -1,10 +1,12 @@
+require File.expand_path('../lib/god/version', __FILE__)
+
 Gem::Specification.new do |s|
   s.specification_version = 2 if s.respond_to? :specification_version=
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
   s.name = 'god'
-  s.version = '0.11.0'
   s.date = '2010-07-01'
+  s.version = God::VERSION::STRING
 
   s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
@@ -22,7 +24,7 @@ Gem::Specification.new do |s|
   s.extensions = %w[ext/god/extconf.rb]
 
   s.rdoc_options = ["--charset=UTF-8"]
-  s.extra_rdoc_files = %w[README.txt]
+  s.extra_rdoc_files = %w[README.mdown]
 
   s.add_development_dependency('test-unit', ["~> 2.1.2"])
   s.add_development_dependency('mocha',     ["~> 0.9.10"])
@@ -42,13 +44,17 @@ Gem::Specification.new do |s|
     Gemfile
     History.txt
     Improvements
-    README.txt
+    README.mdown
     Rakefile
     bin/god
     ext/god/.gitignore
     ext/god/extconf.rb
+    ext/god/god.c
+    ext/god/god.h
     ext/god/kqueue_handler.c
+    ext/god/kqueue_handler.h
     ext/god/netlink_handler.c
+    ext/god/netlink_handler.h
     god.gemspec
     lib/god.rb
     lib/god/behavior.rb
@@ -56,6 +62,7 @@ Gem::Specification.new do |s|
     lib/god/behaviors/clean_pid_file.rb
     lib/god/behaviors/clean_unix_socket.rb
     lib/god/behaviors/notify_when_flapping.rb
+    lib/god/clean_room.rb
     lib/god/cli/command.rb
     lib/god/cli/run.rb
     lib/god/cli/version.rb
@@ -84,6 +91,8 @@ Gem::Specification.new do |s|
     lib/god/contacts/scout.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
+    lib/god/core_ext/kernel.rb
+    lib/god/core_ext/module.rb
     lib/god/dependency_graph.rb
     lib/god/diagnostics.rb
     lib/god/driver.rb
@@ -127,6 +136,7 @@ Gem::Specification.new do |s|
     test/cases/test_process.rb
     test/cases/test_prowl.rb
     test/cases/test_registry.rb
+    test/cases/test_slash_proc_poller.rb
     test/cases/test_socket.rb
     test/cases/test_sugar.rb
     test/cases/test_system_portable_poller.rb
@@ -167,5 +177,5 @@ Gem::Specification.new do |s|
   ]
   # = MANIFEST =
 
-  s.test_files = s.files.select { |path| path =~ /^test\/test_.*\.rb/ }
+  s.test_files = s.files.select { |path| path =~ /^test\/cases\/test_.*\.rb/ }
 end
