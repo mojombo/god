@@ -81,8 +81,6 @@ load_contact(:webhook)
 # (e.g. `god status`)
 $run ||= nil
 
-GOD_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..'))
-
 
 module God
   VERSION = '0.11.0'
@@ -130,6 +128,10 @@ module God
 
   def self.log(watch, level, text)
     self.logger.log(watch, level, text)
+  end
+
+  def self.root
+    File.expand_path(File.join(File.dirname(__FILE__), '..'))
   end
 
   # initialize class instance variables
@@ -638,6 +640,7 @@ module God
       item =~ Regexp.new(regex)
     end.sort_by { |x| x.size }
   end
+
 end
 
 # Runs immediately before the program exits. If $run is true,
