@@ -5,7 +5,7 @@
     w.interval = 0
     w.grace = 2
     w.group = 'test'
-  
+
     w.start_if do |start|
       start.condition(:process_running) do |c|
         c.running = false

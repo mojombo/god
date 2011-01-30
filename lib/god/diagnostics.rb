@@ -11,12 +11,12 @@ end
 
 class BleakHouseDiagnostic
   LOG_FILE = File.join(File.dirname(__FILE__), *%w[.. .. logs bleak.log])
-  
+
   def self.install
     require 'snapshot'
     self.spin
   end
-  
+
   def self.snapshot
     @count ||= 0
     filename = "/tmp/god-bleak-%s-%03i.dump" % [Process.pid,@count]
@@ -25,7 +25,7 @@ class BleakHouseDiagnostic
     STDERR.puts "** BleakHouse: complete\n** Bleakhouse: Run 'bleak #{filename}' to analyze."
     @count += 1
   end
-  
+
   def self.spin(delay = 60)
     Thread.new do
       loop do

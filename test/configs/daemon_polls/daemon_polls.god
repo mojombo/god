@@ -6,9 +6,9 @@ God.watch do |w|
   w.pid_file = '/var/run/daemon-polls.pid'
   w.start_grace = 2.seconds
   w.log = File.join(File.dirname(__FILE__), *%w[out.log])
-  
+
   w.behavior(:clean_pid_file)
-  
+
   w.start_if do |start|
     start.condition(:process_running) do |c|
       c.running = false

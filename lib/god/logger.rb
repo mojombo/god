@@ -1,15 +1,15 @@
 module God
-  
+
   class Logger < SimpleLogger
 
     attr_accessor :logs
-    
+
     class << self
       attr_accessor :syslog
     end
-    
+
     self.syslog = defined?(Syslog)
-    
+
     # Instantiate a new Logger object
     def initialize(io = $stdout)
       super(io)
@@ -21,13 +21,13 @@ module God
       @templog = SimpleLogger.new(@templogio)
       @templog.level = Logger::INFO
     end
-    
-    
+
+
     def level=(lev)
       SysLogger.level = SimpleLogger::CONSTANT_TO_SYMBOL[lev] if Logger.syslog
       super(lev)
     end
-    
+
     # Log a message
     #   +watch+ is the String name of the Watch (may be nil if not Watch is applicable)
     #   +level+ is the log level [:debug|:info|:warn|:error|:fatal]
@@ -61,7 +61,7 @@ module God
       # send to syslog
       SysLogger.log(level, text) if Logger.syslog
     end
-    
+
     # Get all log output for a given Watch since a certain Time.
     #   +watch_name+ is the String name of the Watch
     #   +since+ is the Time since which to fetch log lines
@@ -70,7 +70,7 @@ module God
     def watch_log_since(watch_name, since)
       # initialize watch log if necessary
       self.logs[watch_name] ||= Timeline.new(God::LOG_BUFFER_SIZE_DEFAULT)
-      
+
       # get and join lines since given time
       @mutex.synchronize do
         @spool = Time.now
@@ -81,9 +81,9 @@ module God
         end.join
       end
     end
-    
+
     # private
-    
+
     # Enable capturing of log
     #
     # Returns nothing
@@ -92,7 +92,7 @@ module God
         @capture = StringIO.new
       end
     end
-    
+
     # Disable capturing of log and return what was captured since
     # capturing was enabled with Logger#start_capture
     #
@@ -105,5 +105,5 @@ module God
       end
     end
   end
-  
+
 end

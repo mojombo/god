@@ -3,20 +3,20 @@ God.watch do |w|
   w.interval = 5.seconds
   w.start = File.join(GOD_ROOT, *%w[test configs complex simple_server.rb])
   # w.log = File.join(GOD_ROOT, *%w[test configs child_events god.log])
-  
+
   # determine the state on startup
   w.transition(:init, { true => :up, false => :start }) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end
   end
-  
+
   # determine when process has finished starting
   w.transition([:start, :restart], :up) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end
-    
+
     # failsafe
     on.condition(:tries) do |c|
       c.times = 2
@@ -28,7 +28,7 @@ God.watch do |w|
   w.transition(:up, :start) do |on|
     on.condition(:process_exits)
   end
-  
+
   # restart if process is misbehaving
   w.transition(:up, :restart) do |on|
     on.condition(:complex) do |cc|
@@ -36,14 +36,14 @@ God.watch do |w|
         c.above = 0.percent
         c.times = 1
       end
-      
+
       cc.and(:memory_usage) do |c|
         c.above = 0.megabytes
         c.times = 3
       end
     end
   end
-  
+
   # lifecycle
   w.lifecycle do |on|
     on.condition(:flapping) do |c|

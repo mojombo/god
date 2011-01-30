@@ -7,22 +7,22 @@ God.watch do |w|
   w.log = File.join(File.dirname(__FILE__), 'daemon_events.log')
   w.uid = 'tom'
   w.gid = 'tom'
-  
+
   w.behavior(:clean_pid_file)
-  
+
   # determine the state on startup
   w.transition(:init, { true => :up, false => :start }) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end
   end
-  
+
   # determine when process has finished starting
   w.transition([:start, :restart], :up) do |on|
     on.condition(:process_running) do |c|
       c.running = true
     end
-    
+
     # failsafe
     on.condition(:tries) do |c|
       c.times = 2
