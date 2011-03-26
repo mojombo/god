@@ -79,10 +79,10 @@ nlh_handle_events()
         }
         
         extra_data = rb_hash_new();
-        rb_hash_aset(extra_data, rb_intern("parent_pid"), INT2FIX(event->event_data.fork.parent_pid));
-        rb_hash_aset(extra_data, rb_intern("parent_thread_group_id"), INT2FIX(event->event_data.fork.parent_tgid));
-        rb_hash_aset(extra_data, rb_intern("child_pid"), INT2FIX(event->event_data.fork.child_pid));
-        rb_hash_aset(extra_data, rb_intern("child_thread_group_id"), INT2FIX(event->event_data.fork.child_tgid));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("parent_pid")), INT2FIX(event->event_data.fork.parent_pid));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("parent_thread_group_id")), INT2FIX(event->event_data.fork.parent_tgid));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("child_pid")), INT2FIX(event->event_data.fork.child_pid));
+        rb_hash_aset(extra_data, ID2SYM(rb_intern("child_thread_group_id")), INT2FIX(event->event_data.fork.child_tgid));
       
         rb_funcall(cEventHandler, m_call, 3, INT2FIX(event->event_data.fork.parent_pid), ID2SYM(proc_fork), extra_data);
         return INT2FIX(1);
