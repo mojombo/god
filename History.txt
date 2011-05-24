@@ -1,6 +1,7 @@
 == HEAD
   * Minor Enhancements
     * Add umask support
+    * Add socket response condition (#25)
   * Bug Fixes
     * Use IO.print instead of IO.puts for thread safety (#35)
     * Fix Slashproc poller for commands with spaces (#31)
