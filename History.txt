@@ -2,6 +2,7 @@
   * Minor Enhancements
     * Add umask support
     * Add socket response condition (#25)
+    * Don't require tests run as sudo under non-linux systems (#15)
   * Bug Fixes
     * Use IO.print instead of IO.puts for thread safety (#35)
     * Fix Slashproc poller for commands with spaces (#31)
