@@ -74,7 +74,15 @@ module God
       
       def stat
         stats = {}
-        stats[:pid], stats[:comm], stats[:state], stats[:ppid], stats[:pgrp],
+        proc_stats = File.read("/proc/#{@pid}/stat").split
+
+        stats[:pid] = proc_stats.shift
+
+        comm = [proc_stats.shift]
+        comm << proc_stats.shift while comm.first[0] == ?( and comm.last[-1] != ?)
+        stats[:comm] = comm.join(" ")
+
+        stats[:state], stats[:ppid], stats[:pgrp],
         stats[:session], stats[:tty_nr], stats[:tpgid], stats[:flags],
         stats[:minflt], stats[:cminflt], stats[:majflt], stats[:cmajflt],
         stats[:utime], stats[:stime], stats[:cutime], stats[:cstime],
@@ -84,7 +92,7 @@ module God
         stats[:kstkeip], stats[:signal], stats[:blocked], stats[:sigignore],
         stats[:sigcatch], stats[:wchan], stats[:nswap], stats[:cnswap],
         stats[:exit_signal], stats[:processor], stats[:rt_priority],
-        stats[:policy] = File.read("/proc/#{@pid}/stat").split
+        stats[:policy] = proc_stats
         stats
       end
     end
