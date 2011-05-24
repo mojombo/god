@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib ext]
 
   s.executables = ["god"]
-  s.default_executable = 'god'
   s.extensions = %w[ext/god/extconf.rb]
 
   s.rdoc_options = ["--charset=UTF-8"]
