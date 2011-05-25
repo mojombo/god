@@ -10,10 +10,13 @@
 # === SMTP Options (when delivery_method = :smtp) ===
 # server_host     - The String hostname of the SMTP server (default: localhost).
 # server_port     - The Integer port of the SMTP server (default: 25).
-# server_auth     - The Boolean of whether or not to use authentication
-#                   (default: false).
+# server_auth     - The Symbol authentication method. Possible values:
+#                   [ nil | :plain | :login | :cram_md5 ]
+#                   The default is nil, which means no authentication. To
+#                   enable authentication, pass the appropriate symbol and
+#                   then pass the appropriate SMTP Auth Options (below).
 #
-# === SMTP Auth Options (when server_auth = true) ===
+# === SMTP Auth Options (when server_auth != nil) ===
 # server_domain   - The String domain.
 # server_user     - The String username.
 # server_password - The String password.
@@ -41,7 +44,7 @@ module God
       self.from_email = 'god@example.com'
       self.from_name = 'God Process Monitoring'
       self.delivery_method = :smtp
-      self.server_auth = false
+      self.server_auth = nil
       self.server_host = 'localhost'
       self.server_port = 25
       self.sendmail_path = '/usr/sbin/sendmail'
