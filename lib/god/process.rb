@@ -317,7 +317,7 @@ module God
 
         if self.env && self.env.is_a?(Hash)
           self.env.each do |(key, value)|
-            ENV[key] = value
+            ENV[key] = value.to_s
           end
         end
 
