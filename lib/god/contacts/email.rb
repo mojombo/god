@@ -17,6 +17,8 @@
 # server_domain   - The String domain.
 # server_user     - The String username.
 # server_password - The String password.
+# server_authtype - The Symbol smpt authentication method [ :plain | :login |
+#					:cram_md5 ] (default: :plain)
 #
 # === Sendmail Options (when delivery_method = :sendmail) ===
 # sendmail_path   - The String path to the sendmail executable
@@ -34,7 +36,8 @@ module God
         attr_accessor :to_email, :to_name, :from_email, :from_name,
                       :delivery_method, :server_host, :server_port,
                       :server_auth, :server_domain, :server_user,
-                      :server_password, :sendmail_path, :sendmail_args
+                      :server_password, :sendmail_path, :sendmail_args,
+                      :server_authtype
         attr_accessor :format
       end
 
@@ -46,7 +49,8 @@ module God
       self.server_port = 25
       self.sendmail_path = '/usr/sbin/sendmail'
       self.sendmail_args = '-i -t'
-
+	  self.server_authtype = :plain
+	  
       self.format = lambda do |name, from_email, from_name, to_email, to_name, message, time, priority, category, host|
         <<-EOF
 From: #{from_name} <#{from_email}>
@@ -65,7 +69,8 @@ Category: #{category}
       attr_accessor :to_email, :to_name, :from_email, :from_name,
                     :delivery_method, :server_host, :server_port,
                     :server_auth, :server_domain, :server_user,
-                    :server_password, :sendmail_path, :sendmail_args
+                    :server_password, :server_authtype, :sendmail_path, 
+                    :sendmail_args
 
       def valid?
         valid = true
@@ -78,6 +83,7 @@ Category: #{category}
             valid &= complain("Attribute 'server_domain' must be specified", self) unless arg(:server_domain)
             valid &= complain("Attribute 'server_user' must be specified", self) unless arg(:server_user)
             valid &= complain("Attribute 'server_password' must be specified", self) unless arg(:server_password)
+            valid &= complain("Attribute 'server_authtype' must be specified", self) unless arg(:server_authtype)
           end
         end
         valid
@@ -107,7 +113,7 @@ Category: #{category}
           args << arg(:server_domain)
           args << arg(:server_user)
           args << arg(:server_password)
-          args << arg(:server_auth)
+          args << arg(:server_authtype)
         end
 
         Net::SMTP.start(*args) do |smtp|
