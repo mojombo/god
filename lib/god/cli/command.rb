@@ -49,12 +49,19 @@ module God
           abort "File not found: #{file}"
         end
         
-        names, errors = *@server.running_load(File.read(file), File.expand_path(file))
+        affected, errors, removed = *@server.running_load(File.read(file), File.expand_path(file))
         
         # output response
-        unless names.empty?
+        unless affected.empty?
           puts 'The following tasks were affected:'
           names.each do |w|
+            puts '  ' + w
+          end
+        end
+
+        unless removed.empty?
+          puts 'The following tasks were removed:'
+          removed.each do |w|
             puts '  ' + w
           end
         end
