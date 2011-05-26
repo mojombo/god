@@ -4,29 +4,37 @@ require 'date'
 
 #############################################################################
 #
-# The name of the package
-#
-#############################################################################
-
-NAME = 'god'
-
-#############################################################################
-#
 # Helper functions
 #
 #############################################################################
 
-def source_version
-  line = File.read("lib/#{NAME}.rb")[/^\s*VERSION\s*=\s*.*/]
+def name
+  @name ||= Dir['*.gemspec'].first.split('.').first
+end
+
+def version
+  line = File.read("lib/#{name}.rb")[/^\s*VERSION\s*=\s*.*/]
   line.match(/.*VERSION\s*=\s*['"](.*)['"]/)[1]
 end
 
+def date
+  Date.today.to_s
+end
+
+def rubyforge_project
+  name
+end
+
 def gemspec_file
-  "#{NAME}.gemspec"
+  "#{name}.gemspec"
 end
 
 def gem_file
-  "#{NAME}-#{source_version}.gem"
+  "#{name}-#{version}.gem"
+end
+
+def replace_header(head, header_name)
+  head.sub!(/(\.#{header_name}\s*= ').*'/) { "#{$1}#{send(header_name)}'"}
 end
 
 #############################################################################
@@ -44,7 +52,7 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-desc "Generate and open coverage stats via rcov"
+desc "Generate RCov test coverage and open in your browser"
 task :coverage do
   require 'rcov'
   sh "rm -fr coverage"
@@ -55,14 +63,14 @@ end
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "#{NAME} #{source_version}"
+  rdoc.title = "#{name} #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
 desc "Open an irb session preloaded with this library"
 task :console do
-  sh "irb -rubygems -r ./lib/#{NAME}.rb"
+  sh "irb -rubygems -r ./lib/#{name}.rb"
 end
 
 #############################################################################
@@ -87,38 +95,45 @@ end
 #
 #############################################################################
 
+desc "Create tag v#{version} and build and push #{gem_file} to Rubygems"
 task :release => :build do
   unless `git branch` =~ /^\* master$/
     puts "You must be on the master branch to release!"
     exit!
   end
-  sh "git commit --allow-empty -a -m 'up to #{source_version}'"
-  sh "git tag v#{source_version}"
-  sh "git push origin master --tags"
-  sh "gem push pkg/#{NAME}-#{source_version}.gem"
+  sh "git commit --allow-empty -a -m 'Release #{version}'"
+  sh "git tag v#{version}"
+  sh "git push origin master"
+  sh "git push origin v#{version}"
+  sh "gem push pkg/#{name}-#{version}.gem"
 end
 
+desc "Build #{gem_file} into the pkg directory"
 task :build => :gemspec do
   sh "mkdir -p pkg"
   sh "gem build #{gemspec_file}"
   sh "mv #{gem_file} pkg"
 end
 
-task :gemspec => :validate do
+desc "Generate #{gemspec_file}"
+task :gemspec do
   # read spec file and split out manifest section
   spec = File.read(gemspec_file)
   head, manifest, tail = spec.split("  # = MANIFEST =\n")
 
-  # replace version and date
-  head.sub!(/\.version = '.*'/, ".version = '#{source_version}'")
-  head.sub!(/\.date = '.*'/, ".date = '#{Date.today.to_s}'")
+  # replace name version and date
+  replace_header(head, :name)
+  replace_header(head, :version)
+  replace_header(head, :date)
+  #comment this out if your rubyforge_project has a different name
+  replace_header(head, :rubyforge_project)
 
   # determine file list from git ls-files
   files = `git ls-files`.
     split("\n").
     sort.
     reject { |file| file =~ /^\./ }.
-    reject { |file| file =~ /^(examples|ideas|init|site)/ }.
+    reject { |file| file =~ /^(rdoc|pkg|examples|ideas|init|site)/ }.
     map { |file| "    #{file}" }.
     join("\n")
 
@@ -127,16 +142,4 @@ task :gemspec => :validate do
   spec = [head, manifest, tail].join("  # = MANIFEST =\n")
   File.open(gemspec_file, 'w') { |io| io.write(spec) }
   puts "Updated #{gemspec_file}"
-end
-
-task :validate do
-  libfiles = Dir['lib/*'] - ["lib/#{NAME}.rb", "lib/#{NAME}"]
-  unless libfiles.empty?
-    puts "Directory `lib` should only contain a `#{NAME}.rb` file and `#{NAME}` dir."
-    exit!
-  end
-  unless Dir['VERSION*'].empty?
-    puts "A `VERSION` file at root level violates Gem best practices."
-    exit!
-  end
 end
