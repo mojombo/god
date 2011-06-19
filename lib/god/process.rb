@@ -236,15 +236,14 @@ module God
           r, w = IO.pipe
           begin
             opid = fork do
-              STDOUT.reopen(w)
               r.close
               pid = self.spawn(command)
-              puts pid.to_s # send pid back to forker
+              w.puts "#{pid.to_s}\n" # send pid back to forker
             end
             
-            ::Process.waitpid(opid, 0)
             w.close
             pid = r.gets.chomp
+            ::Process.waitpid(opid, 0)
           ensure
             # make sure the file descriptors get closed no matter what
             r.close rescue nil
