@@ -8,7 +8,7 @@ module God
     INITIAL_STATE = :init
 
     # config
-    attr_accessor :grace, :start_grace, :stop_grace, :restart_grace, :process
+    attr_accessor :grace, :start_grace, :stop_grace, :restart_grace
 
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart, :dir,
