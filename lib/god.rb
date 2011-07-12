@@ -498,7 +498,6 @@ module God
   def self.status
     info = {}
     self.watches.map do |name, w|
-      puts w.process.inspect
       info[name] = {:state => w.state, :group => w.group, :pid => w.pid}
     end
     info
