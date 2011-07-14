@@ -83,8 +83,9 @@ module God
           elsif groups[item]
             # specified group (0 -> up, N -> other)
             puts "#{item}:"
+            width = groups[item].keys.map(&:size).max
             groups[item].keys.sort.each do |name|
-              puts CLI::Command::process_state(name, groups[item][name])
+              puts CLI::Command::process_state(name, groups[item][name], width)
               exitcode += 1 unless state == :up
             end
           else
@@ -95,9 +96,10 @@ module God
           # show all groups and watches
           groups.keys.sort.each do |group|
             puts "#{group}:" unless group.empty?
+            width = groups[group].keys.map(&:size).max
             groups[group].keys.sort.each do |name|
               print "  " unless group.empty?
-              puts CLI::Command::process_state(name, groups[group][name])
+              puts CLI::Command::process_state(name, groups[group][name], width)
             end
           end
         end
@@ -260,21 +262,22 @@ module God
           st
         end
 
-        def process_state(name, obj)
+        # FIXME: God should handle the status of process
+        def process_state(name, obj, width = 0)
           state = obj[:state]
           st = []
-          st << "#{name}: #{state}\t"
+          st << sprintf("%#{width}s: %s", name, state)
           if state == :up
             pid = obj[:pid]
+            st << sprintf("pid %5d", pid)
             spid = System::Process.new(pid)
-            st << sprintf("pid %05d", pid)
             if spid.exists?
               st << "uptime #{CLI::Command::seconds_to_text(spid.uptime)}"
             else
-              st << "(non alive)"
+              st << "non alive"
             end
           end
-          st.join(" ")
+          st.join(", ")
         end
       end
     end # Command
