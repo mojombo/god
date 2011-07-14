@@ -78,18 +78,13 @@ module God
         if item = @args[1]
           if single = statuses[item]
             # specified task (0 -> up, 1 -> unmonitored, 2 -> other)
-            state = single[:state]
-            pid = (state == :up) ? ", pid #{single[:pid]}" : ""
-            puts "#{item}: #{state}#{pid}"
+            puts CLI::Command::process_state(name, single)
             exitcode = state == :up ? 0 : (state == :unmonitored ? 1 : 2)
           elsif groups[item]
             # specified group (0 -> up, N -> other)
             puts "#{item}:"
             groups[item].keys.sort.each do |name|
-              state = groups[item][name][:state]
-              pid = (state == :up) ? ", pid #{groups[item][name][:pid]}" : ""
-              print "  "
-              puts "#{name}: #{state}#{pid}"
+              puts CLI::Command::process_state(name, groups[item][name])
               exitcode += 1 unless state == :up
             end
           else
@@ -101,10 +96,8 @@ module God
           groups.keys.sort.each do |group|
             puts "#{group}:" unless group.empty?
             groups[group].keys.sort.each do |name|
-              state = groups[group][name][:state]
-              pid = (state == :up) ? ", pid #{groups[group][name][:pid]}" : ""
               print "  " unless group.empty?
-              puts "#{name}: #{state}#{pid}"
+              puts CLI::Command::process_state(name, groups[group][name])
             end
           end
         end
@@ -251,6 +244,37 @@ module God
           end
         else
           puts 'No matching task or group'
+        end
+      end
+
+      class << self
+        # See the source code of (procps-3.2.8/ps/output.c::pr_etime)
+        # See also ps(1). The format of etime: [[dd-]hh:]mm:ss.
+        def seconds_to_text(t)
+          ss = t%60 ; t /= 60 ; mm = t%60 ; t /= 60 ;
+          hh = t%24 ; t /= 24 ; dd = t
+          st = ""
+          st << sprintf("%u-", dd) unless dd.to_i.zero?
+          st << sprintf("%02u:", hh) unless dd.to_i.zero? and hh.to_i.zero?
+          st << sprintf("%02u:%02u", mm, ss)
+          st
+        end
+
+        def process_state(name, obj)
+          state = obj[:state]
+          st = []
+          st << "#{name}: #{state}\t"
+          if state == :up
+            pid = obj[:pid]
+            spid = System::Process.new(pid)
+            st << sprintf("pid %05d", pid)
+            if spid.exists?
+              st << "uptime #{CLI::Command::seconds_to_text(spid.uptime)}"
+            else
+              st << "(non alive)"
+            end
+          end
+          st.join(" ")
         end
       end
     end # Command
