@@ -78,7 +78,7 @@ module God
         if item = @args[1]
           if single = statuses[item]
             # specified task (0 -> up, 1 -> unmonitored, 2 -> other)
-            puts CLI::Command::process_state(name, single)
+            puts CLI::Command::process_state(item, single)
             exitcode = state == :up ? 0 : (state == :unmonitored ? 1 : 2)
           elsif groups[item]
             # specified group (0 -> up, N -> other)
