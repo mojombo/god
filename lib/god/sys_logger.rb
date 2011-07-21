@@ -35,7 +35,7 @@ begin
       #
       # Returns Nothing
       def self.log(level, text)
-        Syslog.log(SYMBOL_EQUIVALENTS[level], text)
+        Syslog.log(SYMBOL_EQUIVALENTS[level], '%s', text)
       end
     end
 
