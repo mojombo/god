@@ -28,9 +28,10 @@ module God
           end
         end
       end
-      
+
+      # returns memory used in bytes
       def memory
-        stat[:rss].to_i * @@kb_per_page
+        (stat[:rss].to_i * @@kb_per_page) * 1024
       rescue # This shouldn't fail is there's an error (or proc doesn't exist)
         0
       end
