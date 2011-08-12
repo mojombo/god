@@ -84,7 +84,7 @@ module God
         stats[:kstkeip], stats[:signal], stats[:blocked], stats[:sigignore],
         stats[:sigcatch], stats[:wchan], stats[:nswap], stats[:cnswap],
         stats[:exit_signal], stats[:processor], stats[:rt_priority],
-        stats[:policy] = File.read("/proc/#{@pid}/stat").split
+        stats[:policy] = File.read("/proc/#{@pid}/stat").scan(/\(.*?\)|\w+/)
         stats
       end
     end
