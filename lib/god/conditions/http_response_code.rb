@@ -1,4 +1,5 @@
 require 'net/http'
+require 'net/https'
 
 module God
   module Conditions
@@ -70,6 +71,7 @@ module God
                     :host,         # e.g. www.example.com
                     :port,         # e.g. 8080
                     :ssl,          # e.g. true or false
+                    :ca_file,      # e.g /path/to/pem_file for ssl verification (checkout http://curl.haxx.se/ca/cacert.pem)
                     :timeout,      # e.g. 60.seconds
                     :path,         # e.g. '/'
                     :headers       # e.g. {'Host' => 'myvirtual.mydomain.com'}
@@ -82,6 +84,7 @@ module God
         self.times = [1, 1]
         self.timeout = 60.seconds
         self.ssl = false
+        self.ca_file = nil
       end
 
       def prepare
@@ -113,7 +116,14 @@ module God
         response = nil
 
         connection = Net::HTTP.new(self.host, self.port)
-        connection.use_ssl = self.ssl
+        connection.use_ssl = self.port == 443 ? true : self.ssl
+        connection.verify_mode = OpenSSL::SSL::VERIFY_NONE if connection.use_ssl
+        
+        if connection.use_ssl && self.ca_file
+          pem = File.read(self.ca_file)
+          connection.ca_file = self.ca_file
+          connection.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        end
 
         connection.start do |http|
           http.read_timeout = self.timeout
