@@ -19,7 +19,7 @@ begin
     opts.banner = <<-EOF
   Usage:
     Starting:
-      god [-c <config file>] [-p <port> | -b] [-P <file>] [-l <file>] [-D]
+      god [-c <config file>] [-p <port> | -b] [-P <file>] [-l <file>] [-D] [-U]
       
     Querying:
       god <command> <argument> [-p <port>]
@@ -67,6 +67,11 @@ begin
     
     opts.on("-D", "--no-daemonize", "Don't daemonize") do
       options[:daemonize] = false
+    end
+    
+    # The tweet-text gem needs this in ruby < 1.8
+    opts.on("-U", "--utf8-charset", "Use UTF-8 character set (sets $KCODE to UTF8)") do
+      options[:utf8] = true
     end
     
     opts.on("-v", "--version", "Print the version number and exit") do

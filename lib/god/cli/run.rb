@@ -16,6 +16,10 @@ module God
           require 'god/sys_logger'
         end
         
+        if @options[:utf8]
+          $KCODE = 'UTF8'
+        end
+        
         # run
         if @options[:daemonize]
           run_daemonized
