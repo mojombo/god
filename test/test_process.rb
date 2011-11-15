@@ -207,7 +207,13 @@ class TestProcessDaemon < Test::Unit::TestCase
     @p.unix_socket = '/path/to-socket'
     assert_equal '/path/to-socket', @p.unix_socket
   end
-  
+
+  # umask
+  def test_umask_should_return_umask_specified
+    @p.umask = 002
+    assert_equal 002, @p.umask
+  end
+
   # call_action
   # These actually excercise call_action in the back at this point - Kev
   

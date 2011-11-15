@@ -4,33 +4,26 @@ require File.dirname(__FILE__) + '/helper'
 class TestJabber < Test::Unit::TestCase
 
   def setup
-    God::Contacts::Jabber.settings = { 
-      :jabber_id => 'test@example.com',
-      :password => 'pass'
-    }
     @jabber = God::Contacts::Jabber.new
-    @jabber.jabber_id = 'recipient@example.com'
   end
 
   def test_notify
-    assert_nothing_raised do
-      God::Contacts::Jabber.any_instance.expects(:connect!).once.returns(nil)
-      God::Contacts::Jabber.any_instance.expects(:send!).once.returns(nil)
-      @jabber.notify(:a, :b, :c, :d, :e)
-      assert_equal "sent jabber message to recipient@example.com", @jabber.info
-    end
+    @jabber.host = 'talk.google.com'
+    @jabber.from_jid = 'god@jabber.org'
+    @jabber.password = 'secret'
+    @jabber.to_jid = 'dev@jabber.org'
+
+    time = Time.now
+    body = God::Contacts::Jabber.format.call('msg', time, 'prio', 'cat', 'host')
+
+    assert_equal "Message: msg\nHost: host\nPriority: prio\nCategory: cat\n", body
+
+    Jabber::Client.any_instance.expects(:connect).with('talk.google.com', 5222)
+    Jabber::Client.any_instance.expects(:auth).with('secret')
+    Jabber::Client.any_instance.expects(:send)
+    Jabber::Client.any_instance.expects(:close)
+
+    @jabber.notify('msg', Time.now, 'prio', 'cat', 'host')
+    assert_equal "sent jabber message to dev@jabber.org", @jabber.info
   end
-  
-  # def test_live_notify
-  #   God::Contacts::Jabber.settings = { 
-  #     :jabber_id => 'real_user@example.com',
-  #     :password => 'pass'
-  #   }
-  #   recipient = "real_recipient@example.com"
-  #   
-  #   jabber = God::Contacts::Jabber.new
-  #   jabber.jabber_id = recipient
-  #   jabber.notify("Hello", Time.now, "Test", "Test", "localhost")
-  #   assert_equal "sent jabber message to #{recipient}", jabber.info
-  # end
 end

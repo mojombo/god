@@ -47,7 +47,7 @@
 	</ul>
 	</div>
 	
-	<h1>Installation (v 0.7.17)</h1>
+	<h1>Installation (v 0.11.0)</h1>
 	<p>The best way to get god is via rubygems:</p>
 	<pre>$ sudo gem install god</pre>
 	
@@ -211,38 +211,6 @@ end</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
-<h1>Changing UID/GID for processes</h1>
-
-<p>It is possible to have god run your start/stop/restart commands as a specific user/group. This can be done by setting the <code>uid</code> and/or <code>gid</code> attributes of a watch.</p>
-
-<pre><code class="ruby">  God.watch do |w|
-    ...
-    
-    w.uid = 'tom'
-    w.gid = 'devs'
-    
-    ...
-  end</code></pre>
-    
-</p>This only works for commands specified as a string. Lambda commands are unaffected.</p>
-
-
-<!-- ------------------------------------------------------------------------- -->
-
-<h1>Lambda commands</h1>
-
-<p>In addition to specifying start/stop/restart commands as strings (to be executed via the shell), you can specify a lambda that will be called.</p>
-
-<pre><code class="ruby">  God.watch do |w|
-    ...
-    
-    w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
-    
-    ...
-  end</code></pre>
-
-<!-- ------------------------------------------------------------------------- -->
-
 <h1>Starting and Controlling God</h1>
 
 <p>To start the god monitoring process as a daemon simply run the <code>god</code> executable passing in the path to the config file (you need to sudo if you're using events on Linux or want to use the setuid/setgid functionality):</p>
@@ -256,24 +224,6 @@ end</code></pre>
 <p>You can start/restart/stop/monitor/unmonitor your Watches with the same utility like so:</p>
 
 <pre>$ sudo god stop gravatar2-mongrel-8200</pre>
-
-<!-- ------------------------------------------------------------------------- -->
-
-<h1>Grouping Watches</h1>
-
-<p>Watches can be assigned to groups. These groups can then be controlled together from the command line.</p>
-
-<pre><code class="ruby">  God.watch do |w|
-    ...
-    
-    w.group = 'mongrels'
-    
-    ...
-  end</code></pre>
-    
-<p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
-
-<pre>$ sudo god stop mongrels</pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
@@ -418,6 +368,141 @@ end
 
 <!-- ------------------------------------------------------------------------- -->
 
+<h1>Grouping Watches</h1>
+
+<p>Watches can be assigned to groups. These groups can then be controlled together from the command line.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.group = 'mongrels'
+    
+    ...
+  end</code></pre>
+    
+<p>The above configuration now allows you to control the watch (and any others that are in the group) with a single command:</p>
+
+<pre>$ sudo god stop mongrels</pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Redirecting STDOUT and STDERR of your Process</h1>
+
+<p>By default, the STDOUT stream for your process is redirected to <code>/dev/null</code>. To get access to this output, you can redirect the stream either to a file or to a command.<p>
+  
+<p>To redirect STDOUT to a file, set the <code>log</code> attribute to a file path. The file will be written in append mode and created if it does not exist.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.log = '/var/log/myprocess.log'
+    
+    ...
+  end</code></pre>
+
+<p>To redirect STDOUT to a command that will be run for you, set the <code>log_cmd</code> attribute to a command.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.log_cmd = '/usr/bin/logger'
+    
+    ...
+  end</code></pre>
+
+<p>By default, STDERR is redirected to STDOUT. You can redirect it to a file or a command just like STDOUT by setting the <code>err_log</code> or <code>err_log_cmd</code> attributes respectively.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Changing UID/GID for processes</h1>
+
+<p>It is possible to have god run your start/stop/restart commands as a specific user/group. This can be done by setting the <code>uid</code> and/or <code>gid</code> attributes of a watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.uid = 'tom'
+    w.gid = 'devs'
+    
+    ...
+  end</code></pre>
+    
+</p>This only works for commands specified as a string. Lambda commands are unaffected.</p>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Setting the Working Directory</h1>
+
+<p>By default, God sets the working directory to / before running your process. You can change this by setting the <code>dir</code> attribute on the watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.dir = '/var/www/myapp'
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Setting environment variables</h1>
+
+<p>You can set any number of environment variables you wish via the <code>env</code> attribute of a watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.env = { 'RAILS_ROOT' => "/var/www/myapp",
+              'RAILS_ENV' => "production" }
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Using chroot to Change the File System Root</h1>
+
+<p>If you want your process to run chrooted, simply use the <code>chroot</code> attribute on the watch. The specified directory must exist and have a /dev/null.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.chroot = '/var/myroot'
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Lambda commands</h1>
+
+<p>In addition to specifying start/stop/restart commands as strings (to be executed via the shell), you can specify a lambda that will be called.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
+<h1>Customizing the Default Stop Lambda</h1>
+
+<p>If you do not provide a stop command, God will attempt to stop your process by first sending a SIGTERM. It will then wait for ten seconds for the process to exit. If after this time it still has not exited, it will be sent a SIGKILL. You can customize the stop signal and/or the time to wait for the process to exit by setting the <code>stop_signal</code> and <code>stop_timeout</code> attributes on the watch.</p>
+
+<pre><code class="ruby">  God.watch do |w|
+    ...
+    
+    w.stop_signal = 'QUIT'
+    w.stop_timeout = 20.seconds
+    
+    ...
+  end</code></pre>
+
+<!-- ------------------------------------------------------------------------- -->
+
 <h1>Watching Non-Daemon Processes</h1>
 
 <p>Need to watch a script that doesn't have built in daemonization? No problem! God will daemonize and keep track of your process for you. If you don't specify a <code>pid_file</code> attribute for a watch, it will be auto-daemonized and a PID file will be stored for it in <code>/var/run/god</code>. If you'd rather have the PID file stored in a different location, you can set it at the top of your config:</p>
@@ -474,45 +559,39 @@ God.load "/usr/local/conf/*.god"</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 
-<h1>Notifications</h1>
+<h1><a name="notifications">Notifications</a></h1>
 
-<p>God has an extensible notification framework built in that makes it easy to have notifications sent when conditions are triggered. There are three steps to enabling notifications.</p>
+<p>God has an extensible notification framework built in that makes it easy to have notifications sent when conditions are triggered. Each notification type has a set of configuration parameters that must be set. These parameters may be set globally via Contact Defaults or individually via Contact Instances.</p>
 
-<p>Step 1: Set the options for the notification subsystem(s) that you'll be using. Let's look at how to setup email notifications.</p>
+<p><b>Contact Defaults</b> - Some parameters are unlikely to change on a per-contact basis. You should set those parameters via the defaults mechanism.</p>
 
-<pre><code class="ruby">God::Contacts::Email.message_settings = {
-  :from => 'god@example.com'
-}
+<pre><code class="ruby">God::Contacts::Email.defaults do |d|
+  d.from_email = 'god@example.com'
+  d.from_name = 'God'
+  d.delivery_method = :sendmail
+end</code></pre>
 
-God::Contacts::Email.server_settings = {
-  :address => "smtp.example.com",
-  :port => 25,
-  :domain => "example.com",
-  :authentication => :plain,
-  :user_name => "john",
-  :password => "s3kr3ts"
-}</code></pre>
-
-<p>Step 2: Configure some contacts.</p>
+<p><b>Contact Instances</b> - Each contact must have a unique <code>name</code> set. You may optionally assign each contact to a <code>group</code>.</p>
 
 <pre><code class="ruby">God.contact(:email) do |c|
   c.name = 'tom'
-  c.email = 'tom@example.com'
+  c.group = 'developers'
+  c.to_email = 'tom@example.com'
 end
 
 God.contact(:email) do |c|
   c.name = 'vanpelt'
-  c.email = 'vanpelt@example.com'
   c.group = 'developers'
+  c.to_email = 'vanpelt@example.com'
 end
 
 God.contact(:email) do |c|
   c.name = 'kevin'
-  c.email = 'kevin@example.com'
   c.group = 'developers'
+  c.to_email = 'kevin@example.com'
 end</code></pre>
 
-<p>Step 3: Attach to a condition:</p>
+<p><b>Condition Attachment</b> - To have a specific contact notified when a condition is triggered, simply set the condition's <code>notify</code> attribute to the name of the individual contact.</p>
 
 <pre><code class="ruby">  w.transition(:up, :start) do |on|
     on.condition(:process_exits) do |c|
@@ -532,7 +611,7 @@ end</code></pre>
 
 <p>The above notification will arrive as an email similar to the following.</p>
 
-<pre><code>From: god &lt;god@example.com&gt;
+<pre><code>From: God &lt;god@example.com&gt;
 To: tom &lt;tom@example.com&gt;
 Subject: [god] mongrel-8600 [trigger] process exited (ProcessExits)
 
@@ -540,6 +619,180 @@ Message: mongrel-8600 [trigger] process exited (ProcessExits)
 Host: candymountain.example.com
 Priority: 1
 Category: product</code></pre>
+
+<h1>Available Notification Types</h1>
+
+<h2>Campfire</h2>
+
+<p>Send a notice to a Campfire room (<a href="http://campfirenow.com">http://campfirenow.com</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Campfire.defaults do |d|
+  ...
+end
+
+God.contact(:campfire) do |c|
+  ...
+end</code></pre>
+
+<pre><code>subdomain - The String subdomain of the Campfire account. If your URL is
+            "foo.campfirenow.com" then your subdomain is "foo".
+token     - The String token used for authentication.
+room      - The String room name to which the message should be sent.
+ssl       - A Boolean determining whether or not to use SSL
+            (default: false).</code></pre>
+
+<h2>Email</h2>
+
+<p>Send a notice to an email address.</p>
+
+<pre><code class="ruby">God::Contacts::Email.defaults do |d|
+  ...
+end
+
+God.contact(:email) do |c|
+  ...
+end</code></pre>
+
+<pre><code>to_email        - The String email address to which the email will be sent.
+to_name         - The String name corresponding to the recipient.
+from_email      - The String email address from which the email will be sent.
+from_name       - The String name corresponding to the sender.
+delivery_method - The Symbol delivery method. [ :smtp | :sendmail ]
+                  (default: :smtp).
+
+=== SMTP Options (when delivery_method = :smtp) ===
+server_host     - The String hostname of the SMTP server (default: localhost).
+server_port     - The Integer port of the SMTP server (default: 25).
+server_auth     - The Boolean of whether or not to use authentication
+                  (default: false).
+
+=== SMTP Auth Options (when server_auth = true) ===
+server_domain   - The String domain.
+server_user     - The String username.
+server_password - The String password.
+
+=== Sendmail Options (when delivery_method = :sendmail) ===
+sendmail_path   - The String path to the sendmail executable
+                  (default: "/usr/sbin/sendmail").
+sendmail_args   - The String args to send to sendmail (default "-i -t").</code></pre>
+
+<h2>Jabber</h2>
+
+<p>Send a notice to a Jabber address (<a href="http://jabber.org/">http://jabber.org/</a>).</p>
+
+<p>Google Mail addresses should work. If you need a non-Gmail address, you can sign up for one at <a href="http://register.jabber.org">http://register.jabber.org/</a>.</p>
+
+<pre><code class="ruby">God::Contacts::Jabber.defaults do |d|
+  ...
+end
+
+God.contact(:jabber) do |c|
+  ...
+end</code></pre>
+
+<pre><code>host     - The String hostname of the Jabber server.
+port     - The Integer port of the Jabber server.
+from_jid - The String Jabber ID of the sender.
+password - The String password of the sender.
+to_jid   - The String Jabber ID of the recipient.
+subject  - The String subject of the message (default: "God Notification").</code></pre>
+
+<h2>Prowl</h2>
+
+<p>Send a notice to Prowl (<a href="http://prowl.weks.net/">http://prowl.weks.net/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Prowl.defaults do |d|
+  ...
+end
+
+God.contact(:prowl) do |c|
+  ...
+end</code></pre>
+
+<pre><code>apikey - The String API key.</code></pre>
+
+<h2>Scout</h2>
+
+<p>Send a notice to Scout (<a href="http://scoutapp.com/">http://scoutapp.com/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Scout.defaults do |d|
+  ...
+end
+
+God.contact(:scout) do |c|
+  ...
+end</code></pre>
+
+<pre><code>client_key - The String client key.
+plugin_id  - The String plugin id.
+</code></pre>
+
+<h2>Twitter</h2>
+
+<p>Send a notice to a Twitter account (<a href="http://twitter.com/">http://twitter.com/</a>).</p>
+
+<p>In order to use the Twitter notification, you will need to authorize God via OAuth and then get the OAuth token and secret for your account. The easiest way to do this is with a Ruby gem called <code>twurl</code>. Install it like so:
+
+<pre><code>[sudo] gem install twurl</code></pre>
+
+Then, run the following:
+
+<pre><code>twurl auth --consumer-key gOhjax6s0L3mLeaTtBWPw \
+           --consumer-secret yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA</code></pre>
+
+<p>This will return a URL. Copy it to your clipboard. Make sure you are logged into Twitter with the account that will used for the notifications, and then paste the URL into a new browser window. At the end of the authentication process, you will be given a PIN. Copy this PIN and paste it back to the command line prompt. Once this is complete, you need to find your access token and secret:</p>
+
+<pre><code>cat ~/.twurlrc</code></pre>
+
+<p>This will output the contents of the config file from which you can grab your access token and secret:</p>
+
+<pre><code>---
+profiles:
+  mojombo:
+    gOhjax6s0L3mLeaTtBWPw:
+      <b style="color: red;">token: 17376380-KXA91nCrgaQ4HxUXMmZtM38gB56qS3hx1NYbjT6mQ</b>
+      consumer_key: gOhjax6s0L3mLeaTtBWPw
+      username: mojombo
+      consumer_secret: yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA
+      <b style="color: red;">secret: EBWFQBCtuMwCDeU4OXlc3LwGyY8OdWAV0Jg5KVB0</b>
+configuration:
+  default_profile:
+  - mojombo
+  - gOhjax6s0L3mLeaTtBWPw
+</code></pre>
+
+<p>The access token and secret (highlighted in red above) are what you need to use as parameters to the Twitter notification.</p>
+
+<pre><code class="ruby">God::Contacts::Twitter.defaults do |d|
+  ...
+end
+
+God.contact(:twitter) do |c|
+  ...
+end</code></pre>
+
+<pre><code>consumer_token  - The String OAuth consumer token (defaults to God's
+                  existing consumer token).
+consumer_secret - The String OAuth consumer secret (defaults to God's
+                  existing consumer secret).
+access_token    - The String OAuth access token.
+access_secret   - The String OAuth access secret.</code></pre>
+
+<h2>Webhook</h2>
+
+<p>Send a notice to a webhook (<a href="http://www.webhooks.org/">http://www.webhooks.org/</a>).</p>
+
+<pre><code class="ruby">God::Contacts::Webhook.defaults do |d|
+  ...
+end
+
+God.contact(:webhook) do |c|
+  ...
+end</code></pre>
+
+<pre><code>url    - The String webhook URL.
+format - The Symbol format [ :form | :json ] (default: :form).
+</code></pre>
 
 <!-- ------------------------------------------------------------------------- -->
 

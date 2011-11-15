@@ -12,6 +12,10 @@ module God
         # have at_exit start god
         $run = true
         
+        if @options[:syslog]
+          require 'god/sys_logger'
+        end
+        
         # run
         if @options[:daemonize]
           run_daemonized
@@ -36,7 +40,7 @@ module God
       def default_run
         # make sure we have STDIN/STDOUT redirected immediately
         setup_logging
-
+        
         # start attached pid watcher if necessary
         if @options[:attach]
           self.attach
@@ -91,10 +95,6 @@ module God
             # set pid if requested
             if @options[:pid] # and as deamon
               God.pid = @options[:pid] 
-            end
-            
-            unless @options[:syslog]
-              Logger.syslog = false
             end
             
             default_run

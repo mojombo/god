@@ -13,6 +13,12 @@ module God
                  ERROR => 'ERROR',
                  FATAL => 'FATAL'}
     
+    CONSTANT_TO_SYMBOL = { DEBUG => :debug,
+                           INFO => :info,
+                           WARN => :warn,
+                           ERROR => :error,
+                           FATAL => :fatal }
+    
     attr_accessor :datetime_format, :level
     
     def initialize(io)
@@ -26,7 +32,7 @@ module God
       
       time = Time.now.strftime(self.datetime_format)
       label = SEV_LABEL[level]
-      @io.print(label[0..0], ' [', time, '] ', label.rjust(5), ': ',  msg, "\n")
+      @io.print("#{label[0..0]} [#{time}] #{label.rjust(5)}: #{msg}\n")
     end
     
     def fatal(msg)

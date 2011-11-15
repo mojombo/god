@@ -38,8 +38,11 @@ module God
     
     # Create a new Server and star the DRb server
     #   +port+ is the port on which to start the DRb service (default nil)
-    def initialize(port = nil)
-      @port = port
+    def initialize(port = nil, user = nil, group = nil, perm = nil)
+      @port  = port
+      @user  = user
+      @group = group
+      @perm  = perm
       start
     end
     
@@ -89,6 +92,14 @@ module God
           @drb ||= DRb.start_service(self.socket, self)
           applog(nil, :info, "Started on #{DRb.uri}")
         end
+      end
+
+      if File.exists?(self.socket_file)
+        uid = Etc.getpwnam(@user).uid if @user
+        gid = Etc.getgrnam(@group).gid if @group
+
+        File.chmod(Integer(@perm), socket_file) if @perm
+        File.chown(uid, gid, socket_file) if uid or gid
       end
     end
   end

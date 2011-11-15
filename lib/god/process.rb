@@ -2,8 +2,9 @@ module God
   class Process
     WRITES_PID = [:start, :restart]
     
-    attr_accessor :name, :uid, :gid, :log, :log_cmd, :start, :stop, :restart,
-                  :unix_socket, :chroot, :env, :dir
+    attr_accessor :name, :uid, :gid, :log, :log_cmd, :err_log, :err_log_cmd,
+                  :start, :stop, :restart, :unix_socket, :chroot, :env, :dir,
+                  :stop_timeout, :stop_signal, :umask
     
     def initialize
       self.log = '/dev/null'
@@ -14,6 +15,8 @@ module God
       @pid = nil
       @unix_socket = nil
       @log_cmd = nil
+      @stop_timeout = God::STOP_TIMEOUT_DEFAULT
+      @stop_signal = God::STOP_SIGNAL_DEFAULT
     end
     
     def alive?
@@ -203,11 +206,11 @@ module God
         command = lambda do
           applog(self, :info, "#{self.name} stop: default lambda killer")
           
-          ::Process.kill('TERM', pid) rescue nil
-          applog(self, :info, "#{self.name} sent SIGTERM")
+          ::Process.kill(@stop_signal, pid) rescue nil
+          applog(self, :info, "#{self.name} sent SIG#{@stop_signal}")
           
           # Poll to see if it's dead
-          5.times do
+          @stop_timeout.times do
             begin
               ::Process.kill(0, pid)
             rescue Errno::ESRCH
@@ -220,14 +223,14 @@ module God
           end
           
           ::Process.kill('KILL', pid) rescue nil
-          applog(self, :info, "#{self.name} still alive; sent SIGKILL")
+          applog(self, :warn, "#{self.name} still alive after #{@stop_timeout}s; sent SIGKILL")
         end
       end
             
       if command.kind_of?(String)
         pid = nil
         
-        if @tracking_pid
+        if [:start, :restart].include?(action) && @tracking_pid
           # double fork god-daemonized processes
           # we don't want to wait for them to finish
           r, w = IO.pipe
@@ -283,6 +286,7 @@ module God
     # Returns nothing
     def spawn(command)
       fork do
+        File.umask self.umask if self.umask
         uid_num = Etc.getpwnam(self.uid).uid if self.uid
         gid_num = Etc.getgrnam(self.gid).gid if self.gid
 
@@ -300,14 +304,20 @@ module God
         else
           STDOUT.reopen file_in_chroot(self.log), "a"        
         end
-        STDERR.reopen STDOUT
+        if err_log_cmd
+          STDERR.reopen IO.popen(err_log_cmd, "a") 
+        elsif err_log && (log_cmd || err_log != log)
+          STDERR.reopen file_in_chroot(err_log), "a"        
+        else
+          STDERR.reopen STDOUT
+        end
         
         # close any other file descriptors
         3.upto(256){|fd| IO::new(fd).close rescue nil}
 
         if self.env && self.env.is_a?(Hash)
           self.env.each do |(key, value)|
-            ENV[key] = value
+            ENV[key] = value.to_s
           end
         end
 
@@ -320,13 +330,15 @@ module God
     #
     # Returns nothing
     def ensure_stop
+      applog(self, :warn, "#{self.name} ensuring stop...")
+
       unless self.pid
         applog(self, :warn, "#{self.name} stop called but pid is uknown")
         return
       end
       
       # Poll to see if it's dead
-      10.times do
+      @stop_timeout.times do
         begin
           ::Process.kill(0, self.pid)
         rescue Errno::ESRCH
@@ -339,7 +351,7 @@ module God
       
       # last resort
       ::Process.kill('KILL', self.pid) rescue nil
-      applog(self, :warn, "#{self.name} process still running 10 seconds after stop command returned. Force killing.")
+      applog(self, :warn, "#{self.name} still alive after #{@stop_timeout}s; sent SIGKILL")
     end
 
     private

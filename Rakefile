@@ -1,25 +1,49 @@
 require 'rubygems'
 require 'rake'
+require 'date'
 
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "god"
-    gem.rubyforge_project = "god"
-    gem.summary = 'Like monit, only awesome'
-    gem.description = "God is an easy to configure, easy to extend monitoring framework written in Ruby."
-    gem.email = "tom@mojombo.com"
-    gem.homepage = "http://god.rubyforge.org/"
-    gem.authors = ["Tom Preston-Werner"]
-    gem.require_paths = ["lib", "ext"]
-    gem.files.include("ext")
-    gem.extensions << 'ext/god/extconf.rb'
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
-  end
+#############################################################################
+#
+# Helper functions
+#
+#############################################################################
 
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
+def name
+  @name ||= Dir['*.gemspec'].first.split('.').first
 end
+
+def version
+  line = File.read("lib/#{name}.rb")[/^\s*VERSION\s*=\s*.*/]
+  line.match(/.*VERSION\s*=\s*['"](.*)['"]/)[1]
+end
+
+def date
+  Date.today.to_s
+end
+
+def rubyforge_project
+  name
+end
+
+def gemspec_file
+  "#{name}.gemspec"
+end
+
+def gem_file
+  "#{name}-#{version}.gem"
+end
+
+def replace_header(head, header_name)
+  head.sub!(/(\.#{header_name}\s*= ').*'/) { "#{$1}#{send(header_name)}'"}
+end
+
+#############################################################################
+#
+# Standard tasks
+#
+#############################################################################
+
+task :default => :test
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
@@ -28,12 +52,32 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-task :default => :test
+desc "Generate RCov test coverage and open in your browser"
+task :coverage do
+  require 'rcov'
+  sh "rm -fr coverage"
+  sh "rcov test/test_*.rb"
+  sh "open coverage/index.html"
+end
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "#{name} #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end
 
 desc "Open an irb session preloaded with this library"
 task :console do
-  sh "irb -rubygems -r ./lib/god.rb"
+  sh "irb -rubygems -r ./lib/#{name}.rb"
 end
+
+#############################################################################
+#
+# Custom tasks (add your own tasks here)
+#
+#############################################################################
 
 desc "Upload site to Rubyforge"
 task :site do
@@ -45,24 +89,57 @@ task :site_edge do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
 end
 
-desc "Run rcov"
-task :coverage do
-  `rm -fr coverage`
-  `rcov test/test_*.rb`
-  `open coverage/index.html`
+#############################################################################
+#
+# Packaging tasks
+#
+#############################################################################
+
+desc "Create tag v#{version} and build and push #{gem_file} to Rubygems"
+task :release => :build do
+  unless `git branch` =~ /^\* master$/
+    puts "You must be on the master branch to release!"
+    exit!
+  end
+  sh "git commit --allow-empty -a -m 'Release #{version}'"
+  sh "git tag v#{version}"
+  sh "git push origin master"
+  sh "git push origin v#{version}"
+  sh "gem push pkg/#{name}-#{version}.gem"
 end
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  if File.exist?('VERSION.yml')
-    config = YAML.load(File.read('VERSION.yml'))
-    version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
-  else
-    version = ""
-  end
+desc "Build #{gem_file} into the pkg directory"
+task :build => :gemspec do
+  sh "mkdir -p pkg"
+  sh "gem build #{gemspec_file}"
+  sh "mv #{gem_file} pkg"
+end
 
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "god #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+desc "Generate #{gemspec_file}"
+task :gemspec do
+  # read spec file and split out manifest section
+  spec = File.read(gemspec_file)
+  head, manifest, tail = spec.split("  # = MANIFEST =\n")
+
+  # replace name version and date
+  replace_header(head, :name)
+  replace_header(head, :version)
+  replace_header(head, :date)
+  #comment this out if your rubyforge_project has a different name
+  replace_header(head, :rubyforge_project)
+
+  # determine file list from git ls-files
+  files = `git ls-files`.
+    split("\n").
+    sort.
+    reject { |file| file =~ /^\./ }.
+    reject { |file| file =~ /^(rdoc|pkg|examples|ideas|init|site)/ }.
+    map { |file| "    #{file}" }.
+    join("\n")
+
+  # piece file back together and write
+  manifest = "  s.files = %w[\n#{files}\n  ]\n"
+  spec = [head, manifest, tail].join("  # = MANIFEST =\n")
+  File.open(gemspec_file, 'w') { |io| io.write(spec) }
+  puts "Updated #{gemspec_file}"
 end

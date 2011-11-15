@@ -47,22 +47,7 @@ require 'god/conditions/http_response_code'
 require 'god/conditions/disk_usage'
 require 'god/conditions/complex'
 require 'god/conditions/file_mtime'
-
-require 'god/contact'
-require 'god/contacts/email'
-require 'god/contacts/webhook'
-begin
-  require 'god/contacts/twitter'
-rescue LoadError
-end
-begin
-  require 'god/contacts/jabber'
-rescue LoadError
-end
-begin
-  require 'god/contacts/campfire'
-rescue LoadError
-end
+require 'god/conditions/socket_responding'
 
 require 'god/socket'
 require 'god/driver'
@@ -81,6 +66,25 @@ require 'god/cli/version'
 require 'god/cli/command'
 
 require 'god/diagnostics'
+
+CONTACT_DEPS = { }
+CONTACT_LOAD_SUCCESS = { }
+
+def load_contact(name)
+  require "god/contacts/#{name}"
+  CONTACT_LOAD_SUCCESS[name] = true
+rescue LoadError
+  CONTACT_LOAD_SUCCESS[name] = false
+end
+
+require 'god/contact'
+load_contact(:campfire)
+load_contact(:email)
+load_contact(:jabber)
+load_contact(:prowl)
+load_contact(:scout)
+load_contact(:twitter)
+load_contact(:webhook)
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
@@ -145,11 +149,15 @@ class Module
 end
 
 module God
+  VERSION = '0.11.0'
   LOG_BUFFER_SIZE_DEFAULT = 100
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
   DRB_PORT_DEFAULT = 17165
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
   LOG_LEVEL_DEFAULT = :info
+  TERMINATE_TIMEOUT_DEFAULT = 10
+  STOP_TIMEOUT_DEFAULT = 10
+  STOP_SIGNAL_DEFAULT = 'TERM'
   
   class << self
     # user configurable
@@ -161,7 +169,11 @@ module God
                        :pid_file_directory,
                        :log_file,
                        :log_level,
-                       :use_events
+                       :use_events,
+                       :terminate_timeout,
+                       :socket_user,
+                       :socket_group,
+                       :socket_perms
     
     # internal
     attr_accessor :inited,
@@ -184,6 +196,10 @@ module God
   self.log_buffer_size = nil
   self.pid_file_directory = nil
   self.log_level = nil
+  self.terminate_timeout = nil
+  self.socket_user = nil
+  self.socket_group = nil
+  self.socket_perms = 0755
   
   # Initialize internal data.
   #
@@ -205,6 +221,7 @@ module God
     self.port ||= DRB_PORT_DEFAULT
     self.allow ||= DRB_ALLOW_DEFAULT
     self.log_level ||= LOG_LEVEL_DEFAULT
+    self.terminate_timeout ||= TERMINATE_TIMEOUT_DEFAULT
     
     # additional setup
     self.setup
@@ -334,6 +351,16 @@ module God
   def self.contact(kind)
     self.internal_init
     
+    # verify contact has been loaded
+    if CONTACT_LOAD_SUCCESS[kind] == false
+      applog(nil, :error, "A required dependency for the #{kind} contact is unavailable.")
+      applog(nil, :error, "Run the following commands to install the dependencies:")
+      CONTACT_DEPS[kind].each do |d|
+        applog(nil, :error, "  [sudo] gem install #{d}")
+      end
+      abort
+    end
+    
     # create the contact
     begin
       c = Contact.generate(kind)
@@ -441,7 +468,7 @@ module God
       end
     end
     
-    10.times do
+    terminate_timeout.times do
       return true unless self.watches.map { |name, w| w.alive? }.any?
       sleep 1
     end
@@ -655,6 +682,12 @@ module God
       end
     end
     
+    if God::Logger.syslog
+      LOG.info("Syslog enabled.")
+    else
+      LOG.info("Syslog disabled.")
+    end
+    
     applog(nil, :info, "Using pid file directory: #{self.pid_file_directory}")
   end
   
@@ -665,7 +698,7 @@ module God
     self.internal_init
     
     # instantiate server
-    self.server = Socket.new(self.port)
+    self.server = Socket.new(self.port, self.socket_user, self.socket_group, self.socket_perms)
     
     # start monitoring any watches set to autostart
     self.watches.values.each { |w| w.monitor if w.autostart? }
@@ -688,8 +721,7 @@ module God
   end
   
   def self.version
-    yml = YAML.load(File.read(File.join(File.dirname(__FILE__), *%w[.. VERSION.yml])))
-    "#{yml[:major]}.#{yml[:minor]}.#{yml[:patch]}"
+    God::VERSION
   end
   
   # To be called on program exit to start god

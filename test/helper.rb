@@ -1,4 +1,5 @@
 require 'rubygems'
+require File.join(File.dirname(__FILE__), *%w[.. lib god sys_logger])
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
 God::EventHandler.load
 
@@ -7,7 +8,7 @@ require 'set'
 
 include God
 
-if Process.uid != 0
+if Process.uid != 0 and RbConfig::CONFIG['host_os'] == "linux"
   abort <<-EOF
 \n
 *********************************************************************
@@ -122,7 +123,7 @@ end
 class Object
   class Bypass
     instance_methods.each do |m|
-      undef_method m unless m =~ /^__/
+      undef_method m unless m =~ /^(__|object_id)/
     end
 
     def initialize(ref)

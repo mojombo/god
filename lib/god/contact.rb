@@ -24,6 +24,14 @@ module God
       valid
     end
     
+    def self.defaults
+      yield self
+    end
+    
+    def arg(name)
+      self.instance_variable_get("@#{name}") || self.class.instance_variable_get("@#{name}")
+    end
+    
     # Normalize the given notify specification into canonical form.
     #   +spec+ is the notify spec as a String, Array of Strings, or Hash
     #

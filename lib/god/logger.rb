@@ -1,19 +1,14 @@
 module God
   
   class Logger < SimpleLogger
-    SYSLOG_EQUIVALENTS = {:fatal => :crit,
-                          :error => :err,
-                          :warn => :debug,
-                          :info => :debug,
-                          :debug => :debug}
-    
+
     attr_accessor :logs
     
     class << self
       attr_accessor :syslog
     end
     
-    self.syslog ||= true
+    self.syslog = defined?(Syslog)
     
     # Instantiate a new Logger object
     def initialize(io = $stdout)
@@ -25,28 +20,12 @@ module God
       @templogio = StringIO.new
       @templog = SimpleLogger.new(@templogio)
       @templog.level = Logger::INFO
-      load_syslog
     end
     
-    # If Logger.syslog is true then attempt to load the syslog bindings. If syslog
-    # cannot be loaded, then set Logger.syslog to false and continue.
-    #
-    # Returns nothing
-    def load_syslog
-      return unless Logger.syslog
-      
-      begin
-        require 'syslog'
-        
-        # Ensure that Syslog is open
-        begin
-          Syslog.open('god')
-        rescue RuntimeError
-          Syslog.reopen('god')
-        end
-      rescue Exception
-        Logger.syslog = false
-      end
+    
+    def level=(lev)
+      SysLogger.level = SimpleLogger::CONSTANT_TO_SYMBOL[lev] if Logger.syslog
+      super(lev)
     end
     
     # Log a message
@@ -80,7 +59,7 @@ module God
       self.send(level, text)
 
       # send to syslog
-      Syslog.send(SYSLOG_EQUIVALENTS[level], text) if Logger.syslog
+      SysLogger.log(level, text) if Logger.syslog
     end
     
     # Get all log output for a given Watch since a certain Time.
