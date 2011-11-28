@@ -67,6 +67,11 @@ require 'god/cli/command'
 
 require 'god/diagnostics'
 
+# ruby 1.8 specific configuration
+if RUBY_VERSION < '1.9'
+  $KCODE = 'u'
+end
+
 CONTACT_DEPS = { }
 CONTACT_LOAD_SUCCESS = { }
 

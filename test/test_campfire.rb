@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/helper'
-require 'tinder'
 
 class TestCampfire < Test::Unit::TestCase
   def setup

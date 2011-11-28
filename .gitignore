@@ -7,3 +7,6 @@ logs
 *~
 .*.sw?
 .DS_Store
+Gemfile.lock
+bbin/
+.bundle

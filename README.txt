@@ -33,6 +33,12 @@ The 'master' branch can be cloned with:
 
   $ git clone git://github.com/mojombo/god.git
 
+Once you have the code locally, install dependencies and run tests:
+
+  $ cd god
+  $ bundle install
+  $ bundle exec rake
+
 == LICENSE:
 
 (The MIT License)

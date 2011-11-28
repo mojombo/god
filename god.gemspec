@@ -23,6 +23,9 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.extra_rdoc_files = %w[README.txt]
 
+  s.add_development_dependency('json')
+  s.add_development_dependency('rake')
+  s.add_development_dependency('rdoc')
   s.add_development_dependency('twitter', [">= 0.3.7"])
   s.add_development_dependency('prowly', [">= 0.2.1"])
   s.add_development_dependency('xmpp4r', [">= 0.4.0"])
