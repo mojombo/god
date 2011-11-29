@@ -33,8 +33,8 @@ class TestTask < Test::Unit::TestCase
   def test_transition_should_be_always_if_no_block_was_given
     @task.transition(:foo, :bar)
     
-    assert 1, @task.metrics.size
-    assert Conditions::Always, @task.metrics.keys.first.class
+    assert_equal 5, @task.metrics.size
+    assert_equal Conditions::Always, @task.metrics[:foo].first.conditions.first.class
   end
   
   # method_missing
