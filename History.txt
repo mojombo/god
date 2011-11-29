@@ -3,11 +3,13 @@
     * Add umask support
     * Add socket response condition (#25)
     * Don't require tests run as sudo under non-linux systems (#15)
+    * Add Bundler support
   * Bug Fixes
     * Use IO.print instead of IO.puts for thread safety (#35)
     * Fix Slashproc poller for commands with spaces (#31)
     * Various segfault and kernel panic fixes
     * Fix SMTP Auth documentation (#29)
+    * Fix a bunch of tests that were failing on Ruby 1.9
 
 == 0.11.0 / 2010-07-01
   * Major Changes
