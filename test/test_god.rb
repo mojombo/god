@@ -219,13 +219,14 @@ class TestGod < Test::Unit::TestCase
   def test_contact_should_create_and_store_contact
     contact = nil
     God.contact(:fake_contact) { |c| c.name = 'tom'; contact = c }
-    assert [contact], God.contacts
+    assert_equal({"tom" => contact}, God.contacts)
   end
   
   def test_contact_should_add_to_group
     God.contact(:fake_contact) { |c| c.name = 'tom'; c.group = 'devs' }
     God.contact(:fake_contact) { |c| c.name = 'chris'; c.group = 'devs' }
-    assert 2, God.contact_groups.size
+    assert_equal 2, God.contacts.size
+    assert_equal 1, God.contact_groups.size
   end
   
   def test_contact_should_abort_on_no_name
