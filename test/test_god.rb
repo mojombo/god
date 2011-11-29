@@ -273,6 +273,7 @@ class TestGod < Test::Unit::TestCase
     w = God.watches['foo']
     w.expects(:monitor)
     God.control('foo', 'start')
+    Thread.pass
   end
   
   def test_control_should_move_to_restart_on_restart
@@ -281,6 +282,7 @@ class TestGod < Test::Unit::TestCase
     w = God.watches['foo']
     w.expects(:move).with(:restart)
     God.control('foo', 'restart')
+    Thread.pass
   end
   
   def test_control_should_unmonitor_and_stop_on_stop
@@ -291,6 +293,7 @@ class TestGod < Test::Unit::TestCase
     w.expects(:unmonitor).returns(w)
     w.expects(:action).with(:stop)
     God.control('foo', 'stop')
+    Thread.pass
   end
   
   def test_control_should_unmonitor_on_unmonitor
@@ -300,6 +303,7 @@ class TestGod < Test::Unit::TestCase
     w.state = :up
     w.expects(:unmonitor).returns(w)
     God.control('foo', 'unmonitor')
+    Thread.pass
   end
   
   def test_control_should_unwatch_on_remove
