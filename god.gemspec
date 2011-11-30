@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
 
   s.name = 'god'
   s.version = '0.11.0'
-  s.date = '2011-05-25'
+  s.date = '2011-11-30'
 
   s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
@@ -38,8 +38,10 @@ Gem::Specification.new do |s|
   # = MANIFEST =
   s.files = %w[
     Announce.txt
+    Gemfile
     History.txt
-    README.txt
+    LICENSE
+    README.md
     Rakefile
     bin/god
     ext/god/.gitignore
