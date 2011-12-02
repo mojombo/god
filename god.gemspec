@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
 
   s.name = 'god'
   s.version = '0.11.0'
-  s.date = '2011-11-30'
+  s.date = '2011-12-02'
 
   s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.extensions = %w[ext/god/extconf.rb]
 
   s.rdoc_options = ["--charset=UTF-8"]
-  s.extra_rdoc_files = %w[README.txt]
+  s.extra_rdoc_files = %w[README.md]
 
   s.add_development_dependency('json', '~> 1.6')
   s.add_development_dependency('rake', '~> 0.9')
