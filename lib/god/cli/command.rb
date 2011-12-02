@@ -25,7 +25,7 @@ module God
       end
       
       def dispatch
-        if %w{load status signal log quit terminate}.include?(@command)
+        if %w{load reload status signal log quit terminate}.include?(@command)
           setup
           send("#{@command}_command")
         elsif %w{start stop restart monitor unmonitor remove}.include?(@command)
@@ -65,6 +65,45 @@ module God
         end
       end
       
+      def reload_command
+        file   = @args[1]
+        action = @args[2] || 'stop'
+
+        unless %w(stop remove).include?(action)
+          puts "Command '#{@command}' action must be either 'stop' or 'remove'"
+          exit(1)
+        end
+
+        puts "Sending '#{@command}' command with action '#{action}'"
+        puts
+
+        unless File.exist?(file)
+          abort "File not found: #{file}"
+        end
+
+        affected, removed, errors = *@server.running_reload(File.read(file), File.expand_path(file), action)
+
+        # output response
+        unless affected.empty?
+          puts 'The following tasks were affected:'
+          affected.each do |w|
+            puts '  ' + w
+          end
+        end
+
+        unless removed.empty?
+          puts 'The following tasks were removed:'
+          removed.each do |w|
+            puts '  ' + w
+          end
+        end
+
+        unless errors.empty?
+          puts errors
+          exit(1)
+        end
+      end
+
       def status_command
         exitcode = 0
         statuses = @server.status
