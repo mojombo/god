@@ -121,6 +121,98 @@ I [2011-12-07 09:55:09]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 09:55:14]  INFO: simple [ok] process is running (ProcessRunning)
 ```
 
+While keeping a process up is useful, it would be even better if we could make
+sure our process was behaving well and restart it when resource utilization
+exceeds our specifications. With a few additions, we can easily have our
+process restarted when memory usage or CPU goes above certain limits. Edit
+your `sample.god` config file to look like this:
+
+```ruby
+God.watch do |w|
+  w.name = "simple"
+  w.start = "ruby /full/path/to/simple.rb"
+  w.keepalive(:memory_max => 150.megabytes,
+              :cpu_max => 50.percent)
+end
+```
+
+Here I've specified a `:memory_max` option to the `keepalive` command. Now if
+the process memory usage goes above 150 megabytes, god will restart it.
+Similarly, by setting the `:cpu_max`, god will restart my process if it's CPU
+usage goes over 50%. By default these properties will be checked every 30
+seconds and will be acted upon if there is an overage for three out of any
+five checks. This prevents the process from getting restarted for temporary
+resource spikes.
+
+To test this out, modify your `simple.rb` server script to introduce a memory
+leak:
+
+```ruby
+data = ''
+loop do
+  puts 'Hello'
+  100000.times { data << 'x' }
+end
+```
+
+Ctrl-C out of the foregrounded god instance. Notice that your current `simple`
+server will continue to run. Now, start god again with the same command from
+above. Now instead of starting the `simple` process, it will notice that one
+is already running and simply switch to the `up` state.
+
+```terminal
+I [2011-12-07 14:50:46]  INFO: Loading simple.god
+I [2011-12-07 14:50:46]  INFO: Syslog enabled.
+I [2011-12-07 14:50:46]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-07 14:50:47]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-07 14:50:47]  INFO: simple move 'unmonitored' to 'up'
+I [2011-12-07 14:50:47]  INFO: simple moved 'unmonitored' to 'up'
+I [2011-12-07 14:50:47]  INFO: simple [ok] process is running (ProcessRunning)
+```
+
+In order to get our new `simple` server running, we can issue a command to god
+to have our process restarted:
+
+```terminal
+$ god restart simple
+```
+
+From the logs you can see god killing and restarting the process:
+
+```terminal
+I [2011-12-07 14:51:13]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:51:13]  INFO: simple move 'up' to 'restart'
+I [2011-12-07 14:51:13]  INFO: simple stop: default lambda killer
+I [2011-12-07 14:51:13]  INFO: simple sent SIGTERM
+I [2011-12-07 14:51:14]  INFO: simple process stopped
+I [2011-12-07 14:51:14]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-07 14:51:14]  INFO: simple moved 'up' to 'up'
+I [2011-12-07 14:51:14]  INFO: simple [ok] process is running (ProcessRunning)
+```
+
+God will now start reporting on memory and CPU utilization of your process:
+
+```terminal
+I [2011-12-07 14:54:37]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:37]  INFO: simple [ok] memory within bounds [2032kb] (MemoryUsage)
+I [2011-12-07 14:54:37]  INFO: simple [ok] cpu within bounds [0.0%%] (CpuUsage)
+I [2011-12-07 14:54:42]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:42]  INFO: simple [ok] memory within bounds [2032kb, 13492kb] (MemoryUsage)
+I [2011-12-07 14:54:42]  INFO: simple [ok] cpu within bounds [0.0%%, *99.7%%] (CpuUsage)
+I [2011-12-07 14:54:47]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:47]  INFO: simple [ok] memory within bounds [2032kb, 13492kb, 25568kb] (MemoryUsage)
+I [2011-12-07 14:54:47]  INFO: simple [ok] cpu within bounds [0.0%%, *99.7%%, *100.0%%] (CpuUsage)
+I [2011-12-07 14:54:52]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:52]  INFO: simple [ok] memory within bounds [2032kb, 13492kb, 25568kb, 37556kb] (MemoryUsage)
+I [2011-12-07 14:54:52]  INFO: simple [trigger] cpu out of bounds [0.0%%, *99.7%%, *100.0%%, *98.4%%] (CpuUsage)
+I [2011-12-07 14:54:52]  INFO: simple move 'up' to 'restart'
+```
+
+On the last line of the above log you can see that CPU usage has gone above
+50% for three cycles and god will issue a restart operation. God will continue
+to monitor the `simple` process for as long as god is running and the process
+is set to be monitored.
+
 Now, before you kill the god process, let's kill the `simple` server by asking
 god to stop it for us. In a new terminal, issue the command:
 
@@ -153,7 +245,9 @@ I [2011-12-07 10:00:08]  INFO: simple moved 'up' to 'unmonitored'
 Now feel free to Ctrl-C out of god. Congratulations! You've just taken god for
 a test ride and seen how easy it is to keep your processes running.
 
-This is just the beginning of what god can do. You can configure many
+This is just the beginning of what god can do, and in reality, the `keepalive`
+command is a convenience method written using more advanced transitional and
+condition constructs that may be used directly. You can configure many
 different kinds of conditions to have your process restarted when memory or
 CPU are too high, when disk usage is above a threshold, when a process returns
 an HTTP error code on a specific URL, and many more. In addition you can write
@@ -162,29 +256,6 @@ different lifecycle controls are available alongside a sophisticated and
 extensible notifications system. Keep reading to find out what makes god
 different from other monitoring systems and how it can help you solve many of
 your process monitoring and control problems.
-
-
-Advanced Keepalive
-------------------
-
-To get more control over your process, you can specify a few options to
-`keepalive`.
-
-```ruby
-God.watch do |w|
-  w.name = "simple"
-  w.start = "ruby /full/path/to/simple.rb"
-  w.keepalive(:memory_max => 150.megabytes,
-              :cpu_max => 50.percent)
-end
-```
-
-Here I've specified a `:memory_max`. Now if the process memory usage goes
-above 150 megabytes, god will restart it. Similarly, by setting the
-`:cpu_max`, god will restart my process if it's CPU usage goes over 50%. By
-default these properties will be checked every 30 seconds and will be acted
-upon if there is an overage for three out of any five checks. This prevents
-the process from getting restarted for temporary resource spikes.
 
 
 Config Files are Ruby Code!
@@ -197,11 +268,6 @@ href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels
 running:
 
 ```ruby
-# run with: god -c /path/to/mongrel.god -D
-#
-# This is the actual config file used to keep the mongrels of
-# gravatar.com running.
-
 RAILS_ROOT = "/Users/tom/dev/gravatar2"
 
 %w{8200 8201 8202}.each do |port|
