@@ -17,6 +17,7 @@ end
 require 'god/errors'
 require 'god/simple_logger'
 require 'god/logger'
+require 'god/sugar'
 
 require 'god/system/process'
 require 'god/system/portable_poller'
@@ -59,8 +60,6 @@ require 'god/trigger'
 require 'god/event_handler'
 require 'god/registry'
 require 'god/process'
-
-require 'god/sugar'
 
 require 'god/cli/version'
 require 'god/cli/command'

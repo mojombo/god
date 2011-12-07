@@ -63,6 +63,57 @@ module God
     
     ###########################################################################
     #
+    # Quickstart mode
+    #
+    ###########################################################################
+    
+    DEFAULT_KEEPALIVE_INTERVAL = 5.seconds
+    DEFAULT_KEEPALIVE_MEMORY_TIMES = [3, 5]
+    DEFAULT_KEEPALIVE_CPU_TIMES = [3, 5]
+    
+    # A set of conditions for easily getting started with simple watch
+    # scenarios. Keepalive is intended for use by beginners or on processes
+    # that do not need very sophisticated monitoring.
+    #
+    # If events are enabled, it will use the :process_exit event to determine
+    # if a process fails. Otherwise it will use the :process_running poll.
+    #
+    # options - The option Hash. Possible values are:
+    #           :interval -     The Integer number of seconds on which to poll
+    #                           for process status. Affects CPU, memory, and
+    #                           :process_running conditions (if used).
+    #           :memory_max   - The Integer memory max
+    #           :memory_times - If :memory_max is set, :memory_times can be
+    #                           set to specify the 
+    def keepalive(options = {})
+      self.start_if do |start|
+        start.condition(:process_running) do |c|
+          c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+          c.running = false
+        end
+      end
+      
+      self.restart_if do |restart|
+        if options[:memory_max]
+          restart.condition(:memory_usage) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.above = options[:memory_max]
+            c.times = options[:memory_times] || DEFAULT_KEEPALIVE_MEMORY_TIMES
+          end
+        end
+        
+        if options[:cpu_max]
+          restart.condition(:cpu_usage) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.above = options[:cpu_max]
+            c.times = options[:cpu_times] || DEFAULT_KEEPALIVE_CPU_TIMES
+          end
+        end
+      end
+    end
+    
+    ###########################################################################
+    #
     # Simple mode
     #
     ###########################################################################

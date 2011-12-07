@@ -46,12 +46,154 @@ The following systems have been tested. Help us test it on others!
 * CentOS 4.5 (no events)
 
 
+Quick Start
+-----------
+
+The easiest way to understand how god will make your life better is by trying
+out a simple example. To get you up and running quickly, I'll show you how to
+keep a trivial server running.
+
+Open up a new directory and write a simple server. Let's call it
+`simple.rb`:
+
+```ruby
+loop do
+  puts 'Hello'
+  sleep 1
+end
+```
+
+Now we'll write a god config file that tells god about our process. Place it
+in the same directory and call it `simple.god`:
+
+```ruby
+God.watch do |w|
+  w.name = "simple"
+  w.start = "ruby /full/path/to/simple.rb"
+  w.keepalive
+end
+```
+
+This is the simplest possible god configuration. In this example the
+`simple` process runs foreground, so god will take care of daemonizing it
+and keeping track of the PID for us. If the process is not running when god
+starts, it will be started. If the process dies, it will be restarted.
+
+To run god, we give it the config file we wrote with `-c`. To see what's going
+on, we can ask it to run foreground with `-D`:
+
+```terminal
+$ god -c path/to/simple.god -D
+```
+
+You should now see some output like the following:
+
+```terminal
+I [2011-12-07 09:40:18]  INFO: Loading simple.god
+I [2011-12-07 09:40:18]  INFO: Syslog enabled.
+I [2011-12-07 09:40:18]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-07 09:40:18]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-07 09:40:18]  INFO: simple move 'unmonitored' to 'up'
+I [2011-12-07 09:40:18]  INFO: simple moved 'unmonitored' to 'up'
+I [2011-12-07 09:40:18]  INFO: simple [trigger] process is not running (ProcessRunning)
+I [2011-12-07 09:40:18]  INFO: simple move 'up' to 'start'
+I [2011-12-07 09:40:18]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-07 09:40:19]  INFO: simple moved 'up' to 'up'
+I [2011-12-07 09:40:19]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:40:24]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:40:29]  INFO: simple [ok] process is running (ProcessRunning)
+
+```
+
+Here you can see god starting up, noticing that the `simple` process isn't
+running, starting it, and then checking every five seconds to make sure it's
+up. If you'd like to see god work its magic, go ahead and kill the `simple`
+process. You should then see something like this:
+
+```terminal
+I [2011-12-07 09:54:59]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:55:04]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:55:09]  INFO: simple [trigger] process is not running (ProcessRunning)
+I [2011-12-07 09:55:09]  INFO: simple move 'up' to 'start'
+I [2011-12-07 09:55:09]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-07 09:55:09]  INFO: simple moved 'up' to 'up'
+I [2011-12-07 09:55:09]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:55:14]  INFO: simple [ok] process is running (ProcessRunning)
+```
+
+Now, before you kill the god process, let's kill the `simple` server by asking
+god to stop it for us. In a new terminal, issue the command:
+
+```terminal
+$ god stop simple
+```
+
+You should see the following output:
+
+```terminal
+Sending 'stop' command
+
+The following watches were affected:
+  simple
+```
+
+And in the foregrounded god terminal window, you'll see the log of what
+happened:
+
+```terminal
+I [2011-12-07 09:59:59]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 10:00:04]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 10:00:07]  INFO: simple stop: default lambda killer
+I [2011-12-07 10:00:07]  INFO: simple sent SIGTERM
+I [2011-12-07 10:00:08]  INFO: simple process stopped
+I [2011-12-07 10:00:08]  INFO: simple move 'up' to 'unmonitored'
+I [2011-12-07 10:00:08]  INFO: simple moved 'up' to 'unmonitored'
+```
+
+Now feel free to Ctrl-C out of god. Congratulations! You've just taken god for
+a test ride and seen how easy it is to keep your processes running.
+
+This is just the beginning of what god can do. You can configure many
+different kinds of conditions to have your process restarted when memory or
+CPU are too high, when disk usage is above a threshold, when a process returns
+an HTTP error code on a specific URL, and many more. In addition you can write
+your own custom conditions and use them in your configuration files. Many
+different lifecycle controls are available alongside a sophisticated and
+extensible notifications system. Keep reading to find out what makes god
+different from other monitoring systems and how it can help you solve many of
+your process monitoring and control problems.
+
+
+Advanced Keepalive
+------------------
+
+To get more control over your process, you can specify a few options to
+`keepalive`.
+
+```ruby
+God.watch do |w|
+  w.name = "simple"
+  w.start = "ruby /full/path/to/simple.rb"
+  w.keepalive(:memory_max => 150.megabytes,
+              :cpu_max => 50.percent)
+end
+```
+
+Here I've specified a `:memory_max`. Now if the process memory usage goes
+above 150 megabytes, god will restart it. Similarly, by setting the
+`:cpu_max`, god will restart my process if it's CPU usage goes over 50%. By
+default these properties will be checked every 30 seconds and will be acted
+upon if there is an overage for three out of any five checks. This prevents
+the process from getting restarted for temporary resource spikes.
+
+
 Config Files are Ruby Code!
 ---------------------------
 
-The easiest way to understand how god will make your life better is by looking
-at a sample config file. The following configuration file is what I once used
-at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels
+Now that you've seen how to get started quickly, let's see how to use the more
+powerful aspects of god. Once again, the best way to learn will be through an
+example. The following configuration file is what I once used at <a
+href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels
 running:
 
 ```ruby
