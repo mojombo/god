@@ -1,0 +1,1108 @@
+God: The Ruby Framework for Process Management
+==============================================
+Tom Preston-Werner <tom@mojombo.com>
+
+God is an easy to configure, easy to extend monitoring framework written in
+Ruby.
+
+Keeping your server processes and tasks running should be a simple part of
+your deployment process. God aims to be the simplest, most powerful monitoring
+application available.
+
+Features
+--------
+
+* Config file is written in Ruby
+* Easily write your own custom conditions in Ruby
+* Supports both poll and event based conditions
+* Different poll conditions can have different intervals
+* Integrated notification system (write your own too!)
+* Easily control non-daemonizing scripts
+
+
+Installation
+------------
+
+The best way to get god is via rubygems:
+
+```terminal
+$ [sudo] gem install god
+```
+
+Requirements
+------------
+
+God currently only works on *Linux (kernel 2.6.15+), BSD,* and *Darwin*
+systems. No support for Windows is planned. Event based conditions on Linux
+systems require the `cn` (connector) kernel module loaded or compiled into
+the kernel and god must be run as root.
+
+The following systems have been tested. Help us test it on others!
+
+* Darwin 10.4.10
+* RedHat Fedora Core 6
+* Ubuntu Dapper (no events)
+* Ubuntu Feisty
+* CentOS 4.5 (no events)
+
+
+Config Files are Ruby Code!
+---------------------------
+
+The easiest way to understand how god will make your life better is by looking
+at a sample config file. The following configuration file is what I once used
+at <a href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels
+running:
+
+```ruby
+# run with: god -c /path/to/mongrel.god -D
+#
+# This is the actual config file used to keep the mongrels of
+# gravatar.com running.
+
+RAILS_ROOT = "/Users/tom/dev/gravatar2"
+
+%w{8200 8201 8202}.each do |port|
+  God.watch do |w|
+    w.name = "gravatar2-mongrel-#{port}"
+    w.interval = 30.seconds # default
+    w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
+      -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
+    w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.start_grace = 10.seconds
+    w.restart_grace = 10.seconds
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+
+    w.behavior(:clean_pid_file)
+
+    w.start_if do |start|
+      start.condition(:process_running) do |c|
+        c.interval = 5.seconds
+        c.running = false
+      end
+    end
+
+    w.restart_if do |restart|
+      restart.condition(:memory_usage) do |c|
+        c.above = 150.megabytes
+        c.times = [3, 5] # 3 out of 5 intervals
+      end
+
+      restart.condition(:cpu_usage) do |c|
+        c.above = 50.percent
+        c.times = 5
+      end
+    end
+
+    # lifecycle
+    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 5
+        c.within = 5.minute
+        c.transition = :unmonitored
+        c.retry_in = 10.minutes
+        c.retry_times = 5
+        c.retry_within = 2.hours
+      end
+    end
+  end
+end
+```
+
+That's a lot to take in at once, so I'll break it down by section and explain
+what's going on in each.
+
+```ruby
+RAILS_ROOT = "/var/www/gravatar2/current"
+```
+
+Here I've set a constant that is used throughout the file. Keeping the
+`RAILS_ROOT` value in a constant makes it easy to adapt this script to other
+applications. Because the config file is Ruby code, I can set whatever
+variables or constants I want that make the configuration more concise and
+easier to work with.
+
+```ruby
+%w{8200 8201 8202}.each do |port|
+  ...
+end
+```
+
+Because the config file is written in actual Ruby code, we can construct loops
+and do other intelligent things that are impossible in your every day, run of
+the mill config file. I need to watch three mongrels, so I simply loop over
+their port numbers, eliminating duplication and making my life a whole lot
+easier.
+
+```ruby
+  God.watch do |w|
+    w.name = "gravatar2-mongrel-#{port}"
+    w.interval = 30.seconds # default
+    w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
+      -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
+    w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
+    w.start_grace = 10.seconds
+    w.restart_grace = 10.seconds
+    w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
+
+    ...
+  end
+```
+
+A `watch` represents a single process that has concrete start, stop, and/or
+restart operations. You can define as many watches as you like. In the example
+above, I've got some Rails instances running in Mongrels that I need to keep
+alive. Every watch must have a unique `name` so that it can be identified
+later on. The `interval` option sets the default poll interval (this can be
+overridden in each condition). The `start` and `stop` attributes specify the
+commands to start and stop the process. If no `restart` attribute is set,
+restart will be represented by a call to stop followed by a call to start. The
+optional `grace` attribute sets the amount of time following a
+start/stop/restart command to wait before resuming normal monitoring
+operations. To be more specific, I can set just `start_grace`, `stop_grace`,
+and/or `restart_grace`. If the process you're watching runs as a daemon (as
+mine does), you'll need to set the `pid_file` attribute.
+
+```ruby
+    w.behavior(:clean_pid_file)
+```
+
+Behaviors allow you to execute additional commands around start/stop/restart
+commands. In our case, if the process dies it will leave a PID file behind.
+The next time a start command is issued, it will fail, complaining about the
+leftover PID file. We'd like the PID file cleaned up before a start command is
+issued. The built-in behavior `clean_pid_file` will do just that.
+
+```ruby
+    w.start_if do |start|
+      start.condition(:process_running) do |c|
+        c.interval = 5.seconds
+        c.running = false
+      end
+    end
+```
+
+Watches contain conditions grouped by the action to execute should they return
+`true`. I start with a `start_if` block that contains a single condition.
+Conditions are specified by calling `condition` with an identifier, in this
+case `:process_running`. Each condition can specify a poll interval that will
+override the default watch interval. In this case, I want to check that the
+process is still running every 5 seconds instead of the 30 second interval
+that other conditions will inherit. The ability to set condition specific poll
+intervals makes it possible to run critical tests (such as :process_running)
+more often than less critical tests (such as :memory_usage and :cpu_usage).
+
+```ruby
+    w.restart_if do |restart|
+      restart.condition(:memory_usage) do |c|
+        c.above = 150.megabytes
+        c.times = [3, 5] # 3 out of 5 intervals
+      end
+
+      ...
+    end
+```
+
+Similar to `start_if` there is a `restart_if` command that groups conditions
+that should trigger a restart. The `memory_usage` condition will fail if the
+specified process is using too much memory. The maximum allowable amount of
+memory is specified with the `above` attribute (you can use the `kilobytes`,
+`megabytes`, or `gigabytes` helpers). The number of times the test needs to
+fail in order to trigger a restart is set with `times`. This can be either an
+integer or an array. An integer means it must fail that many times in a row
+while an array `[x, y]` means it must fail `x` times out of the last `y`
+tests.
+
+```ruby
+    w.restart_if do |restart|
+      ...
+
+      restart.condition(:cpu_usage) do |c|
+        c.above = 50.percent
+        c.times = 5
+      end
+    end
+```
+
+To keep an eye on CPU usage, I've employed the `cpu_usage` condition. When CPU
+usage for a Mongrel process is over 50% for 5 consecutive intervals, it will
+be restarted.
+
+```ruby
+    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 5
+        c.within = 5.minute
+        c.transition = :unmonitored
+        c.retry_in = 10.minutes
+        c.retry_times = 5
+        c.retry_within = 2.hours
+      end
+    end
+```
+
+Conditions inside a `lifecycle` section are active as long as the process is being monitored (they live across state changes).
+
+The `:flapping` condition guards against the edge case wherein god rapidly
+starts or restarts your application. Things like server configuration changes
+or the unavailability of external services could make it impossible for my
+process to start. In that case, god will try to start my process over and over
+to no avail. The `:flapping` condition provides two levels of giving up on
+flapping processes. If I were to translate the options of the code above, it
+would be something like: If this watch is started or restarted five times
+withing 5 minutes, then unmonitor it...then after ten minutes, monitor it
+again to see if it was just a temporary problem; if the process is seen to be
+flapping five times within two hours, then give up completely.
+
+That's it!
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Starting and Controlling God
+----------------------------
+
+To start the god monitoring process as a daemon simply run the `god`
+executable passing in the path to the config file (you need to sudo if you're
+using events on Linux or want to use the setuid/setgid functionality):
+
+```terminal
+$ sudo god -c /path/to/config.god
+```
+
+While you're writing your config file, it can be helpful to run god in the
+foreground so you can see the log messages. You can do that with:
+
+```terminal
+$ sudo god -c /path/to/config.god -D
+```
+
+You can start/restart/stop/monitor/unmonitor your Watches with the same
+utility like so:
+
+```terminal
+$ sudo god stop gravatar2-mongrel-8200
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Advanced Configuration with Transitions and Events
+--------------------------------------------------
+
+So far you've been introduced to a simple poll-based config file and seen how
+to run it. Poll-based monitoring works great for simple things, but falls
+short for highly critical tasks. God has native support for kqueue/netlink
+events on BSD/Darwin/Linux systems. For instance, instead of using the
+`process_running` condition to poll for the status of your process, you can
+use the `process_exits` condition that will be notified *immediately* upon the
+exit of your process. This means less load on your system and shorter downtime
+after a crash.
+
+While the configuration syntax you saw in the previous example is very simple,
+it lacks the power that we need to deal with event based monitoring. In fact,
+the `start_if` and `restart_if` methods are really just calling out to a
+lower-level API. If we use the low-level API directly, we can harness the full
+power of god's event based lifecycle system. Let's look at another example
+config file.
+
+```ruby
+RAILS_ROOT = "/Users/tom/dev/gravatar2"
+
+God.watch do |w|
+  w.name = "local-3000"
+  w.interval = 5.seconds # default
+  w.start = "mongrel_rails start -c #{RAILS_ROOT} -P #{RAILS_ROOT}/log/mongrel.pid -p 3000 -d"
+  w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.pid"
+  w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.pid"
+  w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
+
+  # clean pid files before start if necessary
+  w.behavior(:clean_pid_file)
+
+  # determine the state on startup
+  w.transition(:init, { true => :up, false => :start }) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end
+
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 5
+      c.transition = :start
+    end
+  end
+
+  # start if process is not running
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits)
+  end
+
+  # restart if memory or cpu is too high
+  w.transition(:up, :restart) do |on|
+    on.condition(:memory_usage) do |c|
+      c.interval = 20
+      c.above = 50.megabytes
+      c.times = [3, 5]
+    end
+
+    on.condition(:cpu_usage) do |c|
+      c.interval = 10
+      c.above = 10.percent
+      c.times = [3, 5]
+    end
+  end
+
+  # lifecycle
+  w.lifecycle do |on|
+    on.condition(:flapping) do |c|
+      c.to_state = [:start, :restart]
+      c.times = 5
+      c.within = 5.minute
+      c.transition = :unmonitored
+      c.retry_in = 10.minutes
+      c.retry_times = 5
+      c.retry_within = 2.hours
+    end
+  end
+end
+
+```
+
+A bit longer, I know, but very straighforward once you understand how the
+`transition` calls work. The `name`, `interval`, `start`, `stop`, and
+`pid_file` attributes should be familiar. We also specify the `clean_pid_file`
+behavior.
+
+Before jumping into the code, it's important to understand the different
+states that a Watch can have, and how that state changes over time. At any
+given time, a Watch will be in one of the `init`, `up`, `start`, or `restart`
+states. As different conditions are satisfied, the Watch will progress from
+state to state, enabling and disabling conditions along the way.
+
+When god first starts, each Watch is placed in the `init` state.
+
+You'll use the `transition` method to tell god how to transition between
+states. It takes two arguments. The first argument may be either a symbol or
+an array of symbols representing the state or states during which the
+specified conditions should be enabled. The second argument may be either a
+symbol or a hash. If it is a symbol, then that is the state that will be
+transitioned to if any of the conditions return `true`. If it is a hash, then
+that hash must have both `true` and `false` keys, each of which point to a
+symbol that represents the state to transition to given the corresponding
+return from the single condition that must be specified.
+
+```ruby
+  # determine the state on startup
+  w.transition(:init, { true => :up, false => :start }) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end
+```
+
+The first transition block tells god what to do when the Watch is in the
+`init` state (first argument). This is where I tell god how to determine if my
+task is already running. Since I'm monitoring a process, I can use the
+`process_running` condition to determine whether the process is running. If
+the process is running, it will return true, otherwise it will return false.
+Since I sent a hash as the second argument to `transition`, the return from
+`process_running` will determine which of the two states will be transitioned
+to. If the process is running, the return is true and god will put the Watch
+into the `up` state. If the process is not running, the return is false and
+god will put the Watch into the `start` state.
+
+```ruby
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+
+    ...
+  end
+```
+
+If god has determined that my process isn't running, the Watch will be put
+into the `start` state. Upon entering this state, the `start` command that I
+specified on the Watch will be called. In addition, the above transition
+specifies a condition that should be enabled when in either the `start` or
+`restart` states. The condition is another `process_running`, however this
+time I'm only interested in moving to another state once it returns `true`. A
+`true` return from this condition means that the process is running and it's
+ok to transition to the `up` state (second argument to `transition`).
+
+```ruby
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    ...
+
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 5
+      c.transition = :start
+    end
+  end
+```
+
+The other half of this transition uses the `tries` condition to ensure that
+god doesn't get stuck in this state. It's possible that the process could go
+down while the transition is being made, in which case god would end up
+polling forever to see if the process is up. Here I've specified that if this
+condition is called five times, god should override the normal transition
+destination and move to the `start` state instead. If you specify a
+`transition` attribute on any condition, that state will be transferred to
+instead of the normal transfer destination.
+
+```ruby
+  # start if process is not running
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits)
+  end
+```
+
+This is where the event based system comes into play. Once in the `up` state,
+I want to be notified when my process exits. The `process_exits` condition
+registers a callback that will trigger a transition change when it is fired
+off. Event conditions (like this one) cannot be used in transitions that have
+a hash for the second argument (as they do not return true or false).
+
+```ruby
+  # restart if memory or cpu is too high
+  w.transition(:up, :restart) do |on|
+    on.condition(:memory_usage) do |c|
+      c.interval = 20
+      c.above = 50.megabytes
+      c.times = [3, 5]
+    end
+
+    on.condition(:cpu_usage) do |c|
+      c.interval = 10
+      c.above = 10.percent
+      c.times = [3, 5]
+    end
+  end
+```
+
+Notice that I can have multiple transitions with the same start state. In this
+case, I want to have the `memory_usage` and `cpu_usage` poll conditions going
+at the same time that I listen for the process exit event. In the case of
+runaway CPU or memory usage, however, I want to transition to the `restart`
+state. When a Watch enters the `restart` state it will either call the
+`restart` command that you specified, or if none has been set, call the `stop`
+and then `start` commands.
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Grouping Watches
+----------------
+
+Watches can be assigned to groups. These groups can then be controlled
+together from the command line.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.group = 'mongrels'
+
+    ...
+  end
+```
+
+The above configuration now allows you to control the watch (and any others
+that are in the group) with a single command:
+
+```terminal
+$ sudo god stop mongrels
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Redirecting STDOUT and STDERR of your Process
+---------------------------------------------
+
+By default, the STDOUT stream for your process is redirected to `/dev/null`.
+To get access to this output, you can redirect the stream either to a file or
+to a command.
+
+To redirect STDOUT to a file, set the `log` attribute to a file path. The file
+will be written in append mode and created if it does not exist.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.log = '/var/log/myprocess.log'
+
+    ...
+  end
+```
+
+To redirect STDOUT to a command that will be run for you, set the `log_cmd`
+attribute to a command.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.log_cmd = '/usr/bin/logger'
+
+    ...
+  end
+```
+
+By default, STDERR is redirected to STDOUT. You can redirect it to a file or a
+command just like STDOUT by setting the `err_log` or `err_log_cmd` attributes
+respectively.
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Changing UID/GID for processes
+------------------------------
+
+It is possible to have god run your start/stop/restart commands as a specific
+user/group. This can be done by setting the `uid` and/or `gid` attributes of a
+watch.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.uid = 'tom'
+    w.gid = 'devs'
+
+    ...
+  end
+```
+
+This only works for commands specified as a string. Lambda commands are
+unaffected.
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Setting the Working Directory
+-----------------------------
+
+By default, God sets the working directory to `/` before running your process.
+You can change this by setting the `dir` attribute on the watch.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.dir = '/var/www/myapp'
+
+    ...
+  end
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Setting environment variables
+-----------------------------
+
+You can set any number of environment variables you wish via the `env`
+attribute of a watch.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.env = { 'RAILS_ROOT' => "/var/www/myapp",
+              'RAILS_ENV' => "production" }
+
+    ...
+  end
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Using chroot to Change the File System Root
+-------------------------------------------
+
+If you want your process to run chrooted, simply use the `chroot` attribute on
+the watch. The specified directory must exist and have a `/dev/null`.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.chroot = '/var/myroot'
+
+    ...
+  end
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Lambda commands
+---------------
+
+In addition to specifying start/stop/restart commands as strings (to be
+executed via the shell), you can specify a lambda that will be called.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.start = lambda { ENV['APACHE'] ? `apachectl -k graceful` : `lighttpd restart` }
+
+    ...
+  end
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Customizing the Default Stop Lambda
+-----------------------------------
+
+If you do not provide a stop command, God will attempt to stop your process by
+first sending a SIGTERM. It will then wait for ten seconds for the process to
+exit. If after this time it still has not exited, it will be sent a SIGKILL.
+You can customize the stop signal and/or the time to wait for the process to
+exit by setting the `stop_signal` and `stop_timeout` attributes on the watch.
+
+```ruby
+  God.watch do |w|
+    ...
+
+    w.stop_signal = 'QUIT'
+    w.stop_timeout = 20.seconds
+
+    ...
+  end
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Watching Non-Daemon Processes
+-----------------------------
+
+Need to watch a script that doesn't have built in daemonization? No problem!
+God will daemonize and keep track of your process for you. If you don't
+specify a `pid_file` attribute for a watch, it will be auto-daemonized and a
+PID file will be stored for it in `/var/run/god`. If you'd rather have the PID
+file stored in a different location, you can set it at the top of your config:
+
+```ruby
+God.pid_file_directory = '/home/tom/pids'
+
+God.watch do |w|
+  # watch with no pid_file attribute set
+end
+```
+
+The directory you specify must be writable by god.
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Loading Other Config Files
+--------------------------
+
+You should feel free to separate your god configs into separate files for
+easier organization. You can load in other configs using Ruby's normal `load`
+method, or use the convenience method `God.load` which allows for glob-style
+paths:
+
+```ruby
+# load in all god configs
+God.load "/usr/local/conf/*.god"
+```
+
+God won't start its monitoring operations until all configurations have been
+loaded.
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Dynamically Loading Config Files Into an Already Running God
+------------------------------------------------------------
+
+God allows you to load or reload configurations into an already running
+instance. There are a few things to consider when doing this:
+
+* Existng Watches with the same `name` as the incoming Watches will be
+  overidden by the new config.
+* All paths must be either absolute or relative to the path from which god was
+  started.
+
+To load a config into a running god, issue the following command:
+
+```terminal
+$ sudo god load path/to/config.god
+```
+
+Config files that are loaded dynamically can contain anything that a normal
+config file contains, however, global options such as `God.pid_file_directory`
+blocks will be ignored (and produce a warning in the logs).
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Getting Logs for a Single Watch
+-------------------------------
+
+Sifting through the god logs for statements specific to a single Watch can be
+frustrating when you have many of them. You can get the realtime logs for a
+single Watch via the command line:
+
+```terminal
+$ sudo god log local-3000
+```
+
+This will display log output for the 'local-3000' Watch and update every
+second with new log messages.
+
+You can also supply a shorthand to the log command that will match one of your
+watches. If it happens to match several, the shortest match will be used:
+
+```terminal
+$ sudo god log l3
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Notifications
+-------------
+
+God has an extensible notification framework built in that makes it easy to
+have notifications sent when conditions are triggered. Each notification type
+has a set of configuration parameters that must be set. These parameters may
+be set globally via Contact Defaults or individually via Contact Instances.
+
+*Contact Defaults* - Some parameters are unlikely to change on a per-contact
+basis. You should set those parameters via the defaults mechanism.
+
+```ruby
+God::Contacts::Email.defaults do |d|
+  d.from_email = 'god@example.com'
+  d.from_name = 'God'
+  d.delivery_method = :sendmail
+end
+```
+
+*Contact Instances* - Each contact must have a unique `name` set. You may
+optionally assign each contact to a `group`.
+
+```ruby
+God.contact(:email) do |c|
+  c.name = 'tom'
+  c.group = 'developers'
+  c.to_email = 'tom@example.com'
+end
+
+God.contact(:email) do |c|
+  c.name = 'vanpelt'
+  c.group = 'developers'
+  c.to_email = 'vanpelt@example.com'
+end
+
+God.contact(:email) do |c|
+  c.name = 'kevin'
+  c.group = 'developers'
+  c.to_email = 'kevin@example.com'
+end
+```
+
+*Condition Attachment* - To have a specific contact notified when a condition
+is triggered, simply set the condition's `notify` attribute to the name of the
+individual contact.
+
+```ruby
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits) do |c|
+      c.notify = 'tom'
+    end
+  end
+```
+
+There are two ways to specify that a notification should be sent. The first,
+easier way is shown above. Every condition can take an optional `notify`
+attribute that specifies which contacts should be notified when the condition
+is triggered. The value can be a contact name or contact group *or* an array
+of contact names and/or contact groups.
+
+```ruby
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits) do |c|
+      c.notify = {:contacts => ['tom', 'developers'], :priority => 1, :category => 'product'}
+    end
+  end
+```
+
+The second way allows you to specify the `priority` and `category` in addition
+to the contacts. The extra attributes can be arbitrary integers or strings and
+will be passed as-is to the notification subsystem.
+
+The above notification will arrive as an email similar to the following.
+
+```
+From: God &lt;god@example.com&gt;
+To: tom &lt;tom@example.com&gt;
+Subject: [god] mongrel-8600 [trigger] process exited (ProcessExits)
+
+Message: mongrel-8600 [trigger] process exited (ProcessExits)
+Host: candymountain.example.com
+Priority: 1
+Category: product
+```
+
+Available Notification Types
+----------------------------
+
+Campfire
+~~~~~~~~
+
+Send a notice to a Campfire room (http://campfirenow.com).
+
+```ruby
+God::Contacts::Campfire.defaults do |d|
+  ...
+end
+
+God.contact(:campfire) do |c|
+  ...
+end
+```
+
+```
+subdomain - The String subdomain of the Campfire account. If your URL is
+            "foo.campfirenow.com" then your subdomain is "foo".
+token     - The String token used for authentication.
+room      - The String room name to which the message should be sent.
+ssl       - A Boolean determining whether or not to use SSL
+            (default: false).
+```
+
+Email
+~~~~~
+
+Send a notice to an email address.
+
+```ruby
+God::Contacts::Email.defaults do |d|
+  ...
+end
+
+God.contact(:email) do |c|
+  ...
+end
+```
+
+```
+to_email        - The String email address to which the email will be sent.
+to_name         - The String name corresponding to the recipient.
+from_email      - The String email address from which the email will be sent.
+from_name       - The String name corresponding to the sender.
+delivery_method - The Symbol delivery method. [ :smtp | :sendmail ]
+                  (default: :smtp).
+
+=== SMTP Options (when delivery_method = :smtp) ===
+server_host     - The String hostname of the SMTP server (default: localhost).
+server_port     - The Integer port of the SMTP server (default: 25).
+server_auth     - The Boolean of whether or not to use authentication
+                  (default: false).
+
+=== SMTP Auth Options (when server_auth = true) ===
+server_domain   - The String domain.
+server_user     - The String username.
+server_password - The String password.
+
+=== Sendmail Options (when delivery_method = :sendmail) ===
+sendmail_path   - The String path to the sendmail executable
+                  (default: "/usr/sbin/sendmail").
+sendmail_args   - The String args to send to sendmail (default "-i -t").
+```
+
+Jabber
+~~~~~~
+
+Send a notice to a Jabber address (http://jabber.org/).
+
+Google Mail addresses should work. If you need a non-Gmail address, you can
+sign up for one at http://register.jabber.org/.
+
+```ruby
+God::Contacts::Jabber.defaults do |d|
+  ...
+end
+
+God.contact(:jabber) do |c|
+  ...
+end
+```
+
+```
+host     - The String hostname of the Jabber server.
+port     - The Integer port of the Jabber server.
+from_jid - The String Jabber ID of the sender.
+password - The String password of the sender.
+to_jid   - The String Jabber ID of the recipient.
+subject  - The String subject of the message (default: "God Notification").
+```
+
+Prowl
+~~~~~
+
+Send a notice to Prowl (<a href="http://prowl.weks.net/">http://prowl.weks.net/</a>).
+
+```ruby
+God::Contacts::Prowl.defaults do |d|
+  ...
+end
+
+God.contact(:prowl) do |c|
+  ...
+end
+```
+
+```
+apikey - The String API key.
+```
+
+Scout
+~~~~~
+
+Send a notice to Scout (http://scoutapp.com/).
+
+```ruby
+God::Contacts::Scout.defaults do |d|
+  ...
+end
+
+God.contact(:scout) do |c|
+  ...
+end
+```
+
+```
+client_key - The String client key.
+plugin_id  - The String plugin id.
+
+```
+
+Twitter
+~~~~~~~
+
+Send a notice to a Twitter account (http://twitter.com/).
+
+In order to use the Twitter notification, you will need to authorize God via
+OAuth and then get the OAuth token and secret for your account. The easiest
+way to do this is with a Ruby gem called `twurl`. Install it like so:
+
+```terminal
+[sudo] gem install twurl
+```
+
+Then, run the following:
+
+```terminal
+twurl auth --consumer-key gOhjax6s0L3mLeaTtBWPw \
+           --consumer-secret yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA
+```
+
+This will return a URL. Copy it to your clipboard. Make sure you are logged
+into Twitter with the account that will used for the notifications, and then
+paste the URL into a new browser window. At the end of the authentication
+process, you will be given a PIN. Copy this PIN and paste it back to the
+command line prompt. Once this is complete, you need to find your access token
+and secret:
+
+```terminal
+cat ~/.twurlrc
+```
+
+This will output the contents of the config file from which you can grab your
+access token and secret:
+
+```
+---
+profiles:
+  mojombo:
+    gOhjax6s0L3mLeaTtBWPw:
+      [red]token: 17376380-KXA91nCrgaQ4HxUXMmZtM38gB56qS3hx1NYbjT6mQ
+      consumer_key: gOhjax6s0L3mLeaTtBWPw
+      username: mojombo
+      consumer_secret: yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA
+      [red]secret: EBWFQBCtuMwCDeU4OXlc3LwGyY8OdWAV0Jg5KVB0
+configuration:
+  default_profile:
+  - mojombo
+  - gOhjax6s0L3mLeaTtBWPw
+
+```
+
+The access token and secret (highlighted in red above) are what you need to
+use as parameters to the Twitter notification.
+
+```ruby
+God::Contacts::Twitter.defaults do |d|
+  ...
+end
+
+God.contact(:twitter) do |c|
+  ...
+end
+```
+
+```
+consumer_token  - The String OAuth consumer token (defaults to God's
+                  existing consumer token).
+consumer_secret - The String OAuth consumer secret (defaults to God's
+                  existing consumer secret).
+access_token    - The String OAuth access token.
+access_secret   - The String OAuth access secret.
+```
+
+Webhook
+~~~~~~~
+
+Send a notice to a webhook (http://www.webhooks.org/).
+
+```ruby
+God::Contacts::Webhook.defaults do |d|
+  ...
+end
+
+God.contact(:webhook) do |c|
+  ...
+end
+```
+
+```
+url    - The String webhook URL.
+format - The Symbol format [ :form | :json ] (default: :form).
+
+```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Extend God with your own Conditions
+-----------------------------------
+
+God was designed from the start to allow you to easily write your own custom
+conditions, making it simple to add tests that are application specific.
