@@ -87,6 +87,13 @@ class TestWatch < Test::Unit::TestCase
     assert_equal 1, @watch.metrics[nil].size
   end
   
+  # keepalive
+  
+  def test_keepalive_should_place_metrics_on_up_state
+    @watch.keepalive(:memory_max => 5.megabytes, :cpu_max => 50.percent)
+    assert_equal 2, @watch.metrics[:up].size
+  end
+  
   # start_if
   
   def test_start_if_should_place_a_metric_on_up_state

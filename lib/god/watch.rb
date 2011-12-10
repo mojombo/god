@@ -63,6 +63,94 @@ module God
     
     ###########################################################################
     #
+    # Quickstart mode
+    #
+    ###########################################################################
+    
+    DEFAULT_KEEPALIVE_INTERVAL = 5.seconds
+    DEFAULT_KEEPALIVE_MEMORY_TIMES = [3, 5]
+    DEFAULT_KEEPALIVE_CPU_TIMES = [3, 5]
+    
+    # Public: A set of conditions for easily getting started with simple watch
+    # scenarios. Keepalive is intended for use by beginners or on processes
+    # that do not need very sophisticated monitoring.
+    #
+    # If events are enabled, it will use the :process_exit event to determine
+    # if a process fails. Otherwise it will use the :process_running poll.
+    #
+    # options - The option Hash. Possible values are:
+    #           :interval -     The Integer number of seconds on which to poll
+    #                           for process status. Affects CPU, memory, and
+    #                           :process_running conditions (if used).
+    #                           Default: 5.seconds.
+    #           :memory_max   - The Integer memory max. A bare integer means
+    #                           kilobytes. You may use Numeric.kilobytes,
+    #                           Numeric#megabytes, and Numeric#gigabytes to
+    #                           makes things more clear.
+    #           :memory_times - If :memory_max is set, :memory_times can be
+    #                           set to either an Integer or a 2 element
+    #                           Integer Array to specify the number of times
+    #                           the memory condition must fail. Examples:
+    #                           3 (three times), [3, 5] (three out of any five
+    #                           checks). Default: [3, 5].
+    #           :cpu_max      - The Integer CPU percentage max. Range is
+    #                           0 to 100. You may use the Numberic#percent
+    #                           sugar to clarify e.g. 50.percent.
+    #           :cpu_times    - If :cpu_max is set, :cpu_times can be
+    #                           set to either an Integer or a 2 element
+    #                           Integer Array to specify the number of times
+    #                           the memory condition must fail. Examples:
+    #                           3 (three times), [3, 5] (three out of any five
+    #                           checks). Default: [3, 5].
+    def keepalive(options = {})
+      if God::EventHandler.loaded?
+        self.transition(:init, { true => :up, false => :start }) do |on|
+          on.condition(:process_running) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.running = true
+          end
+        end
+        
+        self.transition([:start, :restart], :up) do |on|
+          on.condition(:process_running) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.running = true
+          end
+        end
+        
+        self.transition(:up, :start) do |on|
+          on.condition(:process_exits)
+        end
+      else
+        self.start_if do |start|
+          start.condition(:process_running) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.running = false
+          end
+        end
+      end
+      
+      self.restart_if do |restart|
+        if options[:memory_max]
+          restart.condition(:memory_usage) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.above = options[:memory_max]
+            c.times = options[:memory_times] || DEFAULT_KEEPALIVE_MEMORY_TIMES
+          end
+        end
+        
+        if options[:cpu_max]
+          restart.condition(:cpu_usage) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.above = options[:cpu_max]
+            c.times = options[:cpu_times] || DEFAULT_KEEPALIVE_CPU_TIMES
+          end
+        end
+      end
+    end
+    
+    ###########################################################################
+    #
     # Simple mode
     #
     ###########################################################################
