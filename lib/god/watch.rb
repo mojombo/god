@@ -82,9 +82,25 @@ module God
     #           :interval -     The Integer number of seconds on which to poll
     #                           for process status. Affects CPU, memory, and
     #                           :process_running conditions (if used).
-    #           :memory_max   - The Integer memory max
+    #           :memory_max   - The Integer memory max. A bare integer means
+    #                           kilobytes. You may use Numeric.kilobytes,
+    #                           Numeric#megabytes, and Numeric#gigabytes to
+    #                           makes things more clear.
     #           :memory_times - If :memory_max is set, :memory_times can be
-    #                           set to specify the 
+    #                           set to either an Integer or a 2 element
+    #                           Integer Array to specify the number of times
+    #                           the memory condition must fail. Examples:
+    #                           3 (three times), [3, 5] (three out of any five
+    #                           checks). Default: [3, 5].
+    #           :cpu_max      - The Integer CPU percentage max. Range is
+    #                           0 to 100. You may use the Numberic#percent
+    #                           sugar to clarify e.g. 50.percent.
+    #           :cpu_times    - If :cpu_max is set, :cpu_times can be
+    #                           set to either an Integer or a 2 element
+    #                           Integer Array to specify the number of times
+    #                           the memory condition must fail. Examples:
+    #                           3 (three times), [3, 5] (three out of any five
+    #                           checks). Default: [3, 5].
     def keepalive(options = {})
       self.start_if do |start|
         start.condition(:process_running) do |c|
