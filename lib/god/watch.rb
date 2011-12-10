@@ -71,7 +71,7 @@ module God
     DEFAULT_KEEPALIVE_MEMORY_TIMES = [3, 5]
     DEFAULT_KEEPALIVE_CPU_TIMES = [3, 5]
     
-    # A set of conditions for easily getting started with simple watch
+    # Public: A set of conditions for easily getting started with simple watch
     # scenarios. Keepalive is intended for use by beginners or on processes
     # that do not need very sophisticated monitoring.
     #
@@ -82,6 +82,7 @@ module God
     #           :interval -     The Integer number of seconds on which to poll
     #                           for process status. Affects CPU, memory, and
     #                           :process_running conditions (if used).
+    #                           Default: 5.seconds.
     #           :memory_max   - The Integer memory max. A bare integer means
     #                           kilobytes. You may use Numeric.kilobytes,
     #                           Numeric#megabytes, and Numeric#gigabytes to
@@ -102,10 +103,30 @@ module God
     #                           3 (three times), [3, 5] (three out of any five
     #                           checks). Default: [3, 5].
     def keepalive(options = {})
-      self.start_if do |start|
-        start.condition(:process_running) do |c|
-          c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
-          c.running = false
+      if God::EventHandler.loaded?
+        self.transition(:init, { true => :up, false => :start }) do |on|
+          on.condition(:process_running) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.running = true
+          end
+        end
+        
+        self.transition([:start, :restart], :up) do |on|
+          on.condition(:process_running) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.running = true
+          end
+        end
+        
+        self.transition(:up, :start) do |on|
+          on.condition(:process_exits)
+        end
+      else
+        self.start_if do |start|
+          start.condition(:process_running) do |c|
+            c.interval = options[:interval] || DEFAULT_KEEPALIVE_INTERVAL
+            c.running = false
+          end
         end
       end
       

@@ -86,9 +86,34 @@ on, we can ask it to run foreground with `-D`:
 $ god -c path/to/simple.god -D
 ```
 
-You should now see some output like the following:
+There are two ways that god can monitor your process. The first and better way
+is with process events. Not every system supports it, but those that do will
+automatically use it. With events, god will know immediately when a process
+exits. For those systems without events support, god will use a polling
+mechanism. The output you will see in this section will show both ways.
+
+After starting god, you should see some output like the following:
 
 ```terminal
+# Events
+
+I [2011-12-10 15:24:34]  INFO: Loading simple.god
+I [2011-12-10 15:24:34]  INFO: Syslog enabled.
+I [2011-12-10 15:24:34]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-10 15:24:34]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-10 15:24:34]  INFO: simple move 'unmonitored' to 'init'
+I [2011-12-10 15:24:34]  INFO: simple moved 'unmonitored' to 'init'
+I [2011-12-10 15:24:34]  INFO: simple [trigger] process is not running (ProcessRunning)
+I [2011-12-10 15:24:34]  INFO: simple move 'init' to 'start'
+I [2011-12-10 15:24:34]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-10 15:24:34]  INFO: simple moved 'init' to 'start'
+I [2011-12-10 15:24:34]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:24:34]  INFO: simple move 'start' to 'up'
+I [2011-12-10 15:24:34]  INFO: simple registered 'proc_exit' event for pid 23298
+I [2011-12-10 15:24:34]  INFO: simple moved 'start' to 'up'
+
+# Polls
+
 I [2011-12-07 09:40:18]  INFO: Loading simple.god
 I [2011-12-07 09:40:18]  INFO: Syslog enabled.
 I [2011-12-07 09:40:18]  INFO: Using pid file directory: /Users/tom/.god/pids
@@ -102,7 +127,6 @@ I [2011-12-07 09:40:19]  INFO: simple moved 'up' to 'up'
 I [2011-12-07 09:40:19]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 09:40:24]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 09:40:29]  INFO: simple [ok] process is running (ProcessRunning)
-
 ```
 
 Here you can see god starting up, noticing that the `simple` process isn't
@@ -111,6 +135,20 @@ up. If you'd like to see god work its magic, go ahead and kill the `simple`
 process. You should then see something like this:
 
 ```terminal
+# Events
+
+I [2011-12-10 15:33:38]  INFO: simple [trigger] process 23416 exited (ProcessExits)
+I [2011-12-10 15:33:38]  INFO: simple move 'up' to 'start'
+I [2011-12-10 15:33:38]  INFO: simple deregistered 'proc_exit' event for pid 23416
+I [2011-12-10 15:33:38]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-10 15:33:38]  INFO: simple moved 'up' to 'start'
+I [2011-12-10 15:33:38]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:33:38]  INFO: simple move 'start' to 'up'
+I [2011-12-10 15:33:38]  INFO: simple registered 'proc_exit' event for pid 23601
+I [2011-12-10 15:33:38]  INFO: simple moved 'start' to 'up'
+
+# Polls
+
 I [2011-12-07 09:54:59]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 09:55:04]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 09:55:09]  INFO: simple [trigger] process is not running (ProcessRunning)
@@ -156,11 +194,26 @@ end
 ```
 
 Ctrl-C out of the foregrounded god instance. Notice that your current `simple`
-server will continue to run. Now, start god again with the same command from
-above. Now instead of starting the `simple` process, it will notice that one
+server will continue to run. Start god again with the same command from
+before. Now instead of starting the `simple` process, it will notice that one
 is already running and simply switch to the `up` state.
 
 ```terminal
+# Events
+
+I [2011-12-10 15:36:00]  INFO: Loading simple.god
+I [2011-12-10 15:36:00]  INFO: Syslog enabled.
+I [2011-12-10 15:36:00]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-10 15:36:00]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-10 15:36:00]  INFO: simple move 'unmonitored' to 'init'
+I [2011-12-10 15:36:00]  INFO: simple moved 'unmonitored' to 'init'
+I [2011-12-10 15:36:00]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:36:00]  INFO: simple move 'init' to 'up'
+I [2011-12-10 15:36:00]  INFO: simple registered 'proc_exit' event for pid 23601
+I [2011-12-10 15:36:00]  INFO: simple moved 'init' to 'up'
+
+# Polls
+
 I [2011-12-07 14:50:46]  INFO: Loading simple.god
 I [2011-12-07 14:50:46]  INFO: Syslog enabled.
 I [2011-12-07 14:50:46]  INFO: Using pid file directory: /Users/tom/.god/pids
@@ -180,6 +233,22 @@ $ god restart simple
 From the logs you can see god killing and restarting the process:
 
 ```terminal
+# Events
+
+I [2011-12-10 15:38:13]  INFO: simple move 'up' to 'restart'
+I [2011-12-10 15:38:13]  INFO: simple deregistered 'proc_exit' event for pid 23601
+I [2011-12-10 15:38:13]  INFO: simple stop: default lambda killer
+I [2011-12-10 15:38:13]  INFO: simple sent SIGTERM
+I [2011-12-10 15:38:14]  INFO: simple process stopped
+I [2011-12-10 15:38:14]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-10 15:38:14]  INFO: simple moved 'up' to 'restart'
+I [2011-12-10 15:38:14]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:38:14]  INFO: simple move 'restart' to 'up'
+I [2011-12-10 15:38:14]  INFO: simple registered 'proc_exit' event for pid 23707
+I [2011-12-10 15:38:14]  INFO: simple moved 'restart' to 'up'
+
+# Polls
+
 I [2011-12-07 14:51:13]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 14:51:13]  INFO: simple move 'up' to 'restart'
 I [2011-12-07 14:51:13]  INFO: simple stop: default lambda killer
@@ -193,6 +262,8 @@ I [2011-12-07 14:51:14]  INFO: simple [ok] process is running (ProcessRunning)
 God will now start reporting on memory and CPU utilization of your process:
 
 ```terminal
+# Events and Polls
+
 I [2011-12-07 14:54:37]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 14:54:37]  INFO: simple [ok] memory within bounds [2032kb] (MemoryUsage)
 I [2011-12-07 14:54:37]  INFO: simple [ok] cpu within bounds [0.0%%] (CpuUsage)
@@ -233,6 +304,17 @@ And in the foregrounded god terminal window, you'll see the log of what
 happened:
 
 ```terminal
+# Events
+
+I [2011-12-10 15:41:04]  INFO: simple stop: default lambda killer
+I [2011-12-10 15:41:04]  INFO: simple sent SIGTERM
+I [2011-12-10 15:41:05]  INFO: simple process stopped
+I [2011-12-10 15:41:05]  INFO: simple move 'up' to 'unmonitored'
+I [2011-12-10 15:41:05]  INFO: simple deregistered 'proc_exit' event for pid 23707
+I [2011-12-10 15:41:05]  INFO: simple moved 'up' to 'unmonitored'
+
+# Polls
+
 I [2011-12-07 09:59:59]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 10:00:04]  INFO: simple [ok] process is running (ProcessRunning)
 I [2011-12-07 10:00:07]  INFO: simple stop: default lambda killer
