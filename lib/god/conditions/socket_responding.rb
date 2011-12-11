@@ -48,7 +48,7 @@ module God
 
     class SocketResponding < PollCondition
       attr_accessor :family, :addr, :port, :path, :times
-     
+
       def initialize
         super
         # default to tcp on the localhost
@@ -57,9 +57,9 @@ module God
         # Set these to nil/0 values
         self.port = 0
         self.path = nil
-        
+
         self.times = [1, 1]
-      end 
+      end
 
       def prepare
         if self.times.kind_of?(Integer)
@@ -100,32 +100,32 @@ module God
         valid = false unless %w{tcp unix}.member?(self.family)
         valid
       end
-      
+
       def test
         if self.family == 'tcp'
-         begin
-          s = TCPSocket.new(self.addr, self.port)
-         rescue SystemCallError
-         end 
-         status = s.nil?
-       elsif self.family == 'unix'
-         begin
-          s = UNIXSocket.new(self.path)
-         rescue SystemCallError
-         end 
-         status = s.nil?
-       else
-         status = false
-       end
-       @timeline.push(status)
-       history = "[" + @timeline.map {|s| s ? '*' : ''}.join(',') + "]"
-       if @timeline.select { |x| x }.size >= self.times.first
-        self.info = "socket out of bounds #{history}"
-        return true
-       else
-        self.info = "socket within bounds #{history}"
-        return false
-       end
+          begin
+            s = TCPSocket.new(self.addr, self.port)
+          rescue SystemCallError
+          end
+          status = s.nil?
+        elsif self.family == 'unix'
+          begin
+            s = UNIXSocket.new(self.path)
+          rescue SystemCallError
+          end
+          status = s.nil?
+        else
+          status = false
+        end
+        @timeline.push(status)
+        history = "[" + @timeline.map {|t| t ? '*' : ''}.join(',') + "]"
+        if @timeline.select { |x| x }.size >= self.times.first
+          self.info = "socket out of bounds #{history}"
+          return true
+        else
+          self.info = "socket within bounds #{history}"
+          return false
+        end
       end
     end
   end

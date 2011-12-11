@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
 
   s.name = 'god'
   s.version = '0.11.0'
-  s.date = '2011-05-25'
+  s.date = '2011-12-02'
 
   s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
@@ -21,22 +21,27 @@ Gem::Specification.new do |s|
   s.extensions = %w[ext/god/extconf.rb]
 
   s.rdoc_options = ["--charset=UTF-8"]
-  s.extra_rdoc_files = %w[README.txt]
+  s.extra_rdoc_files = %w[README.md]
 
-  s.add_development_dependency('twitter', [">= 0.3.7"])
-  s.add_development_dependency('prowly', [">= 0.2.1"])
-  s.add_development_dependency('xmpp4r', [">= 0.4.0"])
-  s.add_development_dependency('dike', [">= 0.0.3"])
-  s.add_development_dependency('snapshot', [">= 1.0.0", "< 2.0.0"])
-  s.add_development_dependency('rcov', [">= 0.9.8"])
-  s.add_development_dependency('daemons', [">= 1.0.10", "< 2.0.0"])
-  s.add_development_dependency('mocha', [">= 0.9.1"])
+  s.add_development_dependency('json', '~> 1.6')
+  s.add_development_dependency('rake', '~> 0.9')
+  s.add_development_dependency('rdoc', '~> 3.10')
+  s.add_development_dependency('twitter', '~> 2.0')
+  s.add_development_dependency('prowly', '~> 0.3')
+  s.add_development_dependency('xmpp4r', '~> 0.5')
+  s.add_development_dependency('dike', '~> 0.0.3')
+  s.add_development_dependency('snapshot', '~> 1.0')
+  s.add_development_dependency('rcov', '~> 0.9')
+  s.add_development_dependency('daemons', '~> 1.1')
+  s.add_development_dependency('mocha', '~> 0.10')
 
   # = MANIFEST =
   s.files = %w[
     Announce.txt
+    Gemfile
     History.txt
-    README.txt
+    LICENSE
+    README.md
     Rakefile
     bin/god
     ext/god/.gitignore
