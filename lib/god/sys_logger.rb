@@ -1,15 +1,6 @@
 begin
   require 'syslog'
 
-  # Ensure that Syslog is open
-  begin
-    Syslog.open('god')
-  rescue RuntimeError
-    Syslog.reopen('god')
-  end
-
-  Syslog.info("Syslog enabled.")
-
   module God
 
     class SysLogger
@@ -35,6 +26,18 @@ begin
       #
       # Returns Nothing
       def self.log(level, text)
+        unless Syslog.opened?
+          facility = Syslog::LOG_USER
+          facility = God::Logger.syslog_facility if God::Logger.syslog_facility
+
+          # Ensure that Syslog is open
+          begin
+            Syslog.open('god', Syslog::LOG_PID | Syslog::LOG_CONS, facility)
+          rescue RuntimeError
+            Syslog.reopen('god', Syslog::LOG_PID | Syslog::LOG_CONS, facility)
+          end
+        end
+
         Syslog.log(SYMBOL_EQUIVALENTS[level], '%s', text)
       end
     end
