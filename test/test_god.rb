@@ -462,65 +462,143 @@ class TestGod < Test::Unit::TestCase
         w.start = 'go'
       end
     EOF
-    
+
     God.running_load(code, '/foo/bar.god')
     assert_equal 0, God.pending_watches.size
   end
-  
+
+  def test_running_load_with_stop
+    code_one = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+        w.start = 'go'
+      end
+    EOF
+
+    code_two = <<-EOF
+      God.watch do |w|
+        w.name = 'bar'
+        w.start = 'go'
+      end
+    EOF
+
+    a, e, r = *God.running_load(code_one, '/foo/one.god', 'stop')
+
+    assert_equal 1, a.size
+    assert_equal 0, r.size
+
+    a, e, r = *God.running_load(code_two, '/foo/two.god', 'stop')
+
+    assert_equal 1, a.size
+    assert_equal 1, r.size
+  end
+
+  def test_running_load_with_remove
+    code_one = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+        w.start = 'go'
+      end
+    EOF
+
+    code_two = <<-EOF
+      God.watch do |w|
+        w.name = 'bar'
+        w.start = 'go'
+      end
+    EOF
+
+    a, e, r = *God.running_load(code_one, '/foo/one.god', 'remove')
+
+    assert_equal 1, a.size
+    assert_equal 0, r.size
+
+    a, e, r = *God.running_load(code_two, '/foo/two.god', 'remove')
+
+    assert_equal 1, a.size
+    assert_equal 1, r.size
+  end
+
+  def test_running_load_with_leave
+    code_one = <<-EOF
+      God.watch do |w|
+        w.name = 'foo'
+        w.start = 'go'
+      end
+    EOF
+
+    code_two = <<-EOF
+      God.watch do |w|
+        w.name = 'bar'
+        w.start = 'go'
+      end
+    EOF
+
+    a, e, r = *God.running_load(code_one, '/foo/one.god', 'leave')
+
+    assert_equal 1, a.size
+    assert_equal 0, r.size
+
+    a, e, r = *God.running_load(code_two, '/foo/two.god', 'leave')
+
+    assert_equal 1, a.size
+    assert_equal 0, r.size
+  end
+
   # load
-  
+
   def test_load_should_collect_and_load_globbed_path
     Dir.expects(:[]).with('/path/to/*.thing').returns(['a', 'b'])
     Kernel.expects(:load).with('a').once
     Kernel.expects(:load).with('b').once
     God.load('/path/to/*.thing')
   end
-  
+
   # start
-  
+
   def test_start_should_kick_off_a_server_instance
     God::Socket.expects(:new).returns(true)
     God.start
   end
-  
+
   def test_start_should_begin_monitoring_autostart_watches
     God.watch do |w|
       w.name = 'foo'
       w.start = 'go'
     end
-    
+
     Watch.any_instance.expects(:monitor).once
     God.start
   end
-  
+
   def test_start_should_not_begin_monitoring_non_autostart_watches
     God.watch do |w|
       w.name = 'foo'
       w.start = 'go'
       w.autostart = false
     end
-    
+
     Watch.any_instance.expects(:monitor).never
     God.start
   end
-  
+
   def test_start_should_get_and_join_timer
     God.watch { |w| w.name = 'foo'; w.start = 'bar' }
     God.start
   end
-  
+
   # at_exit
-  
+
   def test_at_exit_should_call_start
     God.expects(:start).once
     God.at_exit
   end
-  
+
   # pattern_match
-  
+
   def test_pattern_match
     list = %w{ mongrel-3000 mongrel-3001 fuzed22 fuzed fuzed2 apache mysql}
-    
+
     assert_equal %w{ mongrel-3000 }, God.pattern_match('m3000', list)
     assert_equal %w{ mongrel-3001 }, God.pattern_match('m31', list)
     assert_equal %w{ fuzed fuzed2 fuzed22}, God.pattern_match('fu', list)

@@ -38,23 +38,36 @@ module God
           abort
         end
       end
-      
+
       def load_command
         file = @args[1]
-          
-        puts "Sending '#{@command}' command"
+        action = @args[2] || 'leave'
+
+        unless ['stop', 'remove', 'leave', ''].include?(action)
+          puts "Command '#{@command}' action must be either 'stop', 'remove' or 'leave'"
+          exit(1)
+        end
+
+        puts "Sending '#{@command}' command with action '#{action}'"
         puts
-        
+
         unless File.exist?(file)
           abort "File not found: #{file}"
         end
-        
-        names, errors = *@server.running_load(File.read(file), File.expand_path(file))
-        
+
+        affected, errors, removed = *@server.running_load(File.read(file), File.expand_path(file), action)
+
         # output response
-        unless names.empty?
+        unless affected.empty?
           puts 'The following tasks were affected:'
           names.each do |w|
+            puts '  ' + w
+          end
+        end
+
+        unless removed.empty?
+          puts 'The following tasks were removed:'
+          removed.each do |w|
             puts '  ' + w
           end
         end
