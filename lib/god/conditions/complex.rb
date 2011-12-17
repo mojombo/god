@@ -72,10 +72,22 @@ module God
           res = @this.test
         end
         
-        @op_stack.each do |op|
-          cond = @oper_stack.shift
-          eval "res " + ((0 < op & AND) ? "&&" : "||") + "= " + ((0 < op & NOT) ? "!" : "") + "cond.test"
-          @oper_stack.push cond
+        (0 ... @op_stack.length).each do |index|
+          op = @op_stack[index]
+          cond = @oper_stack[index]
+
+          begin
+            r_temp = cond.test
+          rescue Exception
+            r_temp = false
+          end
+
+          r_temp = !r_temp if (op & NOT) != 0
+          if (op & AND) != 0
+            res &&= r_temp
+          else
+            res ||= r_temp
+          end
         end
         
         res
