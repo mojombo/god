@@ -657,10 +657,12 @@ module God
         sleep 60
       end
     end
-    
-    self.main.join
   end
-  
+
+  def self.join
+    self.main.join if self.main
+  end
+
   def self.version
     God::VERSION
   end
@@ -670,6 +672,7 @@ module God
   # Returns nothing
   def self.at_exit
     self.start
+    self.join
   end
   
   # private
