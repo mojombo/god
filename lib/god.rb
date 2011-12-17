@@ -23,7 +23,6 @@ require 'god/system/process'
 require 'god/system/portable_poller'
 require 'god/system/slash_proc_poller'
 
-require 'god/dependency_graph'
 require 'god/timeline'
 require 'god/configurable'
 
@@ -63,8 +62,6 @@ require 'god/process'
 
 require 'god/cli/version'
 require 'god/cli/command'
-
-require 'god/diagnostics'
 
 # ruby 1.8 specific configuration
 if RUBY_VERSION < '1.9'

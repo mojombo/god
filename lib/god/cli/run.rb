@@ -77,10 +77,6 @@ module God
       def run_in_front
         require 'god'
         
-        if @options[:bleakhouse]
-          BleakHouseDiagnostic.install
-        end
-        
         default_run
       end
       
