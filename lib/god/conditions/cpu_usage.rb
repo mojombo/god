@@ -13,6 +13,9 @@ module God
     #                populated for Watches.
     #     +above+ is the percent CPU above which to trigger the condition. You 
     #             may use #percent to clarify this amount (see examples).
+    #   Optional
+    #     +family+ should be true in order to include the CPU usage of all child
+    #              processes.
     #
     # Examples
     #
@@ -29,12 +32,13 @@ module God
     #     c.pid_file = "/var/run/mongrel.3000.pid"
     #   end
     class CpuUsage < PollCondition
-      attr_accessor :above, :times, :pid_file
+      attr_accessor :above, :times, :pid_file, :family
     
       def initialize
         super
         self.above = nil
         self.times = [1, 1]
+        self.family = false
       end
       
       def prepare
@@ -62,7 +66,11 @@ module God
       
       def test
         process = System::Process.new(self.pid)
-        @timeline.push(process.percent_cpu)
+        if self.family
+          @timeline.push(process.family_percent_cpu)
+        else
+          @timeline.push(process.percent_cpu)
+        end
         
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}%%" }.join(", ") + "]"
         
