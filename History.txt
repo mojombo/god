@@ -6,6 +6,7 @@
     * Add Bundler support
     * Add keepalive simple conditional setups (#71)
     * Better load command to act upon removed watches (#70)
+    * Add support for ssl in http_response_code condition (#36)
   * Bug Fixes
     * Use IO.print instead of IO.puts for thread safety (#35)
     * Fix Slashproc poller for commands with spaces (#31)
