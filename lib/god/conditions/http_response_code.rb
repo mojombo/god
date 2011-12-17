@@ -1,11 +1,12 @@
 require 'net/http'
+require 'net/https'
 
 module God
   module Conditions
-    
+
     # Condition Symbol :http_response_code
     # Type: Poll
-    # 
+    #
     # Trigger based on the response from an HTTP request.
     #
     # Paramaters
@@ -23,6 +24,7 @@ module God
     #     +times+ is the number of times after which to trigger (default 1)
     #             e.g. 3 (times in a row) or [3, 5] (three out of fives times)
     #     +timeout+ is the time to wait for a connection (default 60.seconds)
+    #     +ssl+ should the connection use ssl (default false)
     #
     # Examples
     #
@@ -68,10 +70,12 @@ module God
                     :times,        # e.g. 3 or [3, 5]
                     :host,         # e.g. www.example.com
                     :port,         # e.g. 8080
+                    :ssl,          # e.g. true or false
+                    :ca_file,      # e.g /path/to/pem_file for ssl verification (checkout http://curl.haxx.se/ca/cacert.pem)
                     :timeout,      # e.g. 60.seconds
                     :path,         # e.g. '/'
                     :headers       # e.g. {'Host' => 'myvirtual.mydomain.com'}
-      
+
       def initialize
         super
         self.port = 80
@@ -79,25 +83,27 @@ module God
         self.headers = {}
         self.times = [1, 1]
         self.timeout = 60.seconds
+        self.ssl = false
+        self.ca_file = nil
       end
-      
+
       def prepare
         self.code_is = Array(self.code_is).map { |x| x.to_i } if self.code_is
         self.code_is_not = Array(self.code_is_not).map { |x| x.to_i } if self.code_is_not
-        
+
         if self.times.kind_of?(Integer)
           self.times = [self.times, self.times]
         end
-        
+
         @timeline = Timeline.new(self.times[1])
         @history = Timeline.new(self.times[1])
       end
-      
+
       def reset
         @timeline.clear
         @history.clear
       end
-      
+
       def valid?
         valid = true
         valid &= complain("Attribute 'host' must be specified", self) if self.host.nil?
@@ -105,15 +111,25 @@ module God
           (self.code_is.nil? && self.code_is_not.nil?) || (self.code_is && self.code_is_not)
         valid
       end
-      
+
       def test
         response = nil
+
+        connection = Net::HTTP.new(self.host, self.port)
+        connection.use_ssl = self.port == 443 ? true : self.ssl
+        connection.verify_mode = OpenSSL::SSL::VERIFY_NONE if connection.use_ssl
         
-        Net::HTTP.start(self.host, self.port) do |http|
+        if connection.use_ssl && self.ca_file
+          pem = File.read(self.ca_file)
+          connection.ca_file = self.ca_file
+          connection.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        end
+
+        connection.start do |http|
           http.read_timeout = self.timeout
           response = http.get(self.path, self.headers)
         end
-        
+
         actual_response_code = response.code.to_i
         if self.code_is && self.code_is.include?(actual_response_code)
           pass(actual_response_code)
@@ -135,9 +151,9 @@ module God
       rescue Exception => failure
         self.code_is ? fail(failure.class.name) : pass(failure.class.name)
       end
-      
+
       private
-      
+
       def pass(code)
         @timeline << true
         if @timeline.select { |x| x }.size >= self.times.first
@@ -148,21 +164,21 @@ module God
           false
         end
       end
-      
+
       def fail(code)
         @timeline << false
         self.info = "http response nominal #{history(code, false)}"
         false
       end
-      
+
       def history(code, passed)
         entry = code.to_s.dup
         entry = '*' + entry if passed
         @history << entry
         '[' + @history.join(", ") + ']'
       end
-      
+
     end
-    
+
   end
 end
