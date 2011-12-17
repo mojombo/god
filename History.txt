@@ -4,6 +4,8 @@
     * Add socket response condition (#25)
     * Don't require tests run as sudo under non-linux systems (#15)
     * Add Bundler support
+    * Add keepalive simple conditional setups (#71)
+    * Better load command to act upon removed watches (#70)
   * Bug Fixes
     * Use IO.print instead of IO.puts for thread safety (#35)
     * Fix Slashproc poller for commands with spaces (#31)
