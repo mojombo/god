@@ -31,11 +31,11 @@ kqh_event_mask(VALUE klass, VALUE sym)
   } else {
     rb_raise(rb_eNotImpError, "Event `%s` not implemented", rb_id2name(id));
   }
-  
+
   return Qnil;
 }
 
-  
+
 VALUE
 kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
 {
@@ -43,18 +43,18 @@ kqh_monitor_process(VALUE klass, VALUE pid, VALUE mask)
   ID event;
 
   (void)event;      //!< Silence warning about unused var, should be removed?
-  
+
   u_int fflags = NUM2UINT(mask);
-  
+
   EV_SET(&new_event, FIX2UINT(pid), EVFILT_PROC,
          EV_ADD | EV_ENABLE, fflags, 0, 0);
-  
+
   if (-1 == kevent(kq, &new_event, 1, NULL, 0, NULL)) {
     rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
-  
+
   num_events = NUM_EVENTS;
-  
+
   return Qnil;
 }
 
@@ -64,23 +64,23 @@ kqh_handle_events()
   int nevents, i, num_to_fetch;
   struct kevent *events;
   fd_set read_set;
-  
+
   FD_ZERO(&read_set);
   FD_SET(kq, &read_set);
-  
+
   // Don't actually run this method until we've got an event
-  rb_thread_select(kq + 1, &read_set, NULL, NULL, NULL);  
-  
+  rb_thread_select(kq + 1, &read_set, NULL, NULL, NULL);
+
   // Grabbing num_events once for thread safety
   num_to_fetch = num_events;
   events = (struct kevent*)malloc(num_to_fetch * sizeof(struct kevent));
-  
+
   if (NULL == events) {
     rb_raise(rb_eStandardError, "%s", strerror(errno));
   }
-  
+
   nevents = kevent(kq, NULL, 0, events, num_to_fetch, NULL);
-  
+
   if (-1 == nevents) {
     free(events);
     rb_raise(rb_eStandardError, "%s", strerror(errno));
@@ -93,7 +93,7 @@ kqh_handle_events()
       }
     }
   }
-  
+
   free(events);
 
   return INT2FIX(nevents);
@@ -103,17 +103,17 @@ void
 Init_kqueue_handler_ext()
 {
   kq = kqueue();
-  
+
   if (kq == -1) {
     rb_raise(rb_eStandardError, "kqueue initilization failed");
   }
-  
+
   proc_exit = rb_intern("proc_exit");
   proc_fork = rb_intern("proc_fork");
   m_call = rb_intern("call");
   m_size = rb_intern("size");
   m_deregister = rb_intern("deregister");
-  
+
   mGod = rb_const_get(rb_cObject, rb_intern("God"));
   cEventHandler = rb_const_get(mGod, rb_intern("EventHandler"));
   cKQueueHandler = rb_define_class_under(mGod, "KQueueHandler", rb_cObject);

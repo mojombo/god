@@ -4,13 +4,13 @@ God.watch do |w|
   w.interval = 5
   w.grace = 2
   w.group = 'test'
-  
+
   w.start_if do |start|
     start.condition(:process_running) do |c|
       c.running = false
     end
   end
-  
+
   w.restart_if do |restart|
     restart.condition(:degrading_lambda) do |c|
       require 'socket'

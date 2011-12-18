@@ -1,6 +1,6 @@
 module God
   module Conditions
-    
+
     class Lambda < PollCondition
       attr_accessor :lambda
 

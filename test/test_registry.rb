@@ -4,7 +4,7 @@ class TestRegistry < Test::Unit::TestCase
   def setup
     God.registry.reset
   end
-  
+
   def test_add
     foo = God::Process.new
     foo.name = 'foo'

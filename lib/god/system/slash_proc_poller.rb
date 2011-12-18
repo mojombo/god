@@ -4,12 +4,12 @@ module God
       @@kb_per_page = 4 # TODO: Need to make this portable
       @@hertz = 100
       @@total_mem = nil
-      
+
       MeminfoPath = '/proc/meminfo'
       UptimePath = '/proc/uptime'
-      
+
       RequiredPaths = [MeminfoPath, UptimePath]
-      
+
       # FreeBSD has /proc by default, but nothing mounted there!
       # So we should check for the actual required paths!
       # Returns true if +RequiredPaths+ are readable.
@@ -18,29 +18,29 @@ module God
           test(?r, path) && readable?(path)
         end
       end
-      
+
       def initialize(pid)
         super(pid)
-        
+
         unless @@total_mem # in K
           File.open(MeminfoPath) do |f|
             @@total_mem = f.gets.split[1]
           end
         end
       end
-      
+
       def memory
         stat[:rss].to_i * @@kb_per_page
       rescue # This shouldn't fail is there's an error (or proc doesn't exist)
         0
       end
-      
+
       def percent_memory
         (memory / @@total_mem.to_f) * 100
       rescue # This shouldn't fail is there's an error (or proc doesn't exist)
         0
       end
-      
+
       # TODO: Change this to calculate the wma instead
       def percent_cpu
         stats = stat
@@ -54,9 +54,9 @@ module God
       rescue # This shouldn't fail is there's an error (or proc doesn't exist)
         0
       end
-      
+
       private
-      
+
       # Some systems (CentOS?) have a /proc, but they can hang when trying to
       # read from them. Try to use this sparingly as it is expensive.
       def self.readable?(path)
@@ -66,12 +66,12 @@ module God
           false
         end
       end
-      
+
       # in seconds
       def uptime
         File.read(UptimePath).split[0].to_f
       end
-      
+
       def stat
         stats = {}
         stats[:pid], stats[:comm], stats[:state], stats[:ppid], stats[:pgrp],

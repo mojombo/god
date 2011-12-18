@@ -14,7 +14,7 @@ God.watch do |w|
   w.name = "lifecycle"
   w.interval = 5.seconds
   w.start = "/dev/null"
-  
+
   # lifecycle
   w.lifecycle do |on|
     on.condition(:always) do |c|

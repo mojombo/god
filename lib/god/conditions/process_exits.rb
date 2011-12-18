@@ -1,9 +1,9 @@
 module God
   module Conditions
-    
+
     # Condition Symbol :process_exits
     # Type: Event
-    # 
+    #
     # Trigger when a process exits.
     #
     # Paramaters
@@ -24,41 +24,41 @@ module God
     #   end
     class ProcessExits < EventCondition
       attr_accessor :pid_file
-      
+
       def initialize
         self.info = "process exited"
       end
-      
+
       def valid?
         true
       end
-      
+
       def pid
         self.pid_file ? File.read(self.pid_file).strip.to_i : self.watch.pid
       end
-      
+
       def register
         pid = self.pid
-        
+
         begin
           EventHandler.register(pid, :proc_exit) do |extra|
             formatted_extra = extra.size > 0 ? " #{extra.inspect}" : ""
             self.info = "process #{pid} exited#{formatted_extra}"
             self.watch.trigger(self)
           end
-          
+
           msg = "#{self.watch.name} registered 'proc_exit' event for pid #{pid}"
           applog(self.watch, :info, msg)
         rescue StandardError
           raise EventRegistrationFailedError.new
         end
       end
-      
+
       def deregister
         pid = self.pid
         if pid
           EventHandler.deregister(pid, :proc_exit)
-          
+
           msg = "#{self.watch.name} deregistered 'proc_exit' event for pid #{pid}"
           applog(self.watch, :info, msg)
         else
@@ -67,6 +67,6 @@ module God
         end
       end
     end
-    
+
   end
 end

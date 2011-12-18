@@ -135,7 +135,7 @@
   * Major Enhancements
     * Enable sending of arbitrary signals to a task or group via `god signal`
   * Bug Fixes
-    * setup logging *after* loading a given config file when daemonized. 
+    * setup logging *after* loading a given config file when daemonized.
       enables logging to the 'God.log_file' specified in a config file. [github.com/jnewland]
   * New Conditions
     * FileMtime < PollCondition - trigger on file mtime durations [github.com/jwilkins]
@@ -290,7 +290,7 @@
 
 * Minor Enhancement
   * Allow extra args to pass through to config file
-  
+
 == 0.5.1 / 2007-10-08
 
 * Bug Fixes

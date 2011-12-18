@@ -20,13 +20,13 @@ begin
   Usage:
     Starting:
       god [-c <config file>] [-p <port> | -b] [-P <file>] [-l <file>] [-D]
-      
+
     Querying:
       god <command> <argument> [-p <port>]
       god <command> [-p <port>]
       god -v
       god -V (must be run as root to be accurate on Linux)
-      
+
     Commands:
       start <task or group name>         start task or group
       restart <task or group name>       restart task or group
@@ -41,70 +41,70 @@ begin
       quit                               stop god
       terminate                          stop god and all tasks
       check                              run self diagnostic
-      
+
     Options:
   EOF
-  
+
     opts.on("-cCONFIG", "--config-file CONFIG", "Configuration file") do |x|
       options[:config] = x
     end
-    
+
     opts.on("-pPORT", "--port PORT", "Communications port (default 17165)") do |x|
       options[:port] = x
     end
-    
+
     opts.on("-b", "--auto-bind", "Auto-bind to an unused port number") do
       options[:port] = "0"
     end
-    
+
     opts.on("-PFILE", "--pid FILE", "Where to write the PID file") do |x|
       options[:pid] = x
     end
-    
+
     opts.on("-lFILE", "--log FILE", "Where to write the log file") do |x|
       options[:log] = x
     end
-    
+
     opts.on("-D", "--no-daemonize", "Don't daemonize") do
       options[:daemonize] = false
     end
-    
+
     opts.on("-v", "--version", "Print the version number and exit") do
       options[:version] = true
     end
-    
+
     opts.on("-V", "Print extended version and build information") do
       options[:info] = true
     end
-    
+
     opts.on("--log-level LEVEL", "Log level [debug|info|warn|error|fatal]") do |x|
       options[:log_level] = x.to_sym
     end
-    
+
     opts.on("--no-syslog", "Disable output to syslog") do
       options[:syslog] = false
     end
-    
+
     opts.on("--attach PID", "Quit god when the attached process dies") do |x|
       options[:attach] = x
     end
-    
+
     opts.on("--no-events", "Disable the event system") do
       options[:events] = false
     end
-    
+
     opts.on("--bleakhouse", "Enable bleakhouse profiling") do
       options[:bleakhouse] = true
     end
   end
-  
+
   opts.parse!
-  
+
   # validate
   if options[:log_level] && ![:debug, :info, :warn, :error, :fatal].include?(options[:log_level])
     abort("Invalid log level '#{options[:log_level]}'")
   end
-  
+
   # dispatch
   if !options[:config] && options[:version]
     require 'god'

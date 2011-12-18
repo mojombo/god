@@ -5,7 +5,7 @@
 # chkconfig: - 85 15
 # description: God is an easy to configure, easy to extend monitoring \
 #              framework written in Ruby.
-#              
+#
 
 CONF_DIR=/etc/god
 
@@ -37,6 +37,6 @@ case "$1" in
       echo "Usage: god {start|stop|restart|status}"
       exit 1
   ;;
-esac      
+esac
 
 exit $RETVAL

@@ -5,7 +5,7 @@ module God
   # The God::Server oversees the DRb server which dishes out info on this God daemon.
   class Socket
     attr_reader :port
-    
+
     # The location of the socket for a given port
     #   +port+ is the port number
     #
@@ -13,7 +13,7 @@ module God
     def self.socket_file(port)
       "/tmp/god.#{port}.sock"
     end
-    
+
     # The address of the socket for a given port
     #   +port+ is the port number
     #
@@ -21,21 +21,21 @@ module God
     def self.socket(port)
       "drbunix://#{self.socket_file(port)}"
     end
-    
+
     # The location of the socket for this Server
     #
     # Returns String (file location)
     def socket_file
       self.class.socket_file(@port)
     end
-    
+
     # The address of the socket for this Server
     #
     # Returns String (drb address)
     def socket
       self.class.socket(@port)
     end
-    
+
     # Create a new Server and star the DRb server
     #   +port+ is the port on which to start the DRb service (default nil)
     def initialize(port = nil, user = nil, group = nil, perm = nil)
@@ -45,19 +45,19 @@ module God
       @perm  = perm
       start
     end
-    
+
     # Returns true
     def ping
       true
     end
-    
+
     # Forward API calls to God
     #
     # Returns whatever the forwarded call returns
     def method_missing(*args, &block)
       God.send(*args, &block)
     end
-    
+
     # Stop the DRb server and delete the socket file
     #
     # Returns nothing
@@ -65,9 +65,9 @@ module God
       DRb.stop_service
       FileUtils.rm_f(self.socket_file)
     end
-    
+
     private
-    
+
     # Start the DRb server. Abort if there is already a running god instance
     # on the socket.
     #
@@ -80,7 +80,7 @@ module God
         applog(nil, :info, "Socket already in use")
         DRb.start_service
         server = DRbObject.new(nil, self.socket)
-        
+
         begin
           Timeout.timeout(5) do
             server.ping

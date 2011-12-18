@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 class TestSocket < Test::Unit::TestCase
   def setup
-    silence_warnings do 
+    silence_warnings do
       Object.const_set(:DRb, stub_everything)
     end
   end
@@ -23,9 +23,9 @@ class TestSocket < Test::Unit::TestCase
     God.expects(:send).with(:something_random)
     server.something_random
   end
-  
+
   # ping
-  
+
   def test_ping_should_return_true
     server = nil
     server = God::Socket.new

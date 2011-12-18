@@ -39,13 +39,13 @@ module God
         true
       end
     end
-  
+
     class FakePollCondition < PollCondition
       def test
         true
       end
     end
-  
+
     class FakeEventCondition < EventCondition
       def register
       end
@@ -53,7 +53,7 @@ module God
       end
     end
   end
-  
+
   module Behaviors
     class FakeBehavior < Behavior
       def before_start
@@ -64,15 +64,15 @@ module God
       end
     end
   end
-  
+
   module Contacts
     class FakeContact < Contact
     end
-    
+
     class InvalidContact
     end
   end
-  
+
   def self.reset
     self.watches = nil
     self.groups = nil
@@ -129,7 +129,7 @@ class Object
     def initialize(ref)
       @ref = ref
     end
-  
+
     def method_missing(sym, *args)
       @ref.__send__(sym, *args)
     end

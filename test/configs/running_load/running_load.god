@@ -7,7 +7,7 @@ God.watch do |w|
   w.uid = 'tom'
   w.gid = 'tom'
   w.group = 'test'
-  
+
   w.start_if do |start|
     start.condition(:process_running) do |c|
       c.running = false
