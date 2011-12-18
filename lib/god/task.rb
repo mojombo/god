@@ -164,6 +164,8 @@ module God
         self.driver.clear_events
         self.metrics[from_state].each { |m| m.disable }
         if to_state == :unmonitored
+          # Last chance trigger fire
+          Trigger.broadcast(self, :state_change, [from_state, orig_to_state])
           self.metrics[nil].each { |m| m.disable }
         end
 
