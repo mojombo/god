@@ -150,14 +150,34 @@ class Module
 end
 
 module God
+  # The String version number for this package.
   VERSION = '0.11.0'
+
+  # The Integer number of lines of backlog to keep for the logger.
   LOG_BUFFER_SIZE_DEFAULT = 100
+
+  # An Array of directory paths to be used as the default PID file directory.
+  # This list will be searched in order and the first one that has write
+  # permissions will be used.
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
+
+  # The default Integer port number for the DRb communcations channel.
   DRB_PORT_DEFAULT = 17165
+
+  # The default Array of String IPs that will allow DRb communication access.
   DRB_ALLOW_DEFAULT = ['127.0.0.1']
+
+  # The default Symbol log level.
   LOG_LEVEL_DEFAULT = :info
+
+  # The default Integer number of seconds to wait for god to terminate when
+  # issued the quit command.
   TERMINATE_TIMEOUT_DEFAULT = 10
+
+  # The default Integer number of seconds to wait for a process to terminate.
   STOP_TIMEOUT_DEFAULT = 10
+
+  # The default String signal to send for the stop command.
   STOP_SIGNAL_DEFAULT = 'TERM'
 
   class << self
@@ -189,7 +209,7 @@ module God
                   :main
   end
 
-  # initialize class instance variables
+  # Initialize class instance variables.
   self.pid = nil
   self.host = nil
   self.port = nil
@@ -204,12 +224,12 @@ module God
 
   # Initialize internal data.
   #
-  # Returns nothing
+  # Returns nothing.
   def self.internal_init
-    # only do this once
+    # Only do this once.
     return if self.inited
 
-    # variable init
+    # Variable init.
     self.watches = {}
     self.groups = {}
     self.pending_watches = []
@@ -217,17 +237,17 @@ module God
     self.contacts = {}
     self.contact_groups = {}
 
-    # set defaults
+    # Set defaults.
     self.log_buffer_size ||= LOG_BUFFER_SIZE_DEFAULT
     self.port ||= DRB_PORT_DEFAULT
     self.allow ||= DRB_ALLOW_DEFAULT
     self.log_level ||= LOG_LEVEL_DEFAULT
     self.terminate_timeout ||= TERMINATE_TIMEOUT_DEFAULT
 
-    # additional setup
+    # Additional setup.
     self.setup
 
-    # log level
+    # Log level.
     log_level_map = {:debug => Logger::DEBUG,
                      :info => Logger::INFO,
                      :warn => Logger::WARN,
@@ -235,69 +255,62 @@ module God
                      :fatal => Logger::FATAL}
     LOG.level = log_level_map[self.log_level]
 
-    # init has been executed
+    # Init has been executed.
     self.inited = true
 
-    # not yet running
+    # Not yet running.
     self.running = false
   end
 
-  # Instantiate a new, empty Watch object and pass it to the mandatory
-  # block. The attributes of the watch will be set by the configuration
-  # file.
+  # Instantiate a new, empty Watch object and pass it to the mandatory block.
+  # The attributes of the watch will be set by the configuration file. Aborts
+  # on duplicate watch name, invalid watch, or conflicting group name.
   #
-  # Aborts on duplicate watch name
-  #           invalid watch
-  #           conflicting group name
-  #
-  # Returns nothing
+  # Returns nothing.
   def self.watch(&block)
     self.task(Watch, &block)
   end
 
-  # Instantiate a new, empty Task object and yield it to the mandatory
-  # block. The attributes of the task will be set by the configuration
-  # file.
+  # Instantiate a new, empty Task object and yield it to the mandatory block.
+  # The attributes of the task will be set by the configuration file. Aborts
+  # on duplicate task name, invalid task, or conflicting group name.
   #
-  # Aborts on duplicate task name
-  #           invalid task
-  #           conflicting group name
-  #
-  # Returns nothing
+  # Returns nothing.
   def self.task(klass = Task)
+    # Ensure internal init has run.
     self.internal_init
 
     t = klass.new
     yield(t)
 
-    # do the post-configuration
+    # Do the post-configuration.
     t.prepare
 
-    # if running, completely remove the watch (if necessary) to
-    # prepare for the reload
+    # If running, completely remove the watch (if necessary) to prepare for
+    # the reload
     existing_watch = self.watches[t.name]
     if self.running && existing_watch
       self.pending_watch_states[existing_watch.name] = existing_watch.state
       self.unwatch(existing_watch)
     end
 
-    # ensure the new watch has a unique name
+    # Ensure the new watch has a unique name.
     if self.watches[t.name] || self.groups[t.name]
       abort "Task name '#{t.name}' already used for a Task or Group"
     end
 
-    # ensure watch is internally valid
+    # Ensure watch is internally valid.
     t.valid? || abort("Task '#{t.name}' is not valid (see above)")
 
-    # add to list of watches
+    # Add to list of watches.
     self.watches[t.name] = t
 
-    # add to pending watches
+    # Add to pending watches.
     self.pending_watches << t
 
-    # add to group if specified
+    # Add to group if specified.
     if t.group
-      # ensure group name hasn't been used for a watch already
+      # Ensure group name hasn't been used for a watch already.
       if self.watches[t.group]
         abort "Group name '#{t.group}' already used for a Task"
       end
@@ -306,10 +319,10 @@ module God
       self.groups[t.group] << t
     end
 
-    # register watch
+    # Register watch.
     t.register!
 
-    # log
+    # Log.
     if self.running && existing_watch
       applog(t, :info, "#{t.name} Reloaded config")
     elsif self.running
@@ -318,20 +331,21 @@ module God
   end
 
   # Unmonitor and remove the given watch from god.
-  #   +watch+ is the Watch to remove
   #
-  # Returns nothing
+  # watch - The Watch to remove.
+  #
+  # Returns nothing.
   def self.unwatch(watch)
-    # unmonitor
+    # Unmonitor.
     watch.unmonitor unless watch.state == :unmonitored
 
-    # unregister
+    # Unregister.
     watch.unregister!
 
-    # remove from watches
+    # Remove from watches.
     self.watches.delete(watch.name)
 
-    # remove from groups
+    # Remove from groups.
     if watch.group
       self.groups[watch.group].delete(watch)
     end
@@ -340,19 +354,17 @@ module God
   end
 
   # Instantiate a new Contact of the given kind and send it to the block.
-  # Then prepare, validate, and record the Contact.
-  #   +kind+ is the contact class specifier
+  # Then prepare, validate, and record the Contact. Aborts on invalid kind,
+  # duplicate contact name, invalid contact, or conflicting group name.
   #
-  # Aborts on invalid kind
-  #           duplicate contact name
-  #           invalid contact
-  #           conflicting group name
+  # kind - The Symbol contact class specifier.
   #
-  # Returns nothing
+  # Returns nothing.
   def self.contact(kind)
+    # Ensure internal init has run.
     self.internal_init
 
-    # verify contact has been loaded
+    # Verify contact has been loaded.
     if CONTACT_LOAD_SUCCESS[kind] == false
       applog(nil, :error, "A required dependency for the #{kind} contact is unavailable.")
       applog(nil, :error, "Run the following commands to install the dependencies:")
@@ -362,43 +374,43 @@ module God
       abort
     end
 
-    # create the contact
+    # Create the contact.
     begin
       c = Contact.generate(kind)
     rescue NoSuchContactError => e
       abort e.message
     end
 
-    # send to block so config can set attributes
+    # Send to block so config can set attributes.
     yield(c) if block_given?
 
-    # call prepare on the contact
+    # Call prepare on the contact.
     c.prepare
 
-    # remove existing contacts of same name
+    # Remove existing contacts of same name.
     existing_contact = self.contacts[c.name]
     if self.running && existing_contact
       self.uncontact(existing_contact)
     end
 
-    # warn and noop if the contact has been defined before
+    # Warn and noop if the contact has been defined before.
     if self.contacts[c.name] || self.contact_groups[c.name]
       applog(nil, :warn, "Contact name '#{c.name}' already used for a Contact or Contact Group")
       return
     end
 
-    # abort if the Contact is invalid, the Contact will have printed
-    # out its own error messages by now
+    # Abort if the Contact is invalid, the Contact will have printed out its
+    # own error messages by now.
     unless Contact.valid?(c) && c.valid?
       abort "Exiting on invalid contact"
     end
 
-    # add to list of contacts
+    # Add to list of contacts.
     self.contacts[c.name] = c
 
-    # add to contact group if specified
+    # Add to contact group if specified.
     if c.group
-      # ensure group name hasn't been used for a contact already
+      # Ensure group name hasn't been used for a contact already.
       if self.contacts[c.group]
         abort "Contact Group name '#{c.group}' already used for a Contact"
       end
@@ -409,9 +421,10 @@ module God
   end
 
   # Remove the given contact from god.
-  #   +contact+ is the Contact to remove
   #
-  # Returns nothing
+  # contact - The Contact to remove.
+  #
+  # Returns nothing.
   def self.uncontact(contact)
     self.contacts.delete(contact.name)
     if contact.group
@@ -420,23 +433,19 @@ module God
   end
 
   # Control the lifecycle of the given task(s).
-  #   +name+ is the name of a task/group (String)
-  #   +command+ is the command to run (String)
-  #             one of: "start"
-  #                     "monitor"
-  #                     "restart"
-  #                     "stop"
-  #                     "unmonitor"
-  #                     "remove"
   #
-  # Returns String[]:task_names
+  # name    - The String name of a task/group.
+  # command - The String command to run. Valid commands are:
+  #           "start", "monitor", "restart", "stop", "unmonitor", "remove".
+  #
+  # Returns an Array of String task names affected by the command.
   def self.control(name, command)
-    # get the list of items
+    # Get the list of items.
     items = Array(self.watches[name] || self.groups[name]).dup
 
     jobs = []
 
-    # do the command
+    # Do the command.
     case command
       when "start", "monitor"
         items.each { |w| jobs << Thread.new { w.monitor if w.state != :up } }
@@ -459,15 +468,10 @@ module God
 
   # Unmonitor and stop all tasks.
   #
-  # Returns true on success
-  #         false if all tasks could not be stopped within 10 seconds
-  def self.stop_all
-    self.watches.sort.each do |name, w|
-      Thread.new do
-        w.unmonitor if w.state != :unmonitored
-        w.action(:stop) if w.alive?
-      end
-    end
+  # Returns true on success, false if all tasks could not be stopped within 10
+  # seconds
+  def self.stop_all self.watches.sort.each do |name, w| Thread.new do
+    w.unmonitor if w.state != :unmonitored w.action(:stop) if w.alive?  end end
 
     terminate_timeout.times do
       return true unless self.watches.map { |name, w| w.alive? }.any?
@@ -478,9 +482,9 @@ module God
   end
 
   # Force the termination of god.
-  #   * Clean up pid file if one exists
-  #   * Stop DRb service
-  #   * Hard exit using exit!
+  # * Clean up pid file if one exists
+  # * Stop DRb service
+  # * Hard exit using exit!
   #
   # Never returns because the process will no longer exist!
   def self.terminate
@@ -492,10 +496,12 @@ module God
   # Gather the status of each task.
   #
   # Examples
+  #
   #   God.status
   #   # => { 'mongrel' => :up, 'nginx' => :up }
   #
-  # Returns { String:task_name => Symbol:status, ... }
+  # Returns a Hash where the key is the String task name and the value is the
+  #   Symbol status.
   def self.status
     info = {}
     self.watches.map do |name, w|
@@ -505,10 +511,11 @@ module God
   end
 
   # Send a signal to each task.
-  #   +name+ is the String name of the task or group
-  #   +signal+ is the signal to send. e.g. HUP, 9
   #
-  # Returns String[]:task_names
+  # name   - The String name of the task or group.
+  # signal - The String or integer signal to send. e.g. 'HUP', 9.
+  #
+  # Returns an Array of String names of the tasks affected.
   def self.signal(name, signal)
     items = Array(self.watches[name] || self.groups[name]).dup
     jobs = []
@@ -518,12 +525,12 @@ module God
   end
 
   # Log lines for the given task since the specified time.
-  #   +watch_name+ is the name of the task (may be abbreviated)
-  #   +since+ is the Time since which to report log lines
   #
-  # Raises God::NoSuchWatchError if no tasks matched
+  # watch_name - The String name of the task (may be abbreviated).
+  # since      - The Time since which to report log lines.
   #
-  # Returns String:joined_log_lines
+  # Raises God::NoSuchWatchError if no tasks matched.
+  # Returns the String of newline separated log lines.
   def self.running_log(watch_name, since)
     matches = pattern_match(watch_name, self.watches.keys)
 
@@ -536,11 +543,21 @@ module God
 
   # Load a config file into a running god instance. Rescues any exceptions
   # that the config may raise and reports these back to the caller.
-  #   +code+ is a String containing the config file
-  #   +filename+ is the filename of the config file
-  #   +action+ is a String containing 'stop', 'remove' or 'leave' (default)
   #
-  # Returns [String[]:loaded_names, String:errors, String[]:unloaded_names]
+  # code     - The String config file contents.
+  # filename - The filename of the config file.
+  # action   - The optional String command specifying how to deal with
+  #            existing watches. Valid options are: 'stop', 'remove' or
+  #            'leave' (default).
+  #
+  # Returns a three-tuple Array [loaded_names, errors, unloaded_names] where:
+  #         loaded_names   - The Array of String task names that were loaded.
+  #         errors         - The String of error messages produced during the
+  #                          load phase. Will be a blank String if no errors
+  #                          were encountered.
+  #         unloaded_names - The Array of String task names that were unloaded
+  #                          from the system (if 'remove' or 'stop' was
+  #                          specified as the action).
   def self.running_load(code, filename, action = nil)
     errors = ""
     loaded_watches = []
@@ -580,10 +597,10 @@ module God
         end
       end
 
-      # make sure we quit capturing when we're done
+      # Make sure we quit capturing when we're done.
       LOG.finish_capture
     rescue Exception => e
-      # don't ever let running_load take down god
+      # Don't ever let running_load take down god.
       errors << LOG.finish_capture
 
       unless e.instance_of?(SystemExit)
@@ -598,18 +615,22 @@ module God
   end
 
   # Load the given file(s) according to the given glob.
-  #   +glob+ is the glob-enabled path to load
   #
-  # Returns nothing
+  # glob - The glob-enabled String path to load.
+  #
+  # Returns nothing.
   def self.load(glob)
     Dir[glob].each do |f|
       Kernel.load f
     end
   end
 
+  # Setup pid file directory and log system.
+  #
+  # Returns nothing.
   def self.setup
     if self.pid_file_directory
-      # pid file dir was specified, ensure it is created and writable
+      # Pid file dir was specified, ensure it is created and writable.
       unless File.exist?(self.pid_file_directory)
         begin
           FileUtils.mkdir_p(self.pid_file_directory)
@@ -622,7 +643,7 @@ module God
         abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"
       end
     else
-      # no pid file dir specified, try defaults
+      # No pid file dir specified, try defaults.
       PID_FILE_DIRECTORY_DEFAULTS.each do |idir|
         dir = File.expand_path(idir)
         begin
@@ -652,23 +673,23 @@ module God
 
   # Initialize and startup the machinery that makes god work.
   #
-  # Returns nothing
+  # Returns nothing.
   def self.start
     self.internal_init
 
-    # instantiate server
+    # Instantiate server.
     self.server = Socket.new(self.port, self.socket_user, self.socket_group, self.socket_perms)
 
-    # start monitoring any watches set to autostart
+    # Start monitoring any watches set to autostart.
     self.watches.values.each { |w| w.monitor if w.autostart? }
 
-    # clear pending watches
+    # Clear pending watches.
     self.pending_watches.clear
 
-    # mark as running
+    # Mark as running.
     self.running = true
 
-    # don't exit
+    # Don't exit.
     self.main =
     Thread.new do
       loop do
@@ -677,17 +698,21 @@ module God
     end
   end
 
+  # Prevent god from exiting.
+  #
+  # Returns nothing.
   def self.join
     self.main.join if self.main
   end
 
+  # Returns the version String.
   def self.version
     God::VERSION
   end
 
-  # To be called on program exit to start god
+  # To be called on program exit to start god.
   #
-  # Returns nothing
+  # Returns nothing.
   def self.at_exit
     self.start
     self.join
@@ -696,10 +721,11 @@ module God
   # private
 
   # Match a shortened pattern against a list of String candidates.
-  # The pattern is expanded into a regular expression by
+  # The pattern is expanded into a regular expression by 
   # inserting .* between each character.
-  #   +pattern+ is the String containing the abbreviation
-  #   +list+ is the Array of Strings to match against
+  #
+  # pattern - The String containing the abbreviation.
+  # list    - The Array of Strings to match against.
   #
   # Examples
   #
@@ -708,7 +734,7 @@ module God
   #   God.pattern_match(list, pattern)
   #   # => ['bar', 'bars']
   #
-  # Returns String[]:matched_elements
+  # Returns the Array of matching name Strings.
   def self.pattern_match(pattern, list)
     regex = pattern.split('').join('.*')
 
@@ -721,7 +747,7 @@ end
 # Runs immediately before the program exits. If $run is true,
 # start god, if $run is false, exit normally.
 #
-# Returns nothing
+# Returns nothing.
 at_exit do
   God.at_exit if $run
 end
