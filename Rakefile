@@ -90,6 +90,18 @@ task :site_edge do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
 end
 
+desc "Generate the new-style site"
+task :site_new do
+  require 'gollum'
+  wiki = Gollum::Wiki.new('.', :base_path => '/doc')
+  html = wiki.page('god', 'HEAD').formatted_data.gsub("\342\200\231", "'")
+  template = File.read('./site/index.template.html')
+  index = template.sub("{{ content }}", html)
+  File.open('./site/index.html', 'w') do |f|
+    f.write(index)
+  end
+end
+
 #############################################################################
 #
 # Packaging tasks

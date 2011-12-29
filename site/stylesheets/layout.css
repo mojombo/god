@@ -104,15 +104,18 @@ a:active {
 	margin-bottom: 20px;
 }
 
-h1 {
+.main {
+  clear: both;
+}
+
+h2 {
 	font: bold 1.5em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
 	color: #f36e21;
 	text-transform: uppercase;
 	margin: 1.5em 0 .5em 0;
-	clear: both;
 }
 
-h2 {
+h3 {
 	font: bold 1.25em "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
 	color: #f36e21;
 	margin: 1.5em 0 .5em 0;
@@ -153,28 +156,9 @@ pre {
   padding: 1em;
   background-color: #efefef;
   margin: 1em 0;
-}
-
-code {
   font-size: 1.2em;
 }
 
-.ruby .keywords {
-  color: blue;
-}
-
-.ruby .comment {
-	color : green;
-}
-
-.ruby .string {
-	color : teal;
-}
-
-.ruby .keywords {
-	color : navy;
-}
-
-.ruby .brackets {
-	color : navy;
+tt {
+  font-size: 1.2em;
 }
