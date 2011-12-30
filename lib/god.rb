@@ -470,8 +470,13 @@ module God
   #
   # Returns true on success, false if all tasks could not be stopped within 10
   # seconds
-  def self.stop_all self.watches.sort.each do |name, w| Thread.new do
-    w.unmonitor if w.state != :unmonitored w.action(:stop) if w.alive?  end end
+  def self.stop_all
+    self.watches.sort.each do |name, w|
+      Thread.new do
+        w.unmonitor if w.state != :unmonitored
+        w.action(:stop) if w.alive?
+      end
+    end
 
     terminate_timeout.times do
       return true unless self.watches.map { |name, w| w.alive? }.any?
