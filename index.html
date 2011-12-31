@@ -120,12 +120,19 @@ in the same directory and call it <tt>simple.god</tt>:</p></div>
 </pre>
 </div>
 </div>
-<div class="paragraph"><p>This is the simplest possible god configuration. In this example the
-<tt>simple</tt> process runs foreground, so god will take care of daemonizing it
-and keeping track of the PID for us. If the process is not running when god
-starts, it will be started. If the process dies, it will be restarted.</p></div>
-<div class="paragraph"><p>To run god, we give it the config file we wrote with <tt>-c</tt>. To see what's going
-on, we can ask it to run foreground with <tt>-D</tt>:</p></div>
+<div class="paragraph"><p>This is the simplest possible god configuration. We start by declaring a
+<tt>God.watch</tt> block.  A watch in god represents a process that we want to watch
+and control. Each watch must have, at minimum, a unique name and a command that
+tells god how to start the process. The <tt>keepalive</tt> declaration tells god to
+keep this process alive. If the process is not running when god starts, it will
+be started. If the process dies, it will be restarted.</p></div>
+<div class="paragraph"><p>In this example the <tt>simple</tt> process runs foreground, so god will take care of
+daemonizing it and keeping track of the PID for us. When possible, it's best to
+let god daemonize processes for us, that way we don't have to worry about
+specifying and keeping track of PID files. Later on we'll see how to manage
+processes that can't run foreground or that require PID files to be specified.</p></div>
+<div class="paragraph"><p>To run god, we give it the configuration file we wrote with <tt>-c</tt>. To see what's
+going on, we can ask it to run foreground with <tt>-D</tt>:</p></div>
 <div class="paragraph"><div class="highlight"><pre>$ god -c path/to/simple.god -D
 </pre>
 </div>
@@ -133,8 +140,8 @@ on, we can ask it to run foreground with <tt>-D</tt>:</p></div>
 <div class="paragraph"><p>There are two ways that god can monitor your process. The first and better way
 is with process events. Not every system supports it, but those that do will
 automatically use it. With events, god will know immediately when a process
-exits. For those systems without events support, god will use a polling
-mechanism. The output you will see in this section will show both ways.</p></div>
+exits. For those systems without process event support, god will use a polling
+mechanism. The output you see throughout this section will show both ways.</p></div>
 <div class="paragraph"><p>After starting god, you should see some output like the following:</p></div>
 <div class="paragraph"><div class="highlight"><pre># Events
 
@@ -216,7 +223,7 @@ your <tt>sample.god</tt> config file to look like this:</p></div>
 </div>
 <div class="paragraph"><p>Here I've specified a <tt>:memory_max</tt> option to the <tt>keepalive</tt> command. Now if
 the process memory usage goes above 150 megabytes, god will restart it.
-Similarly, by setting the <tt>:cpu_max</tt>, god will restart my process if it's CPU
+Similarly, by setting the <tt>:cpu_max</tt>, god will restart my process if its CPU
 usage goes over 50%. By default these properties will be checked every 30
 seconds and will be acted upon if there is an overage for three out of any
 five checks. This prevents the process from getting restarted for temporary
@@ -232,9 +239,9 @@ leak:</p></div>
 </div>
 </div>
 <div class="paragraph"><p>Ctrl-C out of the foregrounded god instance. Notice that your current <tt>simple</tt>
-server will continue to run. Start god again with the same command from
-before. Now instead of starting the <tt>simple</tt> process, it will notice that one
-is already running and simply switch to the <tt>up</tt> state.</p></div>
+server will continue to run. Start god again with the same command as before.
+Now instead of starting the <tt>simple</tt> process, it will notice that one is
+already running and simply switch to the <tt>up</tt> state.</p></div>
 <div class="paragraph"><div class="highlight"><pre># Events
 
 I [2011-12-10 15:36:00]  INFO: Loading simple.god
@@ -374,9 +381,8 @@ your process monitoring and control problems.</p></div>
 <div class="sectionbody">
 <div class="paragraph"><p>Now that you've seen how to get started quickly, let's see how to use the more
 powerful aspects of god. Once again, the best way to learn will be through an
-example. The following configuration file is what I once used at &lt;a
-href="http://site.gravatar.com/"&gt;gravatar.com&lt;/a&gt; to keep the mongrels
-running:</p></div>
+example. The following configuration file is what I once used at gravatar.com
+to keep the mongrels running:</p></div>
 <div class="paragraph"><div class="highlight"><pre><span class="no">RAILS_ROOT</span> <span class="o">=</span> <span class="s2">"/Users/tom/dev/gravatar2"</span>
 
 <span class="sx">%w{8200 8201 8202}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">port</span><span class="o">|</span>
@@ -1346,6 +1352,73 @@ format - The Symbol format [ :form | :json ] (default: :form).
 <div class="sectionbody">
 <div class="paragraph"><p>God was designed from the start to allow you to easily write your own custom
 conditions, making it simple to add tests that are application specific.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_contribute">Contribute</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>If you'd like to hack on god itself or contribute fixes or new functionality,
+read this section.</p></div>
+<div class="paragraph"><p>The codebase can be found at <a href="https://github.com/mojombo/god">https://github.com/mojombo/god</a>. To get started,
+fork god on GitHub into your own account and then pull that down to your local
+machine. This way you can easily submit changes via Pull Requests later on.</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ git clone git@github.com:yourusername/god
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>We recommend using <a href="https://github.com/sstephenson/rbenv">rbenv</a> and
+<a href="https://github.com/sstephenson/ruby-build">ruby-build</a> to manage multiple
+versions of Ruby and their separate gemsets. Any changes to god must work on
+both Ruby 1.8.7-p352 and 1.9.3-p0.</p></div>
+<div class="paragraph"><p>God uses <a href="http://gembundler.com/">bundler</a> to deal with development
+dependencies. Once you have the code locally, you can pull in all the
+dependencies like so:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ cd god
+$ bundle install
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>In order for process events to function during development you'll need to
+compile the C extensions:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ cd ext/god
+$ ruby extconf.rb
+$ make
+$ cd ../..
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Now you're ready to run the tests and make sure everything is configured
+properly.  On Linux you'll need to run the tests as root in order for the
+events system to load. On MacOS there is no need to run the tests as root.</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ [sudo] bundle exec rake
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>To run your development god to make sure config files and such still work
+properly, just run:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ [sudo] bundle exec god -c myconfig.god -D
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>There are a bunch of example config files for various scenarios in
+<tt>test/configs</tt> that you can try out. For big new features, it's great to add a
+new test config showing off the usage of the feature.</p></div>
+<div class="paragraph"><p>If you intend to contribute your changes back to god core, make sure you create
+a new branch and do your work there. Then, when your changes are ready to be
+shared with the world, push them to your fork and issue a Pull Request against
+mojombo/god. Make sure to describe your changes in detail and add relevant
+tests.</p></div>
+<div class="paragraph"><p>Any feature additions or changes should be accompanied by corresponding updates
+to the documentation. It can be found in the <tt>docs</tt> directory. The
+documentation is done in <a href="http://github.com/github/gollum">Gollum</a> format
+and then converted into the public site at <a href="http://godrb.com">http://godrb.com</a>. To see the
+generated site locally you'll first need to commit your changes to git and then
+issue the following:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ bundle exec rake site
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This will open the site in your browser so you can check for correctness.</p></div>
 </div>
 </div>
   </div>
