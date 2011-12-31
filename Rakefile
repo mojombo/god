@@ -92,6 +92,23 @@ end
 
 desc "Generate the new-style site"
 task :site do
+  # Generate the dynamic parts of the site.
+  puts "Generating dynamic..."
+  require 'gollum'
+  wiki = Gollum::Wiki.new('.', :base_path => '/doc')
+  html = wiki.page('god', 'HEAD').formatted_data.gsub("\342\200\231", "'")
+  template = File.read('./site/index.template.html')
+  index = template.sub("{{ content }}", html)
+  File.open('./site/index.html', 'w') do |f|
+    f.write(index)
+  end
+
+  puts "Done. Opening in browser..."
+  sh "open site/index.html"
+end
+
+desc "Generate the new-style site"
+task :site_release do
   # Ensure the gh-pages dir exists so we can generate into it.
   puts "Checking for gh-pages dir..."
   unless File.exist?("./gh-pages")
@@ -102,25 +119,15 @@ task :site do
     exit(1)
   end
 
-  # Generate the dynamic parts of the site.
-  puts "Generating dynamic..."
-  require 'gollum'
-  wiki = Gollum::Wiki.new('.', :base_path => '/doc')
-  html = wiki.page('god', 'HEAD').formatted_data.gsub("\342\200\231", "'")
-  template = File.read('./site/index.template.html')
-  index = template.sub("{{ content }}", html)
-  File.open('./gh-pages/index.html', 'w') do |f|
-    f.write(index)
-  end
-
   # Copy the rest of the site over.
   puts "Copying static..."
   sh "cp -R site/* gh-pages/"
 
-  puts "Done. Opening in browser..."
-  sh "open gh-pages/index.html"
+  # Commit the changes
+  sha = `git log`.match(/[a-z0-9]{40}/)[0]
+  sh "cd gh-pages && git add . && git commit -m 'Updating to #{sha}.'"
+  puts 'Done.'
 end
-
 #############################################################################
 #
 # Packaging tasks
