@@ -10,4 +10,4 @@ logs
 Gemfile.lock
 bbin/
 .bundle
-site/index.html
+gh-pages

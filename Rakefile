@@ -81,7 +81,7 @@ end
 #############################################################################
 
 desc "Upload site to Rubyforge"
-task :site do
+task :site_old do
   sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god"
 end
 
@@ -91,15 +91,34 @@ task :site_edge do
 end
 
 desc "Generate the new-style site"
-task :site_new do
+task :site do
+  # Ensure the gh-pages dir exists so we can generate into it.
+  puts "Checking for gh-pages dir..."
+  unless File.exist?("./gh-pages")
+    puts "No gh-pages directory found. Run the following commands first:"
+    puts "  `git clone git@github.com:mojombo/god gh-pages"
+    puts "  `cd gh-pages"
+    puts "  `git checkout gh-pages`"
+    exit(1)
+  end
+
+  # Generate the dynamic parts of the site.
+  puts "Generating dynamic..."
   require 'gollum'
   wiki = Gollum::Wiki.new('.', :base_path => '/doc')
   html = wiki.page('god', 'HEAD').formatted_data.gsub("\342\200\231", "'")
   template = File.read('./site/index.template.html')
   index = template.sub("{{ content }}", html)
-  File.open('./site/index.html', 'w') do |f|
+  File.open('./gh-pages/index.html', 'w') do |f|
     f.write(index)
   end
+
+  # Copy the rest of the site over.
+  puts "Copying static..."
+  sh "cp -R site/* gh-pages/"
+
+  puts "Done. Opening in browser..."
+  sh "open gh-pages/index.html"
 end
 
 #############################################################################
