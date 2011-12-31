@@ -52,13 +52,21 @@ God.watch do |w|
 end
 ```
 
-This is the simplest possible god configuration. In this example the
-`simple` process runs foreground, so god will take care of daemonizing it
-and keeping track of the PID for us. If the process is not running when god
-starts, it will be started. If the process dies, it will be restarted.
+This is the simplest possible god configuration. We start by declaring a
+`God.watch` block.  A watch in god represents a process that we want to watch
+and control. Each watch must have, at minimum, a unique name and a command that
+tells god how to start the process. The `keepalive` declaration tells god to
+keep this process alive. If the process is not running when god starts, it will
+be started. If the process dies, it will be restarted.
 
-To run god, we give it the config file we wrote with `-c`. To see what's going
-on, we can ask it to run foreground with `-D`:
+In this example the `simple` process runs foreground, so god will take care of
+daemonizing it and keeping track of the PID for us. When possible, it's best to
+let god daemonize processes for us, that way we don't have to worry about
+specifying and keeping track of PID files. Later on we'll see how to manage
+processes that can't run foreground or that require PID files to be specified.
+
+To run god, we give it the configuration file we wrote with `-c`. To see what's
+going on, we can ask it to run foreground with `-D`:
 
 ```terminal
 $ god -c path/to/simple.god -D
@@ -67,8 +75,8 @@ $ god -c path/to/simple.god -D
 There are two ways that god can monitor your process. The first and better way
 is with process events. Not every system supports it, but those that do will
 automatically use it. With events, god will know immediately when a process
-exits. For those systems without events support, god will use a polling
-mechanism. The output you will see in this section will show both ways.
+exits. For those systems without process event support, god will use a polling
+mechanism. The output you see throughout this section will show both ways.
 
 After starting god, you should see some output like the following:
 
@@ -154,7 +162,7 @@ end
 
 Here I've specified a `:memory_max` option to the `keepalive` command. Now if
 the process memory usage goes above 150 megabytes, god will restart it.
-Similarly, by setting the `:cpu_max`, god will restart my process if it's CPU
+Similarly, by setting the `:cpu_max`, god will restart my process if its CPU
 usage goes over 50%. By default these properties will be checked every 30
 seconds and will be acted upon if there is an overage for three out of any
 five checks. This prevents the process from getting restarted for temporary
@@ -172,9 +180,9 @@ end
 ```
 
 Ctrl-C out of the foregrounded god instance. Notice that your current `simple`
-server will continue to run. Start god again with the same command from
-before. Now instead of starting the `simple` process, it will notice that one
-is already running and simply switch to the `up` state.
+server will continue to run. Start god again with the same command as before.
+Now instead of starting the `simple` process, it will notice that one is
+already running and simply switch to the `up` state.
 
 ```terminal
 # Events
@@ -323,9 +331,8 @@ Config Files are Ruby Code!
 
 Now that you've seen how to get started quickly, let's see how to use the more
 powerful aspects of god. Once again, the best way to learn will be through an
-example. The following configuration file is what I once used at <a
-href="http://site.gravatar.com/">gravatar.com</a> to keep the mongrels
-running:
+example. The following configuration file is what I once used at gravatar.com
+to keep the mongrels running:
 
 ```ruby
 RAILS_ROOT = "/Users/tom/dev/gravatar2"
