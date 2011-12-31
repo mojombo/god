@@ -1381,3 +1381,83 @@ Extend God with your own Conditions
 
 God was designed from the start to allow you to easily write your own custom
 conditions, making it simple to add tests that are application specific.
+
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Contribute
+----------
+
+If you'd like to hack on god itself or contribute fixes or new functionality,
+read this section.
+
+The codebase can be found at https://github.com/mojombo/god. To get started,
+fork god on GitHub into your own account and then pull that down to your local
+machine. This way you can easily submit changes via Pull Requests later on.
+
+```terminal
+$ git clone git@github.com:yourusername/god
+```
+
+We recommend using link:https://github.com/sstephenson/rbenv[rbenv] and
+link:https://github.com/sstephenson/ruby-build[ruby-build] to manage multiple
+versions of Ruby and their separate gemsets. Any changes to god must work on
+both Ruby 1.8.7-p352 and 1.9.3-p0.
+
+God uses link:http://gembundler.com/[bundler] to deal with development
+dependencies. Once you have the code locally, you can pull in all the
+dependencies like so:
+
+```terminal
+$ cd god
+$ bundle install
+```
+
+In order for process events to function during development you'll need to
+compile the C extensions:
+
+```terminal
+$ cd ext/god
+$ ruby extconf.rb
+$ make
+$ cd ../..
+```
+
+Now you're ready to run the tests and make sure everything is configured
+properly.  On Linux you'll need to run the tests as root in order for the
+events system to load. On MacOS there is no need to run the tests as root.
+
+```terminal
+$ [sudo] bundle exec rake
+```
+
+To run your development god to make sure config files and such still work
+properly, just run:
+
+```terminal
+$ [sudo] bundle exec god -c myconfig.god -D
+```
+
+There are a bunch of example config files for various scenarios in
+`test/configs` that you can try out. For big new features, it's great to add a
+new test config showing off the usage of the feature.
+
+If you intend to contribute your changes back to god core, make sure you create
+a new branch and do your work there. Then, when your changes are ready to be
+shared with the world, push them to your fork and issue a Pull Request against
+mojombo/god. Make sure to describe your changes in detail and add relevant
+tests.
+
+Any feature additions or changes should be accompanied by corresponding updates
+to the documentation. It can be found in the `docs` directory. The
+documentation is done in link:http://github.com/github/gollum[Gollum] format
+and then converted into the public site at http://godrb.com. To see the
+generated site locally you'll first need to commit your changes to git and then
+issue the following:
+
+```terminal
+$ bundle exec rake site
+```
+
+This will open the site in your browser so you can check for correctness.
