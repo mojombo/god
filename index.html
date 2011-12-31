@@ -1,1 +1,1367 @@
-My GitHub Page
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>God - A Process Monitoring Framework in Ruby</title>
+  <link href="stylesheets/layout.css" rel="stylesheet" type="text/css" />
+  <link href="stylesheets/highlight.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="javascripts/code_highlighter.js"></script>
+  <script type="text/javascript" src="javascripts/ruby.js"></script>
+</head>
+
+<body id="page_home">
+
+<div id="mothership">
+
+</div>
+<div id="content">
+	<div class="banner">
+
+	</div>
+
+  <!-- <div id="menu">
+    <div class="dots"></div>
+    <ul>
+      <li class="menu_home"><a href="/">Home</a></li>
+      <li class="menu_contact"><a href="mailto:tom@projectmothership.com">Contact</a></li>
+    </ul>
+    <div class="dots"></div>
+  </div> -->
+
+	<div class="columnleft">
+		<h2>A Better Way to Monitor</h1>
+		<p>God is an easy to configure, easy to extend monitoring framework written in Ruby.</p>
+		<p>Keeping your server processes and tasks running should be a simple part of your deployment process. God aims to be the simplest, most powerful monitoring application available.</p>
+		<p style="text-align: right">Tom Preston-Werner<br /><a href="mailto:tom@mojombo.com">tom@mojombo.com</a></p>
+		<p style="text-align: right">Google Group: <a href="http://groups.google.com/group/god-rb">http://groups.google.com/group/god-rb</a></p>
+	</div>
+
+	<div class="columnright">
+  	<h2>Features</h1>
+	  <ul class="features">
+		  <li>Config file is written in Ruby</li>
+		  <li>Easily write your own custom conditions in Ruby</li>
+		  <li>Supports both poll and event based conditions</li>
+		  <li>Different poll conditions can have different intervals</li>
+		  <li>Integrated notification system (write your own too!)</li>
+		  <li>Easily control non-daemonizing scripts</li>
+	  </ul>
+	</div>
+
+  <div class="main">
+    <div class="sect1">
+<h2 id="wiki-_installation">Installation</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The best way to get god is via rubygems:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ [sudo] gem install god
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_requirements">Requirements</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>God currently only works on <strong>Linux (kernel 2.6.15+), BSD,</strong> and <strong>Darwin</strong>
+systems. No support for Windows is planned. Event based conditions on Linux
+systems require the <tt>cn</tt> (connector) kernel module loaded or compiled into
+the kernel and god must be run as root.</p></div>
+<div class="paragraph"><p>The following systems have been tested. Help us test it on others!</p></div>
+<div class="ulist"><ul><li>
+<p>
+Darwin 10.4.10
+</p>
+</li>
+<li>
+<p>
+RedHat Fedora Core 6
+</p>
+</li>
+<li>
+<p>
+Ubuntu Dapper (no events)
+</p>
+</li>
+<li>
+<p>
+Ubuntu Feisty
+</p>
+</li>
+<li>
+<p>
+CentOS 4.5 (no events)
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_quick_start">Quick Start</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The easiest way to understand how god will make your life better is by trying
+out a simple example. To get you up and running quickly, I'll show you how to
+keep a trivial server running.</p></div>
+<div class="paragraph"><p>Open up a new directory and write a simple server. Let's call it
+<tt>simple.rb</tt>:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="kp">loop</span> <span class="k">do</span>
+  <span class="nb">puts</span> <span class="s1">'Hello'</span>
+  <span class="nb">sleep</span> <span class="mi">1</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Now we'll write a god config file that tells god about our process. Place it
+in the same directory and call it <tt>simple.god</tt>:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"simple"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"ruby /full/path/to/simple.rb"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">keepalive</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This is the simplest possible god configuration. In this example the
+<tt>simple</tt> process runs foreground, so god will take care of daemonizing it
+and keeping track of the PID for us. If the process is not running when god
+starts, it will be started. If the process dies, it will be restarted.</p></div>
+<div class="paragraph"><p>To run god, we give it the config file we wrote with <tt>-c</tt>. To see what's going
+on, we can ask it to run foreground with <tt>-D</tt>:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ god -c path/to/simple.god -D
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>There are two ways that god can monitor your process. The first and better way
+is with process events. Not every system supports it, but those that do will
+automatically use it. With events, god will know immediately when a process
+exits. For those systems without events support, god will use a polling
+mechanism. The output you will see in this section will show both ways.</p></div>
+<div class="paragraph"><p>After starting god, you should see some output like the following:</p></div>
+<div class="paragraph"><div class="highlight"><pre># Events
+
+I [2011-12-10 15:24:34]  INFO: Loading simple.god
+I [2011-12-10 15:24:34]  INFO: Syslog enabled.
+I [2011-12-10 15:24:34]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-10 15:24:34]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-10 15:24:34]  INFO: simple move 'unmonitored' to 'init'
+I [2011-12-10 15:24:34]  INFO: simple moved 'unmonitored' to 'init'
+I [2011-12-10 15:24:34]  INFO: simple [trigger] process is not running (ProcessRunning)
+I [2011-12-10 15:24:34]  INFO: simple move 'init' to 'start'
+I [2011-12-10 15:24:34]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-10 15:24:34]  INFO: simple moved 'init' to 'start'
+I [2011-12-10 15:24:34]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:24:34]  INFO: simple move 'start' to 'up'
+I [2011-12-10 15:24:34]  INFO: simple registered 'proc_exit' event for pid 23298
+I [2011-12-10 15:24:34]  INFO: simple moved 'start' to 'up'
+
+# Polls
+
+I [2011-12-07 09:40:18]  INFO: Loading simple.god
+I [2011-12-07 09:40:18]  INFO: Syslog enabled.
+I [2011-12-07 09:40:18]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-07 09:40:18]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-07 09:40:18]  INFO: simple move 'unmonitored' to 'up'
+I [2011-12-07 09:40:18]  INFO: simple moved 'unmonitored' to 'up'
+I [2011-12-07 09:40:18]  INFO: simple [trigger] process is not running (ProcessRunning)
+I [2011-12-07 09:40:18]  INFO: simple move 'up' to 'start'
+I [2011-12-07 09:40:18]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-07 09:40:19]  INFO: simple moved 'up' to 'up'
+I [2011-12-07 09:40:19]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:40:24]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:40:29]  INFO: simple [ok] process is running (ProcessRunning)
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Here you can see god starting up, noticing that the <tt>simple</tt> process isn't
+running, starting it, and then checking every five seconds to make sure it's
+up. If you'd like to see god work its magic, go ahead and kill the <tt>simple</tt>
+process. You should then see something like this:</p></div>
+<div class="paragraph"><div class="highlight"><pre># Events
+
+I [2011-12-10 15:33:38]  INFO: simple [trigger] process 23416 exited (ProcessExits)
+I [2011-12-10 15:33:38]  INFO: simple move 'up' to 'start'
+I [2011-12-10 15:33:38]  INFO: simple deregistered 'proc_exit' event for pid 23416
+I [2011-12-10 15:33:38]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-10 15:33:38]  INFO: simple moved 'up' to 'start'
+I [2011-12-10 15:33:38]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:33:38]  INFO: simple move 'start' to 'up'
+I [2011-12-10 15:33:38]  INFO: simple registered 'proc_exit' event for pid 23601
+I [2011-12-10 15:33:38]  INFO: simple moved 'start' to 'up'
+
+# Polls
+
+I [2011-12-07 09:54:59]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:55:04]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:55:09]  INFO: simple [trigger] process is not running (ProcessRunning)
+I [2011-12-07 09:55:09]  INFO: simple move 'up' to 'start'
+I [2011-12-07 09:55:09]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-07 09:55:09]  INFO: simple moved 'up' to 'up'
+I [2011-12-07 09:55:09]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 09:55:14]  INFO: simple [ok] process is running (ProcessRunning)
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>While keeping a process up is useful, it would be even better if we could make
+sure our process was behaving well and restart it when resource utilization
+exceeds our specifications. With a few additions, we can easily have our
+process restarted when memory usage or CPU goes above certain limits. Edit
+your <tt>sample.god</tt> config file to look like this:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"simple"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"ruby /full/path/to/simple.rb"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">keepalive</span><span class="p">(</span><span class="ss">:memory_max</span> <span class="o">=&gt;</span> <span class="mi">150</span><span class="o">.</span><span class="n">megabytes</span><span class="p">,</span>
+              <span class="ss">:cpu_max</span> <span class="o">=&gt;</span> <span class="mi">50</span><span class="o">.</span><span class="n">percent</span><span class="p">)</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Here I've specified a <tt>:memory_max</tt> option to the <tt>keepalive</tt> command. Now if
+the process memory usage goes above 150 megabytes, god will restart it.
+Similarly, by setting the <tt>:cpu_max</tt>, god will restart my process if it's CPU
+usage goes over 50%. By default these properties will be checked every 30
+seconds and will be acted upon if there is an overage for three out of any
+five checks. This prevents the process from getting restarted for temporary
+resource spikes.</p></div>
+<div class="paragraph"><p>To test this out, modify your <tt>simple.rb</tt> server script to introduce a memory
+leak:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="s1">''</span>
+<span class="kp">loop</span> <span class="k">do</span>
+  <span class="nb">puts</span> <span class="s1">'Hello'</span>
+  <span class="mi">100000</span><span class="o">.</span><span class="n">times</span> <span class="p">{</span> <span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="s1">'x'</span> <span class="p">}</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Ctrl-C out of the foregrounded god instance. Notice that your current <tt>simple</tt>
+server will continue to run. Start god again with the same command from
+before. Now instead of starting the <tt>simple</tt> process, it will notice that one
+is already running and simply switch to the <tt>up</tt> state.</p></div>
+<div class="paragraph"><div class="highlight"><pre># Events
+
+I [2011-12-10 15:36:00]  INFO: Loading simple.god
+I [2011-12-10 15:36:00]  INFO: Syslog enabled.
+I [2011-12-10 15:36:00]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-10 15:36:00]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-10 15:36:00]  INFO: simple move 'unmonitored' to 'init'
+I [2011-12-10 15:36:00]  INFO: simple moved 'unmonitored' to 'init'
+I [2011-12-10 15:36:00]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:36:00]  INFO: simple move 'init' to 'up'
+I [2011-12-10 15:36:00]  INFO: simple registered 'proc_exit' event for pid 23601
+I [2011-12-10 15:36:00]  INFO: simple moved 'init' to 'up'
+
+# Polls
+
+I [2011-12-07 14:50:46]  INFO: Loading simple.god
+I [2011-12-07 14:50:46]  INFO: Syslog enabled.
+I [2011-12-07 14:50:46]  INFO: Using pid file directory: /Users/tom/.god/pids
+I [2011-12-07 14:50:47]  INFO: Started on drbunix:///tmp/god.17165.sock
+I [2011-12-07 14:50:47]  INFO: simple move 'unmonitored' to 'up'
+I [2011-12-07 14:50:47]  INFO: simple moved 'unmonitored' to 'up'
+I [2011-12-07 14:50:47]  INFO: simple [ok] process is running (ProcessRunning)
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>In order to get our new <tt>simple</tt> server running, we can issue a command to god
+to have our process restarted:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ god restart simple
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>From the logs you can see god killing and restarting the process:</p></div>
+<div class="paragraph"><div class="highlight"><pre># Events
+
+I [2011-12-10 15:38:13]  INFO: simple move 'up' to 'restart'
+I [2011-12-10 15:38:13]  INFO: simple deregistered 'proc_exit' event for pid 23601
+I [2011-12-10 15:38:13]  INFO: simple stop: default lambda killer
+I [2011-12-10 15:38:13]  INFO: simple sent SIGTERM
+I [2011-12-10 15:38:14]  INFO: simple process stopped
+I [2011-12-10 15:38:14]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-10 15:38:14]  INFO: simple moved 'up' to 'restart'
+I [2011-12-10 15:38:14]  INFO: simple [trigger] process is running (ProcessRunning)
+I [2011-12-10 15:38:14]  INFO: simple move 'restart' to 'up'
+I [2011-12-10 15:38:14]  INFO: simple registered 'proc_exit' event for pid 23707
+I [2011-12-10 15:38:14]  INFO: simple moved 'restart' to 'up'
+
+# Polls
+
+I [2011-12-07 14:51:13]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:51:13]  INFO: simple move 'up' to 'restart'
+I [2011-12-07 14:51:13]  INFO: simple stop: default lambda killer
+I [2011-12-07 14:51:13]  INFO: simple sent SIGTERM
+I [2011-12-07 14:51:14]  INFO: simple process stopped
+I [2011-12-07 14:51:14]  INFO: simple start: ruby /Users/tom/dev/mojombo/god/simple.rb
+I [2011-12-07 14:51:14]  INFO: simple moved 'up' to 'up'
+I [2011-12-07 14:51:14]  INFO: simple [ok] process is running (ProcessRunning)
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>God will now start reporting on memory and CPU utilization of your process:</p></div>
+<div class="paragraph"><div class="highlight"><pre># Events and Polls
+
+I [2011-12-07 14:54:37]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:37]  INFO: simple [ok] memory within bounds [2032kb] (MemoryUsage)
+I [2011-12-07 14:54:37]  INFO: simple [ok] cpu within bounds [0.0%%] (CpuUsage)
+I [2011-12-07 14:54:42]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:42]  INFO: simple [ok] memory within bounds [2032kb, 13492kb] (MemoryUsage)
+I [2011-12-07 14:54:42]  INFO: simple [ok] cpu within bounds [0.0%%, *99.7%%] (CpuUsage)
+I [2011-12-07 14:54:47]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:47]  INFO: simple [ok] memory within bounds [2032kb, 13492kb, 25568kb] (MemoryUsage)
+I [2011-12-07 14:54:47]  INFO: simple [ok] cpu within bounds [0.0%%, *99.7%%, *100.0%%] (CpuUsage)
+I [2011-12-07 14:54:52]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 14:54:52]  INFO: simple [ok] memory within bounds [2032kb, 13492kb, 25568kb, 37556kb] (MemoryUsage)
+I [2011-12-07 14:54:52]  INFO: simple [trigger] cpu out of bounds [0.0%%, *99.7%%, *100.0%%, *98.4%%] (CpuUsage)
+I [2011-12-07 14:54:52]  INFO: simple move 'up' to 'restart'
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>On the last line of the above log you can see that CPU usage has gone above
+50% for three cycles and god will issue a restart operation. God will continue
+to monitor the <tt>simple</tt> process for as long as god is running and the process
+is set to be monitored.</p></div>
+<div class="paragraph"><p>Now, before you kill the god process, let's kill the <tt>simple</tt> server by asking
+god to stop it for us. In a new terminal, issue the command:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ god stop simple
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>You should see the following output:</p></div>
+<div class="paragraph"><div class="highlight"><pre>Sending 'stop' command
+
+The following watches were affected:
+  simple
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>And in the foregrounded god terminal window, you'll see the log of what
+happened:</p></div>
+<div class="paragraph"><div class="highlight"><pre># Events
+
+I [2011-12-10 15:41:04]  INFO: simple stop: default lambda killer
+I [2011-12-10 15:41:04]  INFO: simple sent SIGTERM
+I [2011-12-10 15:41:05]  INFO: simple process stopped
+I [2011-12-10 15:41:05]  INFO: simple move 'up' to 'unmonitored'
+I [2011-12-10 15:41:05]  INFO: simple deregistered 'proc_exit' event for pid 23707
+I [2011-12-10 15:41:05]  INFO: simple moved 'up' to 'unmonitored'
+
+# Polls
+
+I [2011-12-07 09:59:59]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 10:00:04]  INFO: simple [ok] process is running (ProcessRunning)
+I [2011-12-07 10:00:07]  INFO: simple stop: default lambda killer
+I [2011-12-07 10:00:07]  INFO: simple sent SIGTERM
+I [2011-12-07 10:00:08]  INFO: simple process stopped
+I [2011-12-07 10:00:08]  INFO: simple move 'up' to 'unmonitored'
+I [2011-12-07 10:00:08]  INFO: simple moved 'up' to 'unmonitored'
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Now feel free to Ctrl-C out of god. Congratulations! You've just taken god for
+a test ride and seen how easy it is to keep your processes running.</p></div>
+<div class="paragraph"><p>This is just the beginning of what god can do, and in reality, the <tt>keepalive</tt>
+command is a convenience method written using more advanced transitional and
+condition constructs that may be used directly. You can configure many
+different kinds of conditions to have your process restarted when memory or
+CPU are too high, when disk usage is above a threshold, when a process returns
+an HTTP error code on a specific URL, and many more. In addition you can write
+your own custom conditions and use them in your configuration files. Many
+different lifecycle controls are available alongside a sophisticated and
+extensible notifications system. Keep reading to find out what makes god
+different from other monitoring systems and how it can help you solve many of
+your process monitoring and control problems.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_config_files_are_ruby_code">Config Files are Ruby Code!</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Now that you've seen how to get started quickly, let's see how to use the more
+powerful aspects of god. Once again, the best way to learn will be through an
+example. The following configuration file is what I once used at &lt;a
+href="http://site.gravatar.com/"&gt;gravatar.com&lt;/a&gt; to keep the mongrels
+running:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">RAILS_ROOT</span> <span class="o">=</span> <span class="s2">"/Users/tom/dev/gravatar2"</span>
+
+<span class="sx">%w{8200 8201 8202}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">port</span><span class="o">|</span>
+  <span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"gravatar2-mongrel-</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">30</span><span class="o">.</span><span class="n">seconds</span> <span class="c1"># default</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -p </span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2"> \</span>
+<span class="s2">      -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid  -d"</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">start_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">restart_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span><span class="p">)</span>
+
+    <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
+
+    <span class="n">w</span><span class="o">.</span><span class="n">start_if</span> <span class="k">do</span> <span class="o">|</span><span class="n">start</span><span class="o">|</span>
+      <span class="n">start</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">seconds</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">false</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="n">w</span><span class="o">.</span><span class="n">restart_if</span> <span class="k">do</span> <span class="o">|</span><span class="n">restart</span><span class="o">|</span>
+      <span class="n">restart</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">150</span><span class="o">.</span><span class="n">megabytes</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span> <span class="c1"># 3 out of 5 intervals</span>
+      <span class="k">end</span>
+
+      <span class="n">restart</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">percent</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="c1"># lifecycle</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">lifecycle</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+      <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:flapping</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">to_state</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">within</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">minute</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:unmonitored</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">retry_in</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">minutes</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">retry_times</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">retry_within</span> <span class="o">=</span> <span class="mi">2</span><span class="o">.</span><span class="n">hours</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>That's a lot to take in at once, so I'll break it down by section and explain
+what's going on in each.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">RAILS_ROOT</span> <span class="o">=</span> <span class="s2">"/var/www/gravatar2/current"</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Here I've set a constant that is used throughout the file. Keeping the
+<tt>RAILS_ROOT</tt> value in a constant makes it easy to adapt this script to other
+applications. Because the config file is Ruby code, I can set whatever
+variables or constants I want that make the configuration more concise and
+easier to work with.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="sx">%w{8200 8201 8202}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">port</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Because the config file is written in actual Ruby code, we can construct loops
+and do other intelligent things that are impossible in your every day, run of
+the mill config file. I need to watch three mongrels, so I simply loop over
+their port numbers, eliminating duplication and making my life a whole lot
+easier.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"gravatar2-mongrel-</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">30</span><span class="o">.</span><span class="n">seconds</span> <span class="c1"># default</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -p </span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2"> \</span>
+<span class="s2">    -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid  -d"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">start_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">restart_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span><span class="p">)</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>A <tt>watch</tt> represents a single process that has concrete start, stop, and/or
+restart operations. You can define as many watches as you like. In the example
+above, I've got some Rails instances running in Mongrels that I need to keep
+alive. Every watch must have a unique <tt>name</tt> so that it can be identified
+later on. The <tt>interval</tt> option sets the default poll interval (this can be
+overridden in each condition). The <tt>start</tt> and <tt>stop</tt> attributes specify the
+commands to start and stop the process. If no <tt>restart</tt> attribute is set,
+restart will be represented by a call to stop followed by a call to start. The
+optional <tt>grace</tt> attribute sets the amount of time following a
+start/stop/restart command to wait before resuming normal monitoring
+operations. To be more specific, I can set just <tt>start_grace</tt>, <tt>stop_grace</tt>,
+and/or <tt>restart_grace</tt>. If the process you're watching runs as a daemon (as
+mine does), you'll need to set the <tt>pid_file</tt> attribute.</p></div>
+<div class="paragraph"><div class="highlight"><pre>  <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Behaviors allow you to execute additional commands around start/stop/restart
+commands. In our case, if the process dies it will leave a PID file behind.
+The next time a start command is issued, it will fail, complaining about the
+leftover PID file. We'd like the PID file cleaned up before a start command is
+issued. The built-in behavior <tt>clean_pid_file</tt> will do just that.</p></div>
+<div class="paragraph"><div class="highlight"><pre>  <span class="n">w</span><span class="o">.</span><span class="n">start_if</span> <span class="k">do</span> <span class="o">|</span><span class="n">start</span><span class="o">|</span>
+    <span class="n">start</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">seconds</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">false</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Watches contain conditions grouped by the action to execute should they return
+<tt>true</tt>. I start with a <tt>start_if</tt> block that contains a single condition.
+Conditions are specified by calling <tt>condition</tt> with an identifier, in this
+case <tt>:process_running</tt>. Each condition can specify a poll interval that will
+override the default watch interval. In this case, I want to check that the
+process is still running every 5 seconds instead of the 30 second interval
+that other conditions will inherit. The ability to set condition specific poll
+intervals makes it possible to run critical tests (such as :process_running)
+more often than less critical tests (such as :memory_usage and :cpu_usage).</p></div>
+<div class="paragraph"><div class="highlight"><pre>  <span class="n">w</span><span class="o">.</span><span class="n">restart_if</span> <span class="k">do</span> <span class="o">|</span><span class="n">restart</span><span class="o">|</span>
+    <span class="n">restart</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">150</span><span class="o">.</span><span class="n">megabytes</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span> <span class="c1"># 3 out of 5 intervals</span>
+    <span class="k">end</span>
+
+    <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+  <span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Similar to <tt>start_if</tt> there is a <tt>restart_if</tt> command that groups conditions
+that should trigger a restart. The <tt>memory_usage</tt> condition will fail if the
+specified process is using too much memory. The maximum allowable amount of
+memory is specified with the <tt>above</tt> attribute (you can use the <tt>kilobytes</tt>,
+<tt>megabytes</tt>, or <tt>gigabytes</tt> helpers). The number of times the test needs to
+fail in order to trigger a restart is set with <tt>times</tt>. This can be either an
+integer or an array. An integer means it must fail that many times in a row
+while an array <tt>[x, y]</tt> means it must fail <tt>x</tt> times out of the last <tt>y</tt>
+tests.</p></div>
+<div class="paragraph"><div class="highlight"><pre>  <span class="n">w</span><span class="o">.</span><span class="n">restart_if</span> <span class="k">do</span> <span class="o">|</span><span class="n">restart</span><span class="o">|</span>
+    <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+    <span class="n">restart</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">percent</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>To keep an eye on CPU usage, I've employed the <tt>cpu_usage</tt> condition. When CPU
+usage for a Mongrel process is over 50% for 5 consecutive intervals, it will
+be restarted.</p></div>
+<div class="paragraph"><div class="highlight"><pre>  <span class="n">w</span><span class="o">.</span><span class="n">lifecycle</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:flapping</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">to_state</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">within</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">minute</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:unmonitored</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_in</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">minutes</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_within</span> <span class="o">=</span> <span class="mi">2</span><span class="o">.</span><span class="n">hours</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Conditions inside a <tt>lifecycle</tt> section are active as long as the process is being monitored (they live across state changes).</p></div>
+<div class="paragraph"><p>The <tt>:flapping</tt> condition guards against the edge case wherein god rapidly
+starts or restarts your application. Things like server configuration changes
+or the unavailability of external services could make it impossible for my
+process to start. In that case, god will try to start my process over and over
+to no avail. The <tt>:flapping</tt> condition provides two levels of giving up on
+flapping processes. If I were to translate the options of the code above, it
+would be something like: If this watch is started or restarted five times
+withing 5 minutes, then unmonitor it…then after ten minutes, monitor it
+again to see if it was just a temporary problem; if the process is seen to be
+flapping five times within two hours, then give up completely.</p></div>
+<div class="paragraph"><p>That's it!</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_starting_and_controlling_god">Starting and Controlling God</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>To start the god monitoring process as a daemon simply run the <tt>god</tt>
+executable passing in the path to the config file (you need to sudo if you're
+using events on Linux or want to use the setuid/setgid functionality):</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god -c /path/to/config.god
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>While you're writing your config file, it can be helpful to run god in the
+foreground so you can see the log messages. You can do that with:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god -c /path/to/config.god -D
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>You can start/restart/stop/monitor/unmonitor your Watches with the same
+utility like so:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god stop gravatar2-mongrel-8200
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_advanced_configuration_with_transitions_and_events">Advanced Configuration with Transitions and Events</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>So far you've been introduced to a simple poll-based config file and seen how
+to run it. Poll-based monitoring works great for simple things, but falls
+short for highly critical tasks. God has native support for kqueue/netlink
+events on BSD/Darwin/Linux systems. For instance, instead of using the
+<tt>process_running</tt> condition to poll for the status of your process, you can
+use the <tt>process_exits</tt> condition that will be notified <strong>immediately</strong> upon the
+exit of your process. This means less load on your system and shorter downtime
+after a crash.</p></div>
+<div class="paragraph"><p>While the configuration syntax you saw in the previous example is very simple,
+it lacks the power that we need to deal with event based monitoring. In fact,
+the <tt>start_if</tt> and <tt>restart_if</tt> methods are really just calling out to a
+lower-level API. If we use the low-level API directly, we can harness the full
+power of god's event based lifecycle system. Let's look at another example
+config file.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">RAILS_ROOT</span> <span class="o">=</span> <span class="s2">"/Users/tom/dev/gravatar2"</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"local-3000"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">seconds</span> <span class="c1"># default</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid -p 3000 -d"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.pid"</span><span class="p">)</span>
+
+  <span class="c1"># clean pid files before start if necessary</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
+
+  <span class="c1"># determine the state on startup</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:init</span><span class="p">,</span> <span class="p">{</span> <span class="kp">true</span> <span class="o">=&gt;</span> <span class="ss">:up</span><span class="p">,</span> <span class="kp">false</span> <span class="o">=&gt;</span> <span class="ss">:start</span> <span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># determine when process has finished starting</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+    <span class="k">end</span>
+
+    <span class="c1"># failsafe</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:tries</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:start</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># start if process is not running</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># restart if memory or cpu is too high</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:restart</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">20</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">megabytes</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+    <span class="k">end</span>
+
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">10</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">percent</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># lifecycle</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">lifecycle</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:flapping</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">to_state</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">within</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">minute</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:unmonitored</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_in</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">minutes</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_within</span> <span class="o">=</span> <span class="mi">2</span><span class="o">.</span><span class="n">hours</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>A bit longer, I know, but very straighforward once you understand how the
+<tt>transition</tt> calls work. The <tt>name</tt>, <tt>interval</tt>, <tt>start</tt>, <tt>stop</tt>, and
+<tt>pid_file</tt> attributes should be familiar. We also specify the <tt>clean_pid_file</tt>
+behavior.</p></div>
+<div class="paragraph"><p>Before jumping into the code, it's important to understand the different
+states that a Watch can have, and how that state changes over time. At any
+given time, a Watch will be in one of the <tt>init</tt>, <tt>up</tt>, <tt>start</tt>, or <tt>restart</tt>
+states. As different conditions are satisfied, the Watch will progress from
+state to state, enabling and disabling conditions along the way.</p></div>
+<div class="paragraph"><p>When god first starts, each Watch is placed in the <tt>init</tt> state.</p></div>
+<div class="paragraph"><p>You'll use the <tt>transition</tt> method to tell god how to transition between
+states. It takes two arguments. The first argument may be either a symbol or
+an array of symbols representing the state or states during which the
+specified conditions should be enabled. The second argument may be either a
+symbol or a hash. If it is a symbol, then that is the state that will be
+transitioned to if any of the conditions return <tt>true</tt>. If it is a hash, then
+that hash must have both <tt>true</tt> and <tt>false</tt> keys, each of which point to a
+symbol that represents the state to transition to given the corresponding
+return from the single condition that must be specified.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine the state on startup</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:init</span><span class="p">,</span> <span class="p">{</span> <span class="kp">true</span> <span class="o">=&gt;</span> <span class="ss">:up</span><span class="p">,</span> <span class="kp">false</span> <span class="o">=&gt;</span> <span class="ss">:start</span> <span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The first transition block tells god what to do when the Watch is in the
+<tt>init</tt> state (first argument). This is where I tell god how to determine if my
+task is already running. Since I'm monitoring a process, I can use the
+<tt>process_running</tt> condition to determine whether the process is running. If
+the process is running, it will return true, otherwise it will return false.
+Since I sent a hash as the second argument to <tt>transition</tt>, the return from
+<tt>process_running</tt> will determine which of the two states will be transitioned
+to. If the process is running, the return is true and god will put the Watch
+into the <tt>up</tt> state. If the process is not running, the return is false and
+god will put the Watch into the <tt>start</tt> state.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine when process has finished starting</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>If god has determined that my process isn't running, the Watch will be put
+into the <tt>start</tt> state. Upon entering this state, the <tt>start</tt> command that I
+specified on the Watch will be called. In addition, the above transition
+specifies a condition that should be enabled when in either the <tt>start</tt> or
+<tt>restart</tt> states. The condition is another <tt>process_running</tt>, however this
+time I'm only interested in moving to another state once it returns <tt>true</tt>. A
+<tt>true</tt> return from this condition means that the process is running and it's
+ok to transition to the <tt>up</tt> state (second argument to <tt>transition</tt>).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine when process has finished starting</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="c1"># failsafe</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:tries</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:start</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The other half of this transition uses the <tt>tries</tt> condition to ensure that
+god doesn't get stuck in this state. It's possible that the process could go
+down while the transition is being made, in which case god would end up
+polling forever to see if the process is up. Here I've specified that if this
+condition is called five times, god should override the normal transition
+destination and move to the <tt>start</tt> state instead. If you specify a
+<tt>transition</tt> attribute on any condition, that state will be transferred to
+instead of the normal transfer destination.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># start if process is not running</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This is where the event based system comes into play. Once in the <tt>up</tt> state,
+I want to be notified when my process exits. The <tt>process_exits</tt> condition
+registers a callback that will trigger a transition change when it is fired
+off. Event conditions (like this one) cannot be used in transitions that have
+a hash for the second argument (as they do not return true or false).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># restart if memory or cpu is too high</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:restart</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">megabytes</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+  <span class="k">end</span>
+
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">percent</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Notice that I can have multiple transitions with the same start state. In this
+case, I want to have the <tt>memory_usage</tt> and <tt>cpu_usage</tt> poll conditions going
+at the same time that I listen for the process exit event. In the case of
+runaway CPU or memory usage, however, I want to transition to the <tt>restart</tt>
+state. When a Watch enters the <tt>restart</tt> state it will either call the
+<tt>restart</tt> command that you specified, or if none has been set, call the <tt>stop</tt>
+and then <tt>start</tt> commands.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_grouping_watches">Grouping Watches</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Watches can be assigned to groups. These groups can then be controlled
+together from the command line.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="s1">'mongrels'</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The above configuration now allows you to control the watch (and any others
+that are in the group) with a single command:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god stop mongrels
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_redirecting_stdout_and_stderr_of_your_process">Redirecting STDOUT and STDERR of your Process</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>By default, the STDOUT stream for your process is redirected to <tt>/dev/null</tt>.
+To get access to this output, you can redirect the stream either to a file or
+to a command.</p></div>
+<div class="paragraph"><p>To redirect STDOUT to a file, set the <tt>log</tt> attribute to a file path. The file
+will be written in append mode and created if it does not exist.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="s1">'/var/log/myprocess.log'</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>To redirect STDOUT to a command that will be run for you, set the <tt>log_cmd</tt>
+attribute to a command.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">log_cmd</span> <span class="o">=</span> <span class="s1">'/usr/bin/logger'</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>By default, STDERR is redirected to STDOUT. You can redirect it to a file or a
+command just like STDOUT by setting the <tt>err_log</tt> or <tt>err_log_cmd</tt> attributes
+respectively.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_changing_uid_gid_for_processes">Changing UID/GID for processes</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>It is possible to have god run your start/stop/restart commands as a specific
+user/group. This can be done by setting the <tt>uid</tt> and/or <tt>gid</tt> attributes of a
+watch.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="s1">'tom'</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">gid</span> <span class="o">=</span> <span class="s1">'devs'</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This only works for commands specified as a string. Lambda commands are
+unaffected.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_setting_the_working_directory">Setting the Working Directory</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>By default, God sets the working directory to <tt>/</tt> before running your process.
+You can change this by setting the <tt>dir</tt> attribute on the watch.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">dir</span> <span class="o">=</span> <span class="s1">'/var/www/myapp'</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_setting_environment_variables">Setting environment variables</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>You can set any number of environment variables you wish via the <tt>env</tt>
+attribute of a watch.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">'RAILS_ROOT'</span> <span class="o">=&gt;</span> <span class="s2">"/var/www/myapp"</span><span class="p">,</span>
+            <span class="s1">'RAILS_ENV'</span> <span class="o">=&gt;</span> <span class="s2">"production"</span> <span class="p">}</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_using_chroot_to_change_the_file_system_root">Using chroot to Change the File System Root</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>If you want your process to run chrooted, simply use the <tt>chroot</tt> attribute on
+the watch. The specified directory must exist and have a <tt>/dev/null</tt>.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">chroot</span> <span class="o">=</span> <span class="s1">'/var/myroot'</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_lambda_commands">Lambda commands</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>In addition to specifying start/stop/restart commands as strings (to be
+executed via the shell), you can specify a lambda that will be called.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span> <span class="no">ENV</span><span class="o">[</span><span class="s1">'APACHE'</span><span class="o">]</span> <span class="p">?</span> <span class="sb">`apachectl -k graceful`</span> <span class="p">:</span> <span class="sb">`lighttpd restart`</span> <span class="p">}</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_customizing_the_default_stop_lambda">Customizing the Default Stop Lambda</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>If you do not provide a stop command, God will attempt to stop your process by
+first sending a SIGTERM. It will then wait for ten seconds for the process to
+exit. If after this time it still has not exited, it will be sent a SIGKILL.
+You can customize the stop signal and/or the time to wait for the process to
+exit by setting the <tt>stop_signal</tt> and <tt>stop_timeout</tt> attributes on the watch.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">stop_signal</span> <span class="o">=</span> <span class="s1">'QUIT'</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">stop_timeout</span> <span class="o">=</span> <span class="mi">20</span><span class="o">.</span><span class="n">seconds</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_watching_non_daemon_processes">Watching Non-Daemon Processes</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Need to watch a script that doesn't have built in daemonization? No problem!
+God will daemonize and keep track of your process for you. If you don't
+specify a <tt>pid_file</tt> attribute for a watch, it will be auto-daemonized and a
+PID file will be stored for it in <tt>/var/run/god</tt>. If you'd rather have the PID
+file stored in a different location, you can set it at the top of your config:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">pid_file_directory</span> <span class="o">=</span> <span class="s1">'/home/tom/pids'</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="c1"># watch with no pid_file attribute set</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The directory you specify must be writable by god.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_loading_other_config_files">Loading Other Config Files</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>You should feel free to separate your god configs into separate files for
+easier organization. You can load in other configs using Ruby's normal <tt>load</tt>
+method, or use the convenience method <tt>God.load</tt> which allows for glob-style
+paths:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># load in all god configs</span>
+<span class="no">God</span><span class="o">.</span><span class="n">load</span> <span class="s2">"/usr/local/conf/*.god"</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>God won't start its monitoring operations until all configurations have been
+loaded.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_dynamically_loading_config_files_into_an_already_running_god">Dynamically Loading Config Files Into an Already Running God</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>God allows you to load or reload configurations into an already running
+instance. There are a few things to consider when doing this:</p></div>
+<div class="ulist"><ul><li>
+<p>
+Existng Watches with the same <tt>name</tt> as the incoming Watches will be
+  overidden by the new config.
+</p>
+</li>
+<li>
+<p>
+All paths must be either absolute or relative to the path from which god was
+  started.
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>To load a config into a running god, issue the following command:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god load path/to/config.god
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Config files that are loaded dynamically can contain anything that a normal
+config file contains, however, global options such as <tt>God.pid_file_directory</tt>
+blocks will be ignored (and produce a warning in the logs).</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_getting_logs_for_a_single_watch">Getting Logs for a Single Watch</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Sifting through the god logs for statements specific to a single Watch can be
+frustrating when you have many of them. You can get the realtime logs for a
+single Watch via the command line:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god log local-3000
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This will display log output for the <em>local-3000</em> Watch and update every
+second with new log messages.</p></div>
+<div class="paragraph"><p>You can also supply a shorthand to the log command that will match one of your
+watches. If it happens to match several, the shortest match will be used:</p></div>
+<div class="paragraph"><div class="highlight"><pre>$ sudo god log l3
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_notifications">Notifications</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>God has an extensible notification framework built in that makes it easy to
+have notifications sent when conditions are triggered. Each notification type
+has a set of configuration parameters that must be set. These parameters may
+be set globally via Contact Defaults or individually via Contact Instances.</p></div>
+<div class="paragraph"><p><strong>Contact Defaults</strong> - Some parameters are unlikely to change on a per-contact
+basis. You should set those parameters via the defaults mechanism.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Email</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="n">d</span><span class="o">.</span><span class="n">from_email</span> <span class="o">=</span> <span class="s1">'god@example.com'</span>
+  <span class="n">d</span><span class="o">.</span><span class="n">from_name</span> <span class="o">=</span> <span class="s1">'God'</span>
+  <span class="n">d</span><span class="o">.</span><span class="n">delivery_method</span> <span class="o">=</span> <span class="ss">:sendmail</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p><strong>Contact Instances</strong> - Each contact must have a unique <tt>name</tt> set. You may
+optionally assign each contact to a <tt>group</tt>.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:email</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'tom'</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="s1">'developers'</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">to_email</span> <span class="o">=</span> <span class="s1">'tom@example.com'</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:email</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'vanpelt'</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="s1">'developers'</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">to_email</span> <span class="o">=</span> <span class="s1">'vanpelt@example.com'</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:email</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'kevin'</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="s1">'developers'</span>
+  <span class="n">c</span><span class="o">.</span><span class="n">to_email</span> <span class="o">=</span> <span class="s1">'kevin@example.com'</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p><strong>Condition Attachment</strong> - To have a specific contact notified when a condition
+is triggered, simply set the condition's <tt>notify</tt> attribute to the name of the
+individual contact.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="s1">'tom'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>There are two ways to specify that a notification should be sent. The first,
+easier way is shown above. Every condition can take an optional <tt>notify</tt>
+attribute that specifies which contacts should be notified when the condition
+is triggered. The value can be a contact name or contact group <strong>or</strong> an array
+of contact names and/or contact groups.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="p">{</span><span class="ss">:contacts</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">'tom'</span><span class="p">,</span> <span class="s1">'developers'</span><span class="o">]</span><span class="p">,</span> <span class="ss">:priority</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="ss">:category</span> <span class="o">=&gt;</span> <span class="s1">'product'</span><span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The second way allows you to specify the <tt>priority</tt> and <tt>category</tt> in addition
+to the contacts. The extra attributes can be arbitrary integers or strings and
+will be passed as-is to the notification subsystem.</p></div>
+<div class="paragraph"><p>The above notification will arrive as an email similar to the following.</p></div>
+<div class="paragraph"><div class="highlight"><pre>From: God &amp;lt;god@example.com&amp;gt;
+To: tom &amp;lt;tom@example.com&amp;gt;
+Subject: [god] mongrel-8600 [trigger] process exited (ProcessExits)
+
+Message: mongrel-8600 [trigger] process exited (ProcessExits)
+Host: candymountain.example.com
+Priority: 1
+Category: product
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_available_notification_types">Available Notification Types</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="wiki-_campfire">Campfire</h3>
+<div class="paragraph"><p>Send a notice to a Campfire room (<a href="http://campfirenow.com">http://campfirenow.com</a>).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Campfire</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:campfire</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>subdomain - The String subdomain of the Campfire account. If your URL is
+            "foo.campfirenow.com" then your subdomain is "foo".
+token     - The String token used for authentication.
+room      - The String room name to which the message should be sent.
+ssl       - A Boolean determining whether or not to use SSL
+            (default: false).
+</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wiki-_email">Email</h3>
+<div class="paragraph"><p>Send a notice to an email address.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Email</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:email</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>to_email        - The String email address to which the email will be sent.
+to_name         - The String name corresponding to the recipient.
+from_email      - The String email address from which the email will be sent.
+from_name       - The String name corresponding to the sender.
+delivery_method - The Symbol delivery method. [ :smtp | :sendmail ]
+                  (default: :smtp).
+
+=== SMTP Options (when delivery_method = :smtp) ===
+server_host     - The String hostname of the SMTP server (default: localhost).
+server_port     - The Integer port of the SMTP server (default: 25).
+server_auth     - The Boolean of whether or not to use authentication
+                  (default: false).
+
+=== SMTP Auth Options (when server_auth = true) ===
+server_domain   - The String domain.
+server_user     - The String username.
+server_password - The String password.
+
+=== Sendmail Options (when delivery_method = :sendmail) ===
+sendmail_path   - The String path to the sendmail executable
+                  (default: "/usr/sbin/sendmail").
+sendmail_args   - The String args to send to sendmail (default "-i -t").
+</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wiki-_jabber">Jabber</h3>
+<div class="paragraph"><p>Send a notice to a Jabber address (<a href="http://jabber.org/">http://jabber.org/</a>).</p></div>
+<div class="paragraph"><p>Google Mail addresses should work. If you need a non-Gmail address, you can
+sign up for one at <a href="http://register.jabber.org/">http://register.jabber.org/</a>.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Jabber</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:jabber</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>host     - The String hostname of the Jabber server.
+port     - The Integer port of the Jabber server.
+from_jid - The String Jabber ID of the sender.
+password - The String password of the sender.
+to_jid   - The String Jabber ID of the recipient.
+subject  - The String subject of the message (default: "God Notification").
+</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wiki-_prowl">Prowl</h3>
+<div class="paragraph"><p>Send a notice to Prowl (&lt;a href="http://prowl.weks.net/"&gt;http://prowl.weks.net/&lt;/a&gt;).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Prowl</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:prowl</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>apikey - The String API key.
+</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wiki-_scout">Scout</h3>
+<div class="paragraph"><p>Send a notice to Scout (<a href="http://scoutapp.com/">http://scoutapp.com/</a>).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Scout</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:scout</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>client_key - The String client key.
+plugin_id  - The String plugin id.
+</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wiki-_twitter">Twitter</h3>
+<div class="paragraph"><p>Send a notice to a Twitter account (<a href="http://twitter.com/">http://twitter.com/</a>).</p></div>
+<div class="paragraph"><p>In order to use the Twitter notification, you will need to authorize God via
+OAuth and then get the OAuth token and secret for your account. The easiest
+way to do this is with a Ruby gem called <tt>twurl</tt>. Install it like so:</p></div>
+<div class="paragraph"><div class="highlight"><pre>[sudo] gem install twurl
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Then, run the following:</p></div>
+<div class="paragraph"><div class="highlight"><pre>twurl auth --consumer-key gOhjax6s0L3mLeaTtBWPw \
+           --consumer-secret yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This will return a URL. Copy it to your clipboard. Make sure you are logged
+into Twitter with the account that will used for the notifications, and then
+paste the URL into a new browser window. At the end of the authentication
+process, you will be given a PIN. Copy this PIN and paste it back to the
+command line prompt. Once this is complete, you need to find your access token
+and secret:</p></div>
+<div class="paragraph"><div class="highlight"><pre>cat ~/.twurlrc
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This will output the contents of the config file from which you can grab your
+access token and secret:</p></div>
+<div class="paragraph"><div class="highlight"><pre>---
+profiles:
+  mojombo:
+    gOhjax6s0L3mLeaTtBWPw:
+      [red]token: 17376380-KXA91nCrgaQ4HxUXMmZtM38gB56qS3hx1NYbjT6mQ
+      consumer_key: gOhjax6s0L3mLeaTtBWPw
+      username: mojombo
+      consumer_secret: yz4gpAVXJHKxvsGK85tEyzQJ7o2FEy27H1KEWL75jfA
+      [red]secret: EBWFQBCtuMwCDeU4OXlc3LwGyY8OdWAV0Jg5KVB0
+configuration:
+  default_profile:
+  - mojombo
+  - gOhjax6s0L3mLeaTtBWPw
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The access token and secret (highlighted in red above) are what you need to
+use as parameters to the Twitter notification.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Twitter</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:twitter</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>consumer_token  - The String OAuth consumer token (defaults to God's
+                  existing consumer token).
+consumer_secret - The String OAuth consumer secret (defaults to God's
+                  existing consumer secret).
+access_token    - The String OAuth access token.
+access_secret   - The String OAuth access secret.
+</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wiki-_webhook">Webhook</h3>
+<div class="paragraph"><p>Send a notice to a webhook (<a href="http://www.webhooks.org/">http://www.webhooks.org/</a>).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">::</span><span class="no">Contacts</span><span class="o">::</span><span class="no">Webhook</span><span class="o">.</span><span class="n">defaults</span> <span class="k">do</span> <span class="o">|</span><span class="n">d</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">contact</span><span class="p">(</span><span class="ss">:webhook</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><div class="highlight"><pre>url    - The String webhook URL.
+format - The Symbol format [ :form | :json ] (default: :form).
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_extend_god_with_your_own_conditions">Extend God with your own Conditions</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>God was designed from the start to allow you to easily write your own custom
+conditions, making it simple to add tests that are application specific.</p></div>
+</div>
+</div>
+  </div>
+
+</div>
+
+<div id="footer">
+	<p>Brought to you by <a href="http://tom.preston-werner.com/">Tom Preston-Werner</a></p>
+</div>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2196727-1";
+urchinTracker();
+</script>
+
+</body>
+</html>
