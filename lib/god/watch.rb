@@ -2,14 +2,28 @@ require 'etc'
 require 'forwardable'
 
 module God
-
+  # The Watch class is a specialized Task that handles standard process
+  # workflows. It has four states: init, up, start, and restart.
   class Watch < Task
+    # The Array of Symbol valid task states.
     VALID_STATES = [:init, :up, :start, :restart]
+
+    # The Sybmol initial state.
     INITIAL_STATE = :init
 
-    # config
-    attr_accessor :grace, :start_grace, :stop_grace, :restart_grace
+    # Public: The grace period for this process (seconds).
+    attr_accessor :grace
 
+    # Public: The start grace period (seconds).
+    attr_accessor :start_grace
+
+    # Public: The stop grace period (seconds).
+    attr_accessor :stop_grace
+
+    # Public: The restart grace period (seconds).
+    attr_accessor :restart_grace
+
+    # Public: God::Process delegators. See lib/god/process.rb for docs.
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart, :dir,
                               :name=, :uid=, :gid=, :start=, :stop=, :restart=,
@@ -19,20 +33,25 @@ module God
                               :unix_socket, :unix_socket=, :chroot, :chroot=,
                               :env, :env=, :signal, :stop_timeout=,
                               :stop_signal=, :umask, :umask=
-    #
+
+    # Initialize a new Watch instance.
     def initialize
       super
 
+      # This God::Process instance holds information specific to the process.
       @process = God::Process.new
 
-      # valid states
+      # Valid states.
       self.valid_states = VALID_STATES
       self.initial_state = INITIAL_STATE
 
-      # no grace period by default
+      # No grace period by default.
       self.grace = self.start_grace = self.stop_grace = self.restart_grace = 0
     end
 
+    # Is this Watch valid?
+    #
+    # Returns true if the Watch is valid, false if not.
     def valid?
       super && @process.valid?
     end
@@ -43,19 +62,26 @@ module God
     #
     ###########################################################################
 
+    # Public: Add a behavior to this Watch. See lib/god/behavior.rb.
+    #
+    # kind - The Symbol name of the Behavior to add.
+    #
+    # Yields the newly instantiated Behavior.
+    #
+    # Returns nothing.
     def behavior(kind)
-      # create the behavior
+      # Create the behavior.
       begin
         b = Behavior.generate(kind, self)
       rescue NoSuchBehaviorError => e
         abort e.message
       end
 
-      # send to block so config can set attributes
+      # Send to block so config can set attributes.
       yield(b) if block_given?
 
-      # abort if the Behavior is invalid, the Behavior will have printed
-      # out its own error messages by now
+      # Abort if the Behavior is invalid, the Behavior will have printed
+      # out its own error messages by now.
       abort unless b.valid?
 
       self.behaviors << b
@@ -67,8 +93,15 @@ module God
     #
     ###########################################################################
 
+    # Default Integer interval at which keepalive will runn poll checks.
     DEFAULT_KEEPALIVE_INTERVAL = 5.seconds
+
+    # Default Integer or Array of Integers specification of how many times the
+    # memory condition must fail before triggering.
     DEFAULT_KEEPALIVE_MEMORY_TIMES = [3, 5]
+
+    # Default Integer or Array of Integers specification of how many times the
+    # CPU condition must fail before triggering.
     DEFAULT_KEEPALIVE_CPU_TIMES = [3, 5]
 
     # Public: A set of conditions for easily getting started with simple watch
@@ -155,18 +188,33 @@ module God
     #
     ###########################################################################
 
+    # Public: Start the process if any of the given conditions are triggered.
+    #
+    # Yields the Metric upon which conditions can be added.
+    #
+    # Returns nothing.
     def start_if
       self.transition(:up, :start) do |on|
         yield(on)
       end
     end
 
+    # Public: Restart the process if any of the given conditions are triggered.
+    #
+    # Yields the Metric upon which conditions can be added.
+    #
+    # Returns nothing.
     def restart_if
       self.transition(:up, :restart) do |on|
         yield(on)
       end
     end
 
+    # Public: Stop the process if any of the given conditions are triggered.
+    #
+    # Yields the Metric upon which conditions can be added.
+    #
+    # Returns nothing.
     def stop_if
       self.transition(:up, :stop) do |on|
         yield(on)
@@ -179,9 +227,10 @@ module God
     #
     ###########################################################################
 
-    # Enable monitoring
+    # Enable monitoring. Start at the first available of the init or up states.
+    #
+    # Returns nothing.
     def monitor
-      # start monitoring at the first available of the init or up states
       if !self.metrics[:init].empty?
         self.move(:init)
       else
@@ -195,15 +244,18 @@ module God
     #
     ###########################################################################
 
+    # Perform an action.
+    #
+    # a - The Symbol action to perform. One of :start, :restart, :stop.
+    # c - The Condition.
+    #
+    # Returns this Watch.
     def action(a, c = nil)
       if !self.driver.in_driver_context?
-        # called from outside Driver
-
-        # send an async message to Driver
+        # Called from outside Driver. Send an async message to Driver.
         self.driver.message(:action, [a, c])
       else
-        # called from within Driver
-
+        # Called from within Driver.
         case a
         when :start
           call_action(c, :start)
@@ -225,8 +277,14 @@ module God
       self
     end
 
+    # Perform the specifics of the action.
+    #
+    # condition - The Condition.
+    # action    - The Sybmol action.
+    #
+    # Returns nothing.
     def call_action(condition, action)
-      # before
+      # Before.
       before_items = self.behaviors
       before_items += [condition] if condition
       before_items.each do |b|
@@ -237,15 +295,16 @@ module God
         end
       end
 
-      # log
+      # Log.
       if self.send(action)
         msg = "#{self.name} #{action}: #{self.send(action).to_s}"
         applog(self, :info, msg)
       end
 
+      # Execute.
       @process.call_action(action)
 
-      # after
+      # After.
       after_items = self.behaviors
       after_items += [condition] if condition
       after_items.each do |b|
@@ -263,14 +322,19 @@ module God
     #
     ###########################################################################
 
+    # Register the Process in the global process registry.
+    #
+    # Returns nothing.
     def register!
       God.registry.add(@process)
     end
 
+    # Unregister the Process in the global process registry.
+    #
+    # Returns nothing.
     def unregister!
       God.registry.remove(@process)
       super
     end
   end
-
 end
