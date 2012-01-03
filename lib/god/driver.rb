@@ -91,9 +91,6 @@ module God
       end
     end
 
-    alias shift pop
-    alias deq pop
-
     #
     # Add an event to the queue, wake any waiters if what we added needs to
     # happen sooner than the next pending event
@@ -108,9 +105,6 @@ module God
         @resource.signal if @events.first == event
       end
     end
-
-    alias << push
-    alias enq push
 
     def empty?
       @events.empty?
