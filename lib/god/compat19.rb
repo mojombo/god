@@ -1,6 +1,4 @@
-
 require 'monitor'
-
 
 # Taken from http://redmine.ruby-lang.org/repositories/entry/ruby-19/lib/monitor.rb
 
@@ -18,7 +16,6 @@ module MonitorMixin
     end
   end
 end
-
 
 # Taken from http://redmine.ruby-lang.org/repositories/entry/ruby-19/lib/thread.rb
 
