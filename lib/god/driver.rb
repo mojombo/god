@@ -66,8 +66,6 @@ module God
       @events = []
       @monitor = Monitor.new
       @resource = @monitor.new_cond
-      @events.taint
-      self.taint
     end
 
     #
