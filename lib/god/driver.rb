@@ -29,12 +29,10 @@ module God
   end # DriverEvent
 
   class DriverEvent < TimedEvent
-    attr_accessor :condition, :task
-
     def initialize(delay, task, condition)
-      super delay
-      self.task = task
-      self.condition = condition
+      super(delay)
+      @task = task
+      @condition = condition
     end
 
     def handle_event
@@ -43,13 +41,11 @@ module God
   end # DriverEvent
 
   class DriverOperation < TimedEvent
-    attr_accessor :task, :name, :args
-
     def initialize(task, name, args)
       super(0)
-      self.task = task
-      self.name = name
-      self.args = args
+      @task = task
+      @name = name
+      @args = args
     end
 
     # Handle the next queued operation that was issued asynchronously
