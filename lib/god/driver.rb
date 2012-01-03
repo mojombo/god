@@ -82,7 +82,7 @@ module God
         if @events.empty?
           raise ThreadError, "queue empty" if @shutdown
           @resource.wait
-        else !@events.first.due?
+        else
           delay = @events.first.at - Time.now
           @resource.wait(delay) if delay > 0
         end
