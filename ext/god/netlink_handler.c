@@ -91,6 +91,9 @@ nlh_handle_events()
       case PROC_EVENT_EXEC:
       case PROC_EVENT_UID:
       case PROC_EVENT_GID:
+#ifdef PROC_EVENT_SID
+      case PROC_EVENT_SID:
+#endif
         break;
     }
   }
