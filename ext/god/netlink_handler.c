@@ -87,10 +87,7 @@ nlh_handle_events()
         rb_funcall(cEventHandler, m_call, 3, INT2FIX(event->event_data.fork.parent_pid), ID2SYM(proc_fork), extra_data);
         return INT2FIX(1);
 
-      case PROC_EVENT_NONE:
-      case PROC_EVENT_EXEC:
-      case PROC_EVENT_UID:
-      case PROC_EVENT_GID:
+      default:
         break;
     }
   }
