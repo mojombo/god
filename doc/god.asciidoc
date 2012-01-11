@@ -18,10 +18,10 @@ the kernel and god must be run as root.
 The following systems have been tested. Help us test it on others!
 
 * Darwin 10.4.10
-* RedHat Fedora Core 6
+* RedHat Fedora 6-15
 * Ubuntu Dapper (no events)
 * Ubuntu Feisty
-* CentOS 4.5 (no events)
+* CentOS 4.5, 5 (no events)
 
 
 Quick Start
