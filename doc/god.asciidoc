@@ -21,7 +21,7 @@ The following systems have been tested. Help us test it on others!
 * RedHat Fedora 6-15
 * Ubuntu Dapper (no events)
 * Ubuntu Feisty
-* CentOS 4.5, 5 (no events)
+* CentOS 4.5 (no events), 5, 6
 
 
 Quick Start
@@ -340,13 +340,12 @@ RAILS_ROOT = "/Users/tom/dev/gravatar2"
 %w{8200 8201 8202}.each do |port|
   God.watch do |w|
     w.name = "gravatar2-mongrel-#{port}"
-    w.interval = 30.seconds # default
+
     w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
       -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
     w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
     w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
-    w.start_grace = 10.seconds
-    w.restart_grace = 10.seconds
+
     w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
 
     w.behavior(:clean_pid_file)
@@ -414,13 +413,12 @@ easier.
 ```ruby
   God.watch do |w|
     w.name = "gravatar2-mongrel-#{port}"
-    w.interval = 30.seconds # default
+
     w.start = "mongrel_rails start -c #{RAILS_ROOT} -p #{port} \
       -P #{RAILS_ROOT}/log/mongrel.#{port}.pid  -d"
     w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
     w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.#{port}.pid"
-    w.start_grace = 10.seconds
-    w.restart_grace = 10.seconds
+
     w.pid_file = File.join(RAILS_ROOT, "log/mongrel.#{port}.pid")
 
     ...
@@ -431,14 +429,12 @@ A `watch` represents a single process that has concrete start, stop, and/or
 restart operations. You can define as many watches as you like. In the example
 above, I've got some Rails instances running in Mongrels that I need to keep
 alive. Every watch must have a unique `name` so that it can be identified
-later on. The `interval` option sets the default poll interval (this can be
-overridden in each condition). The `start` and `stop` attributes specify the
-commands to start and stop the process. If no `restart` attribute is set,
-restart will be represented by a call to stop followed by a call to start. The
+later on. The `start` and `stop` attributes specify the commands to start 
+and stop the process. If no `restart` attribute is set, restart will be 
+represented by a call to stop followed by a call to start. The
 optional `grace` attribute sets the amount of time following a
 start/stop/restart command to wait before resuming normal monitoring
-operations. To be more specific, I can set just `start_grace`, `stop_grace`,
-and/or `restart_grace`. If the process you're watching runs as a daemon (as
+operations. If the process you're watching runs as a daemon (as
 mine does), you'll need to set the `pid_file` attribute.
 
 ```ruby
@@ -566,217 +562,49 @@ $ sudo god stop gravatar2-mongrel-8200
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-Advanced Configuration with Transitions and Events
---------------------------------------------------
+Watching Non-Daemon Processes
+-----------------------------
 
-So far you've been introduced to a simple poll-based config file and seen how
-to run it. Poll-based monitoring works great for simple things, but falls
-short for highly critical tasks. God has native support for kqueue/netlink
-events on BSD/Darwin/Linux systems. For instance, instead of using the
-`process_running` condition to poll for the status of your process, you can
-use the `process_exits` condition that will be notified *immediately* upon the
-exit of your process. This means less load on your system and shorter downtime
-after a crash.
+Need to watch a script that doesn't have built in daemonization? No problem!
+God will daemonize and keep track of your process for you. If you don't
+specify a `pid_file` attribute for a watch, it will be auto-daemonized and a
+PID file will be stored for it in `/var/run/god`. 
 
-While the configuration syntax you saw in the previous example is very simple,
-it lacks the power that we need to deal with event based monitoring. In fact,
-the `start_if` and `restart_if` methods are really just calling out to a
-lower-level API. If we use the low-level API directly, we can harness the full
-power of god's event based lifecycle system. Let's look at another example
-config file.
 
 ```ruby
-RAILS_ROOT = "/Users/tom/dev/gravatar2"
+God.pid_file_directory = '/home/tom/pids'
 
+# Watcher that auto-daemonizes and creates the pid file
 God.watch do |w|
-  w.name = "local-3000"
-  w.interval = 5.seconds # default
-  w.start = "mongrel_rails start -c #{RAILS_ROOT} -P #{RAILS_ROOT}/log/mongrel.pid -p 3000 -d"
-  w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.pid"
-  w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.pid"
-  w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
-
-  # clean pid files before start if necessary
-  w.behavior(:clean_pid_file)
-
-  # determine the state on startup
-  w.transition(:init, { true => :up, false => :start }) do |on|
-    on.condition(:process_running) do |c|
-      c.running = true
-    end
-  end
-
-  # determine when process has finished starting
-  w.transition([:start, :restart], :up) do |on|
-    on.condition(:process_running) do |c|
-      c.running = true
-    end
-
-    # failsafe
-    on.condition(:tries) do |c|
-      c.times = 5
-      c.transition = :start
-    end
-  end
-
-  # start if process is not running
-  w.transition(:up, :start) do |on|
-    on.condition(:process_exits)
-  end
-
-  # restart if memory or cpu is too high
-  w.transition(:up, :restart) do |on|
-    on.condition(:memory_usage) do |c|
-      c.interval = 20
-      c.above = 50.megabytes
-      c.times = [3, 5]
-    end
-
-    on.condition(:cpu_usage) do |c|
-      c.interval = 10
-      c.above = 10.percent
-      c.times = [3, 5]
-    end
-  end
-
-  # lifecycle
-  w.lifecycle do |on|
-    on.condition(:flapping) do |c|
-      c.to_state = [:start, :restart]
-      c.times = 5
-      c.within = 5.minute
-      c.transition = :unmonitored
-      c.retry_in = 10.minutes
-      c.retry_times = 5
-      c.retry_within = 2.hours
-    end
-  end
+  w.name = 'mongrel'
+  w.pid_file = w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
+  
+  w.start = "mongrel_rails start -P #{RAILS_ROOT}/log/mongrel.pid  -d"
+  
+  # ...
 end
 
+# Watcher that does not auto-daemonize
+God.watch do |w|
+  w.name = 'worker'
+  # w.pid_file = is not set
+  
+  w.start = "rake resque:worker"
+  
+  # ...
+end
 ```
 
-A bit longer, I know, but very straighforward once you understand how the
-`transition` calls work. The `name`, `interval`, `start`, `stop`, and
-`pid_file` attributes should be familiar. We also specify the `clean_pid_file`
-behavior.
 
-Before jumping into the code, it's important to understand the different
-states that a Watch can have, and how that state changes over time. At any
-given time, a Watch will be in one of the `init`, `up`, `start`, or `restart`
-states. As different conditions are satisfied, the Watch will progress from
-state to state, enabling and disabling conditions along the way.
-
-When god first starts, each Watch is placed in the `init` state.
-
-You'll use the `transition` method to tell god how to transition between
-states. It takes two arguments. The first argument may be either a symbol or
-an array of symbols representing the state or states during which the
-specified conditions should be enabled. The second argument may be either a
-symbol or a hash. If it is a symbol, then that is the state that will be
-transitioned to if any of the conditions return `true`. If it is a hash, then
-that hash must have both `true` and `false` keys, each of which point to a
-symbol that represents the state to transition to given the corresponding
-return from the single condition that must be specified.
+If you'd rather have the PID file stored in a different location, you can 
+set it at the top of your config:
 
 ```ruby
-  # determine the state on startup
-  w.transition(:init, { true => :up, false => :start }) do |on|
-    on.condition(:process_running) do |c|
-      c.running = true
-    end
-  end
+God.pid_file_directory = '/home/tom/pids'
 ```
 
-The first transition block tells god what to do when the Watch is in the
-`init` state (first argument). This is where I tell god how to determine if my
-task is already running. Since I'm monitoring a process, I can use the
-`process_running` condition to determine whether the process is running. If
-the process is running, it will return true, otherwise it will return false.
-Since I sent a hash as the second argument to `transition`, the return from
-`process_running` will determine which of the two states will be transitioned
-to. If the process is running, the return is true and god will put the Watch
-into the `up` state. If the process is not running, the return is false and
-god will put the Watch into the `start` state.
+The directory you specify must be writable by god.
 
-```ruby
-  # determine when process has finished starting
-  w.transition([:start, :restart], :up) do |on|
-    on.condition(:process_running) do |c|
-      c.running = true
-    end
-
-    ...
-  end
-```
-
-If god has determined that my process isn't running, the Watch will be put
-into the `start` state. Upon entering this state, the `start` command that I
-specified on the Watch will be called. In addition, the above transition
-specifies a condition that should be enabled when in either the `start` or
-`restart` states. The condition is another `process_running`, however this
-time I'm only interested in moving to another state once it returns `true`. A
-`true` return from this condition means that the process is running and it's
-ok to transition to the `up` state (second argument to `transition`).
-
-```ruby
-  # determine when process has finished starting
-  w.transition([:start, :restart], :up) do |on|
-    ...
-
-    # failsafe
-    on.condition(:tries) do |c|
-      c.times = 5
-      c.transition = :start
-    end
-  end
-```
-
-The other half of this transition uses the `tries` condition to ensure that
-god doesn't get stuck in this state. It's possible that the process could go
-down while the transition is being made, in which case god would end up
-polling forever to see if the process is up. Here I've specified that if this
-condition is called five times, god should override the normal transition
-destination and move to the `start` state instead. If you specify a
-`transition` attribute on any condition, that state will be transferred to
-instead of the normal transfer destination.
-
-```ruby
-  # start if process is not running
-  w.transition(:up, :start) do |on|
-    on.condition(:process_exits)
-  end
-```
-
-This is where the event based system comes into play. Once in the `up` state,
-I want to be notified when my process exits. The `process_exits` condition
-registers a callback that will trigger a transition change when it is fired
-off. Event conditions (like this one) cannot be used in transitions that have
-a hash for the second argument (as they do not return true or false).
-
-```ruby
-  # restart if memory or cpu is too high
-  w.transition(:up, :restart) do |on|
-    on.condition(:memory_usage) do |c|
-      c.interval = 20
-      c.above = 50.megabytes
-      c.times = [3, 5]
-    end
-
-    on.condition(:cpu_usage) do |c|
-      c.interval = 10
-      c.above = 10.percent
-      c.times = [3, 5]
-    end
-  end
-```
-
-Notice that I can have multiple transitions with the same start state. In this
-case, I want to have the `memory_usage` and `cpu_usage` poll conditions going
-at the same time that I listen for the process exit event. In the case of
-runaway CPU or memory usage, however, I want to transition to the `restart`
-state. When a Watch enters the `restart` state it will either call the
-`restart` command that you specified, or if none has been set, call the `stop`
-and then `start` commands.
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -968,27 +796,6 @@ exit by setting the `stop_signal` and `stop_timeout` attributes on the watch.
   end
 ```
 
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-
-Watching Non-Daemon Processes
------------------------------
-
-Need to watch a script that doesn't have built in daemonization? No problem!
-God will daemonize and keep track of your process for you. If you don't
-specify a `pid_file` attribute for a watch, it will be auto-daemonized and a
-PID file will be stored for it in `/var/run/god`. If you'd rather have the PID
-file stored in a different location, you can set it at the top of your config:
-
-```ruby
-God.pid_file_directory = '/home/tom/pids'
-
-God.watch do |w|
-  # watch with no pid_file attribute set
-end
-```
-
-The directory you specify must be writable by god.
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -1372,6 +1179,223 @@ url    - The String webhook URL.
 format - The Symbol format [ :form | :json ] (default: :form).
 
 ```
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+Advanced Configuration with Transitions and Events
+--------------------------------------------------
+
+So far you've been introduced to a simple poll-based config file and seen how
+to run it. Poll-based monitoring works great for simple things, but falls
+short for highly critical tasks. God has native support for kqueue/netlink
+events on BSD/Darwin/Linux systems. For instance, instead of using the
+`process_running` condition to poll for the status of your process, you can
+use the `process_exits` condition that will be notified *immediately* upon the
+exit of your process. This means less load on your system and shorter downtime
+after a crash.
+
+While the configuration syntax you saw in the previous example is very simple,
+it lacks the power that we need to deal with event based monitoring. In fact,
+the `start_if` and `restart_if` methods are really just calling out to a
+lower-level API. If we use the low-level API directly, we can harness the full
+power of god's event based lifecycle system. Let's look at another example
+config file.
+
+```ruby
+RAILS_ROOT = "/Users/tom/dev/gravatar2"
+
+God.watch do |w|
+  w.name = "local-3000"
+
+  w.start = "mongrel_rails start -c #{RAILS_ROOT} -P #{RAILS_ROOT}/log/mongrel.pid -p 3000 -d"
+  w.stop = "mongrel_rails stop -P #{RAILS_ROOT}/log/mongrel.pid"
+  w.restart = "mongrel_rails restart -P #{RAILS_ROOT}/log/mongrel.pid"
+
+  w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
+
+  # clean pid files before start if necessary
+  w.behavior(:clean_pid_file)
+
+  # determine the state on startup
+  w.transition(:init, { true => :up, false => :start }) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end
+
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 5
+      c.transition = :start
+    end
+  end
+
+  # start if process is not running
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits)
+  end
+
+  # restart if memory or cpu is too high
+  w.transition(:up, :restart) do |on|
+    on.condition(:memory_usage) do |c|
+      c.interval = 20
+      c.above = 50.megabytes
+      c.times = [3, 5]
+    end
+
+    on.condition(:cpu_usage) do |c|
+      c.interval = 10
+      c.above = 10.percent
+      c.times = [3, 5]
+    end
+  end
+
+  # lifecycle
+  w.lifecycle do |on|
+    on.condition(:flapping) do |c|
+      c.to_state = [:start, :restart]
+      c.times = 5
+      c.within = 5.minute
+      c.transition = :unmonitored
+      c.retry_in = 10.minutes
+      c.retry_times = 5
+      c.retry_within = 2.hours
+    end
+  end
+end
+
+```
+
+A bit longer, I know, but very straighforward once you understand how the
+`transition` calls work. The `name`, `interval`, `start`, `stop`, and
+`pid_file` attributes should be familiar. We also specify the `clean_pid_file`
+behavior.
+
+Before jumping into the code, it's important to understand the different
+states that a Watch can have, and how that state changes over time. At any
+given time, a Watch will be in one of the `init`, `up`, `start`, or `restart`
+states. As different conditions are satisfied, the Watch will progress from
+state to state, enabling and disabling conditions along the way.
+
+When god first starts, each Watch is placed in the `init` state.
+
+You'll use the `transition` method to tell god how to transition between
+states. It takes two arguments. The first argument may be either a symbol or
+an array of symbols representing the state or states during which the
+specified conditions should be enabled. The second argument may be either a
+symbol or a hash. If it is a symbol, then that is the state that will be
+transitioned to if any of the conditions return `true`. If it is a hash, then
+that hash must have both `true` and `false` keys, each of which point to a
+symbol that represents the state to transition to given the corresponding
+return from the single condition that must be specified.
+
+```ruby
+  # determine the state on startup
+  w.transition(:init, { true => :up, false => :start }) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+  end
+```
+
+The first transition block tells god what to do when the Watch is in the
+`init` state (first argument). This is where I tell god how to determine if my
+task is already running. Since I'm monitoring a process, I can use the
+`process_running` condition to determine whether the process is running. If
+the process is running, it will return true, otherwise it will return false.
+Since I sent a hash as the second argument to `transition`, the return from
+`process_running` will determine which of the two states will be transitioned
+to. If the process is running, the return is true and god will put the Watch
+into the `up` state. If the process is not running, the return is false and
+god will put the Watch into the `start` state.
+
+```ruby
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    on.condition(:process_running) do |c|
+      c.running = true
+    end
+
+    ...
+  end
+```
+
+If god has determined that my process isn't running, the Watch will be put
+into the `start` state. Upon entering this state, the `start` command that I
+specified on the Watch will be called. In addition, the above transition
+specifies a condition that should be enabled when in either the `start` or
+`restart` states. The condition is another `process_running`, however this
+time I'm only interested in moving to another state once it returns `true`. A
+`true` return from this condition means that the process is running and it's
+ok to transition to the `up` state (second argument to `transition`).
+
+```ruby
+  # determine when process has finished starting
+  w.transition([:start, :restart], :up) do |on|
+    ...
+
+    # failsafe
+    on.condition(:tries) do |c|
+      c.times = 5
+      c.transition = :start
+    end
+  end
+```
+
+The other half of this transition uses the `tries` condition to ensure that
+god doesn't get stuck in this state. It's possible that the process could go
+down while the transition is being made, in which case god would end up
+polling forever to see if the process is up. Here I've specified that if this
+condition is called five times, god should override the normal transition
+destination and move to the `start` state instead. If you specify a
+`transition` attribute on any condition, that state will be transferred to
+instead of the normal transfer destination.
+
+```ruby
+  # start if process is not running
+  w.transition(:up, :start) do |on|
+    on.condition(:process_exits)
+  end
+```
+
+This is where the event based system comes into play. Once in the `up` state,
+I want to be notified when my process exits. The `process_exits` condition
+registers a callback that will trigger a transition change when it is fired
+off. Event conditions (like this one) cannot be used in transitions that have
+a hash for the second argument (as they do not return true or false).
+
+```ruby
+  # restart if memory or cpu is too high
+  w.transition(:up, :restart) do |on|
+    on.condition(:memory_usage) do |c|
+      c.interval = 20
+      c.above = 50.megabytes
+      c.times = [3, 5]
+    end
+
+    on.condition(:cpu_usage) do |c|
+      c.interval = 10
+      c.above = 10.percent
+      c.times = [3, 5]
+    end
+  end
+```
+
+Notice that I can have multiple transitions with the same start state. In this
+case, I want to have the `memory_usage` and `cpu_usage` poll conditions going
+at the same time that I listen for the process exit event. In the case of
+runaway CPU or memory usage, however, I want to transition to the `restart`
+state. When a Watch enters the `restart` state it will either call the
+`restart` command that you specified, or if none has been set, call the `stop`
+and then `start` commands.
+
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
