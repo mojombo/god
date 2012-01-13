@@ -117,9 +117,9 @@ module God
 
         connection = Net::HTTP.new(self.host, self.port)
         connection.use_ssl = self.port == 443 ? true : self.ssl
-        connection.verify_mode = OpenSSL::SSL::VERIFY_NONE if connection.use_ssl
+        connection.verify_mode = OpenSSL::SSL::VERIFY_NONE if connection.use_ssl?
 
-        if connection.use_ssl && self.ca_file
+        if connection.use_ssl? && self.ca_file
           pem = File.read(self.ca_file)
           connection.ca_file = self.ca_file
           connection.verify_mode = OpenSSL::SSL::VERIFY_PEER
