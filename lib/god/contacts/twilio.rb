@@ -3,8 +3,10 @@
 # account_sid - Your account SID
 # auth_token  - Your account auth secret token
 
-require 'twilio-ruby'
-
+CONTACT_DEPS[:twilio] = ['twilio-ruby']
+CONTACT_DEPS[:twilio].each do |d|
+  require d
+end
 module God
   module Contacts
     class Twilio < Contact
@@ -26,7 +28,7 @@ module God
                     :from_number, :to_number
 
       def notify(message, time, priority, category, host)
-        @client = Twilio::REST::Client.new arg(:account_sid), arg(:auth_token)
+        @client = ::Twilio::REST::Client.new arg(:account_sid), arg(:auth_token)
         @client.account.sms.messages.create(
           :from => arg(:from_number),
           :to => arg(:to_number),
