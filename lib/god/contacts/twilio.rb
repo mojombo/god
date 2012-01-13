@@ -35,7 +35,7 @@ module God
           :body => message
         )
 
-        self.info = "sent txt message"
+        self.info = "sent txt message to #{self.to_number}"
       rescue => e
         applog(nil, :info, "failed to send txt message: #{e.message}")
         applog(nil, :debug, e.backtrace.join("\n"))
