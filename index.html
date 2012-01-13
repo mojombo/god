@@ -74,7 +74,7 @@ Darwin 10.4.10
 </li>
 <li>
 <p>
-RedHat Fedora Core 6
+RedHat Fedora 6-15
 </p>
 </li>
 <li>
@@ -89,7 +89,7 @@ Ubuntu Feisty
 </li>
 <li>
 <p>
-CentOS 4.5 (no events)
+CentOS 4.5 (no events), 5, 6
 </p>
 </li>
 </ul></div>
@@ -388,13 +388,12 @@ to keep the mongrels running:</p></div>
 <span class="sx">%w{8200 8201 8202}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">port</span><span class="o">|</span>
   <span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
     <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"gravatar2-mongrel-</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">30</span><span class="o">.</span><span class="n">seconds</span> <span class="c1"># default</span>
+
     <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -p </span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2"> \</span>
 <span class="s2">      -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid  -d"</span>
     <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
     <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">start_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">restart_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
+
     <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span><span class="p">)</span>
 
     <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
@@ -459,13 +458,12 @@ their port numbers, eliminating duplication and making my life a whole lot
 easier.</p></div>
 <div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
   <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"gravatar2-mongrel-</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">30</span><span class="o">.</span><span class="n">seconds</span> <span class="c1"># default</span>
+
   <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -p </span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2"> \</span>
 <span class="s2">    -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid  -d"</span>
   <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
   <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">start_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">restart_grace</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">seconds</span>
+
   <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">.pid"</span><span class="p">)</span>
 
   <span class="o">.</span><span class="n">.</span><span class="o">.</span>
@@ -477,14 +475,12 @@ easier.</p></div>
 restart operations. You can define as many watches as you like. In the example
 above, I've got some Rails instances running in Mongrels that I need to keep
 alive. Every watch must have a unique <tt>name</tt> so that it can be identified
-later on. The <tt>interval</tt> option sets the default poll interval (this can be
-overridden in each condition). The <tt>start</tt> and <tt>stop</tt> attributes specify the
-commands to start and stop the process. If no <tt>restart</tt> attribute is set,
-restart will be represented by a call to stop followed by a call to start. The
+later on. The <tt>start</tt> and <tt>stop</tt> attributes specify the commands to start
+and stop the process. If no <tt>restart</tt> attribute is set, restart will be
+represented by a call to stop followed by a call to start. The
 optional <tt>grace</tt> attribute sets the amount of time following a
 start/stop/restart command to wait before resuming normal monitoring
-operations. To be more specific, I can set just <tt>start_grace</tt>, <tt>stop_grace</tt>,
-and/or <tt>restart_grace</tt>. If the process you're watching runs as a daemon (as
+operations. If the process you're watching runs as a daemon (as
 mine does), you'll need to set the <tt>pid_file</tt> attribute.</p></div>
 <div class="paragraph"><div class="highlight"><pre>  <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
 </pre>
@@ -600,205 +596,43 @@ utility like so:</p></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="wiki-_advanced_configuration_with_transitions_and_events">Advanced Configuration with Transitions and Events</h2>
+<h2 id="wiki-_watching_non_daemon_processes">Watching Non-Daemon Processes</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>So far you've been introduced to a simple poll-based config file and seen how
-to run it. Poll-based monitoring works great for simple things, but falls
-short for highly critical tasks. God has native support for kqueue/netlink
-events on BSD/Darwin/Linux systems. For instance, instead of using the
-<tt>process_running</tt> condition to poll for the status of your process, you can
-use the <tt>process_exits</tt> condition that will be notified <strong>immediately</strong> upon the
-exit of your process. This means less load on your system and shorter downtime
-after a crash.</p></div>
-<div class="paragraph"><p>While the configuration syntax you saw in the previous example is very simple,
-it lacks the power that we need to deal with event based monitoring. In fact,
-the <tt>start_if</tt> and <tt>restart_if</tt> methods are really just calling out to a
-lower-level API. If we use the low-level API directly, we can harness the full
-power of god's event based lifecycle system. Let's look at another example
-config file.</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="no">RAILS_ROOT</span> <span class="o">=</span> <span class="s2">"/Users/tom/dev/gravatar2"</span>
+<div class="paragraph"><p>Need to watch a script that doesn't have built in daemonization? No problem!
+God will daemonize and keep track of your process for you. If you don't
+specify a <tt>pid_file</tt> attribute for a watch, it will be auto-daemonized and a
+PID file will be stored for it in <tt>/var/run/god</tt>.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">pid_file_directory</span> <span class="o">=</span> <span class="s1">'/home/tom/pids'</span>
 
+<span class="c1"># Watcher that auto-daemonizes and creates the pid file</span>
 <span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"local-3000"</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">seconds</span> <span class="c1"># default</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid -p 3000 -d"</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid"</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid"</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.pid"</span><span class="p">)</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'mongrel'</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.pid"</span><span class="p">)</span>
+  
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid  -d"</span>
+  
+  <span class="c1"># ...</span>
+<span class="k">end</span>
 
-  <span class="c1"># clean pid files before start if necessary</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
-
-  <span class="c1"># determine the state on startup</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:init</span><span class="p">,</span> <span class="p">{</span> <span class="kp">true</span> <span class="o">=&gt;</span> <span class="ss">:up</span><span class="p">,</span> <span class="kp">false</span> <span class="o">=&gt;</span> <span class="ss">:start</span> <span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-
-  <span class="c1"># determine when process has finished starting</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
-    <span class="k">end</span>
-
-    <span class="c1"># failsafe</span>
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:tries</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:start</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-
-  <span class="c1"># start if process is not running</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="c1"># restart if memory or cpu is too high</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:restart</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">20</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">megabytes</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
-    <span class="k">end</span>
-
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">10</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">percent</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-
-  <span class="c1"># lifecycle</span>
-  <span class="n">w</span><span class="o">.</span><span class="n">lifecycle</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:flapping</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">to_state</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">within</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">minute</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:unmonitored</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">retry_in</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">minutes</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">retry_times</span> <span class="o">=</span> <span class="mi">5</span>
-      <span class="n">c</span><span class="o">.</span><span class="n">retry_within</span> <span class="o">=</span> <span class="mi">2</span><span class="o">.</span><span class="n">hours</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+<span class="c1"># Watcher that does not auto-daemonize</span>
+<span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'worker'</span>
+  <span class="c1"># w.pid_file = is not set</span>
+  
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"rake resque:worker"</span>
+  
+  <span class="c1"># ...</span>
 <span class="k">end</span>
 </pre>
 </div>
 </div>
-<div class="paragraph"><p>A bit longer, I know, but very straighforward once you understand how the
-<tt>transition</tt> calls work. The <tt>name</tt>, <tt>interval</tt>, <tt>start</tt>, <tt>stop</tt>, and
-<tt>pid_file</tt> attributes should be familiar. We also specify the <tt>clean_pid_file</tt>
-behavior.</p></div>
-<div class="paragraph"><p>Before jumping into the code, it's important to understand the different
-states that a Watch can have, and how that state changes over time. At any
-given time, a Watch will be in one of the <tt>init</tt>, <tt>up</tt>, <tt>start</tt>, or <tt>restart</tt>
-states. As different conditions are satisfied, the Watch will progress from
-state to state, enabling and disabling conditions along the way.</p></div>
-<div class="paragraph"><p>When god first starts, each Watch is placed in the <tt>init</tt> state.</p></div>
-<div class="paragraph"><p>You'll use the <tt>transition</tt> method to tell god how to transition between
-states. It takes two arguments. The first argument may be either a symbol or
-an array of symbols representing the state or states during which the
-specified conditions should be enabled. The second argument may be either a
-symbol or a hash. If it is a symbol, then that is the state that will be
-transitioned to if any of the conditions return <tt>true</tt>. If it is a hash, then
-that hash must have both <tt>true</tt> and <tt>false</tt> keys, each of which point to a
-symbol that represents the state to transition to given the corresponding
-return from the single condition that must be specified.</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine the state on startup</span>
-<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:init</span><span class="p">,</span> <span class="p">{</span> <span class="kp">true</span> <span class="o">=&gt;</span> <span class="ss">:up</span><span class="p">,</span> <span class="kp">false</span> <span class="o">=&gt;</span> <span class="ss">:start</span> <span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+<div class="paragraph"><p>If you'd rather have the PID file stored in a different location, you can
+set it at the top of your config:</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">pid_file_directory</span> <span class="o">=</span> <span class="s1">'/home/tom/pids'</span>
 </pre>
 </div>
 </div>
-<div class="paragraph"><p>The first transition block tells god what to do when the Watch is in the
-<tt>init</tt> state (first argument). This is where I tell god how to determine if my
-task is already running. Since I'm monitoring a process, I can use the
-<tt>process_running</tt> condition to determine whether the process is running. If
-the process is running, it will return true, otherwise it will return false.
-Since I sent a hash as the second argument to <tt>transition</tt>, the return from
-<tt>process_running</tt> will determine which of the two states will be transitioned
-to. If the process is running, the return is true and god will put the Watch
-into the <tt>up</tt> state. If the process is not running, the return is false and
-god will put the Watch into the <tt>start</tt> state.</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine when process has finished starting</span>
-<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
-  <span class="k">end</span>
-
-  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
-<span class="k">end</span>
-</pre>
-</div>
-</div>
-<div class="paragraph"><p>If god has determined that my process isn't running, the Watch will be put
-into the <tt>start</tt> state. Upon entering this state, the <tt>start</tt> command that I
-specified on the Watch will be called. In addition, the above transition
-specifies a condition that should be enabled when in either the <tt>start</tt> or
-<tt>restart</tt> states. The condition is another <tt>process_running</tt>, however this
-time I'm only interested in moving to another state once it returns <tt>true</tt>. A
-<tt>true</tt> return from this condition means that the process is running and it's
-ok to transition to the <tt>up</tt> state (second argument to <tt>transition</tt>).</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine when process has finished starting</span>
-<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
-
-  <span class="c1"># failsafe</span>
-  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:tries</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:start</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre>
-</div>
-</div>
-<div class="paragraph"><p>The other half of this transition uses the <tt>tries</tt> condition to ensure that
-god doesn't get stuck in this state. It's possible that the process could go
-down while the transition is being made, in which case god would end up
-polling forever to see if the process is up. Here I've specified that if this
-condition is called five times, god should override the normal transition
-destination and move to the <tt>start</tt> state instead. If you specify a
-<tt>transition</tt> attribute on any condition, that state will be transferred to
-instead of the normal transfer destination.</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="c1"># start if process is not running</span>
-<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span>
-<span class="k">end</span>
-</pre>
-</div>
-</div>
-<div class="paragraph"><p>This is where the event based system comes into play. Once in the <tt>up</tt> state,
-I want to be notified when my process exits. The <tt>process_exits</tt> condition
-registers a callback that will trigger a transition change when it is fired
-off. Event conditions (like this one) cannot be used in transitions that have
-a hash for the second argument (as they do not return true or false).</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="c1"># restart if memory or cpu is too high</span>
-<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:restart</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
-  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">20</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">megabytes</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
-  <span class="k">end</span>
-
-  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">percent</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre>
-</div>
-</div>
-<div class="paragraph"><p>Notice that I can have multiple transitions with the same start state. In this
-case, I want to have the <tt>memory_usage</tt> and <tt>cpu_usage</tt> poll conditions going
-at the same time that I listen for the process exit event. In the case of
-runaway CPU or memory usage, however, I want to transition to the <tt>restart</tt>
-state. When a Watch enters the <tt>restart</tt> state it will either call the
-<tt>restart</tt> command that you specified, or if none has been set, call the <tt>stop</tt>
-and then <tt>start</tt> commands.</p></div>
+<div class="paragraph"><p>The directory you specify must be writable by god.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -968,25 +802,6 @@ exit by setting the <tt>stop_signal</tt> and <tt>stop_timeout</tt> attributes on
 </pre>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="wiki-_watching_non_daemon_processes">Watching Non-Daemon Processes</h2>
-<div class="sectionbody">
-<div class="paragraph"><p>Need to watch a script that doesn't have built in daemonization? No problem!
-God will daemonize and keep track of your process for you. If you don't
-specify a <tt>pid_file</tt> attribute for a watch, it will be auto-daemonized and a
-PID file will be stored for it in <tt>/var/run/god</tt>. If you'd rather have the PID
-file stored in a different location, you can set it at the top of your config:</p></div>
-<div class="paragraph"><div class="highlight"><pre><span class="no">God</span><span class="o">.</span><span class="n">pid_file_directory</span> <span class="o">=</span> <span class="s1">'/home/tom/pids'</span>
-
-<span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
-  <span class="c1"># watch with no pid_file attribute set</span>
-<span class="k">end</span>
-</pre>
-</div>
-</div>
-<div class="paragraph"><p>The directory you specify must be writable by god.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -1345,6 +1160,209 @@ format - The Symbol format [ :form | :json ] (default: :form).
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="wiki-_advanced_configuration_with_transitions_and_events">Advanced Configuration with Transitions and Events</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>So far you've been introduced to a simple poll-based config file and seen how
+to run it. Poll-based monitoring works great for simple things, but falls
+short for highly critical tasks. God has native support for kqueue/netlink
+events on BSD/Darwin/Linux systems. For instance, instead of using the
+<tt>process_running</tt> condition to poll for the status of your process, you can
+use the <tt>process_exits</tt> condition that will be notified <strong>immediately</strong> upon the
+exit of your process. This means less load on your system and shorter downtime
+after a crash.</p></div>
+<div class="paragraph"><p>While the configuration syntax you saw in the previous example is very simple,
+it lacks the power that we need to deal with event based monitoring. In fact,
+the <tt>start_if</tt> and <tt>restart_if</tt> methods are really just calling out to a
+lower-level API. If we use the low-level API directly, we can harness the full
+power of god's event based lifecycle system. Let's look at another example
+config file.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="no">RAILS_ROOT</span> <span class="o">=</span> <span class="s2">"/Users/tom/dev/gravatar2"</span>
+
+<span class="no">God</span><span class="o">.</span><span class="n">watch</span> <span class="k">do</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"local-3000"</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="s2">"mongrel_rails start -c </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2"> -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid -p 3000 -d"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="s2">"mongrel_rails stop -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid"</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="s2">"mongrel_rails restart -P </span><span class="si">#{</span><span class="no">RAILS_ROOT</span><span class="si">}</span><span class="s2">/log/mongrel.pid"</span>
+
+  <span class="n">w</span><span class="o">.</span><span class="n">pid_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RAILS_ROOT</span><span class="p">,</span> <span class="s2">"log/mongrel.pid"</span><span class="p">)</span>
+
+  <span class="c1"># clean pid files before start if necessary</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">behavior</span><span class="p">(</span><span class="ss">:clean_pid_file</span><span class="p">)</span>
+
+  <span class="c1"># determine the state on startup</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:init</span><span class="p">,</span> <span class="p">{</span> <span class="kp">true</span> <span class="o">=&gt;</span> <span class="ss">:up</span><span class="p">,</span> <span class="kp">false</span> <span class="o">=&gt;</span> <span class="ss">:start</span> <span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># determine when process has finished starting</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+    <span class="k">end</span>
+
+    <span class="c1"># failsafe</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:tries</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:start</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># start if process is not running</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># restart if memory or cpu is too high</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:restart</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">20</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">megabytes</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+    <span class="k">end</span>
+
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">10</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">percent</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># lifecycle</span>
+  <span class="n">w</span><span class="o">.</span><span class="n">lifecycle</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+    <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:flapping</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">to_state</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">within</span> <span class="o">=</span> <span class="mi">5</span><span class="o">.</span><span class="n">minute</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:unmonitored</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_in</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">minutes</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_times</span> <span class="o">=</span> <span class="mi">5</span>
+      <span class="n">c</span><span class="o">.</span><span class="n">retry_within</span> <span class="o">=</span> <span class="mi">2</span><span class="o">.</span><span class="n">hours</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>A bit longer, I know, but very straighforward once you understand how the
+<tt>transition</tt> calls work. The <tt>name</tt>, <tt>interval</tt>, <tt>start</tt>, <tt>stop</tt>, and
+<tt>pid_file</tt> attributes should be familiar. We also specify the <tt>clean_pid_file</tt>
+behavior.</p></div>
+<div class="paragraph"><p>Before jumping into the code, it's important to understand the different
+states that a Watch can have, and how that state changes over time. At any
+given time, a Watch will be in one of the <tt>init</tt>, <tt>up</tt>, <tt>start</tt>, or <tt>restart</tt>
+states. As different conditions are satisfied, the Watch will progress from
+state to state, enabling and disabling conditions along the way.</p></div>
+<div class="paragraph"><p>When god first starts, each Watch is placed in the <tt>init</tt> state.</p></div>
+<div class="paragraph"><p>You'll use the <tt>transition</tt> method to tell god how to transition between
+states. It takes two arguments. The first argument may be either a symbol or
+an array of symbols representing the state or states during which the
+specified conditions should be enabled. The second argument may be either a
+symbol or a hash. If it is a symbol, then that is the state that will be
+transitioned to if any of the conditions return <tt>true</tt>. If it is a hash, then
+that hash must have both <tt>true</tt> and <tt>false</tt> keys, each of which point to a
+symbol that represents the state to transition to given the corresponding
+return from the single condition that must be specified.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine the state on startup</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:init</span><span class="p">,</span> <span class="p">{</span> <span class="kp">true</span> <span class="o">=&gt;</span> <span class="ss">:up</span><span class="p">,</span> <span class="kp">false</span> <span class="o">=&gt;</span> <span class="ss">:start</span> <span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The first transition block tells god what to do when the Watch is in the
+<tt>init</tt> state (first argument). This is where I tell god how to determine if my
+task is already running. Since I'm monitoring a process, I can use the
+<tt>process_running</tt> condition to determine whether the process is running. If
+the process is running, it will return true, otherwise it will return false.
+Since I sent a hash as the second argument to <tt>transition</tt>, the return from
+<tt>process_running</tt> will determine which of the two states will be transitioned
+to. If the process is running, the return is true and god will put the Watch
+into the <tt>up</tt> state. If the process is not running, the return is false and
+god will put the Watch into the <tt>start</tt> state.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine when process has finished starting</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_running</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>If god has determined that my process isn't running, the Watch will be put
+into the <tt>start</tt> state. Upon entering this state, the <tt>start</tt> command that I
+specified on the Watch will be called. In addition, the above transition
+specifies a condition that should be enabled when in either the <tt>start</tt> or
+<tt>restart</tt> states. The condition is another <tt>process_running</tt>, however this
+time I'm only interested in moving to another state once it returns <tt>true</tt>. A
+<tt>true</tt> return from this condition means that the process is running and it's
+ok to transition to the <tt>up</tt> state (second argument to <tt>transition</tt>).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># determine when process has finished starting</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="o">[</span><span class="ss">:start</span><span class="p">,</span> <span class="ss">:restart</span><span class="o">]</span><span class="p">,</span> <span class="ss">:up</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+
+  <span class="c1"># failsafe</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:tries</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="ss">:start</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>The other half of this transition uses the <tt>tries</tt> condition to ensure that
+god doesn't get stuck in this state. It's possible that the process could go
+down while the transition is being made, in which case god would end up
+polling forever to see if the process is up. Here I've specified that if this
+condition is called five times, god should override the normal transition
+destination and move to the <tt>start</tt> state instead. If you specify a
+<tt>transition</tt> attribute on any condition, that state will be transferred to
+instead of the normal transfer destination.</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># start if process is not running</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:start</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:process_exits</span><span class="p">)</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>This is where the event based system comes into play. Once in the <tt>up</tt> state,
+I want to be notified when my process exits. The <tt>process_exits</tt> condition
+registers a callback that will trigger a transition change when it is fired
+off. Event conditions (like this one) cannot be used in transitions that have
+a hash for the second argument (as they do not return true or false).</p></div>
+<div class="paragraph"><div class="highlight"><pre><span class="c1"># restart if memory or cpu is too high</span>
+<span class="n">w</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:restart</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:memory_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">50</span><span class="o">.</span><span class="n">megabytes</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+  <span class="k">end</span>
+
+  <span class="n">on</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span><span class="ss">:cpu_usage</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">above</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">percent</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="o">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+</div>
+<div class="paragraph"><p>Notice that I can have multiple transitions with the same start state. In this
+case, I want to have the <tt>memory_usage</tt> and <tt>cpu_usage</tt> poll conditions going
+at the same time that I listen for the process exit event. In the case of
+runaway CPU or memory usage, however, I want to transition to the <tt>restart</tt>
+state. When a Watch enters the <tt>restart</tt> state it will either call the
+<tt>restart</tt> command that you specified, or if none has been set, call the <tt>stop</tt>
+and then <tt>start</tt> commands.</p></div>
 </div>
 </div>
 <div class="sect1">
