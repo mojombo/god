@@ -1,40 +1,32 @@
 module God
   module Conditions
-
-    # Condition Symbol :process_running
-    # Type: Poll
-    #
     # Trigger when a process is running or not running depending on attributes.
-    #
-    # Paramaters
-    #   Required
-    #     +pid_file+ is the pid file of the process in question. Automatically
-    #                populated for Watches.
-    #     +running" specifies whether you want to trigger if the process is
-    #               running (true) or whether it is not running (false)
     #
     # Examples
     #
-    # Trigger if process IS NOT running (from a Watch):
-    #
+    #   # Trigger if process IS NOT running.
     #   on.condition(:process_running) do |c|
     #     c.running = false
     #   end
     #
-    # Trigger if process IS running (from a Watch):
-    #
+    #   # Trigger if process IS running.
     #   on.condition(:process_running) do |c|
     #     c.running = true
     #   end
     #
-    # Non-Watch Tasks must specify a PID file:
-    #
+    #   # Non-Watch Tasks must specify a PID file.
     #   on.condition(:process_running) do |c|
     #     c.running = false
     #     c.pid_file = "/var/run/mongrel.3000.pid"
     #   end
     class ProcessRunning < PollCondition
-      attr_accessor :running, :pid_file
+      # Public: The Boolean specifying whether you want to trigger if the
+      # process is running (true) or if it is not running (false).
+      attr_accessor :running
+
+      # Public: The String PID file location of the process in question.
+      # Automatically populated for Watches.
+      attr_accessor :pid_file
 
       def pid
         self.pid_file ? File.read(self.pid_file).strip.to_i : self.watch.pid
@@ -69,6 +61,5 @@ module God
         end
       end
     end
-
   end
 end

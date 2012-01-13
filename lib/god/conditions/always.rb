@@ -1,7 +1,21 @@
 module God
   module Conditions
-
+    # Always trigger or never trigger.
+    #
+    # Examples
+    #
+    #   # Always trigger.
+    #   on.condition(:always) do |c|
+    #     c.what = true
+    #   end
+    #
+    #   # Never trigger.
+    #   on.condition(:always) do |c|
+    #     c.what = false
+    #   end
     class Always < PollCondition
+      # The Boolean determining whether this condition will always trigger
+      # (true) or never trigger (false).
       attr_accessor :what
 
       def initialize
@@ -18,6 +32,5 @@ module God
         @what
       end
     end
-
   end
 end
