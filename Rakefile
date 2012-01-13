@@ -125,7 +125,7 @@ task :site_release do
 
   # Commit the changes
   sha = `git log`.match(/[a-z0-9]{40}/)[0]
-  sh "cd gh-pages && git add . && git commit -m 'Updating to #{sha}.'"
+  sh "cd gh-pages && git add . && git commit -m 'Updating to #{sha}.' && git push"
   puts 'Done.'
 end
 #############################################################################
