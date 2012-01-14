@@ -80,17 +80,7 @@ end
 #
 #############################################################################
 
-desc "Upload site to Rubyforge"
-task :site_old do
-  sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god"
-end
-
-desc "Upload site to Rubyforge"
-task :site_edge do
-  sh "scp -r site/* mojombo@god.rubyforge.org:/var/www/gforge-projects/god/edge"
-end
-
-desc "Generate the new-style site"
+desc "Generate and view the site locally"
 task :site do
   # Generate the dynamic parts of the site.
   puts "Generating dynamic..."
@@ -107,7 +97,7 @@ task :site do
   sh "open site/index.html"
 end
 
-desc "Generate the new-style site"
+desc "Commit the local site to the gh-pages branch and deploy"
 task :site_release do
   # Ensure the gh-pages dir exists so we can generate into it.
   puts "Checking for gh-pages dir..."
@@ -128,6 +118,7 @@ task :site_release do
   sh "cd gh-pages && git add . && git commit -m 'Updating to #{sha}.' && git push"
   puts 'Done.'
 end
+
 #############################################################################
 #
 # Packaging tasks
