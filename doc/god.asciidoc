@@ -27,6 +27,13 @@ The following systems have been tested. Help us test it on others!
 Quick Start
 -----------
 
+Note: this quick start guide requires god 0.12.0 or above. You can check your
+version by running:
+
+```terminal
+$ god --version
+```
+
 The easiest way to understand how god will make your life better is by trying
 out a simple example. To get you up and running quickly, I'll show you how to
 keep a trivial server running.
