@@ -115,6 +115,14 @@ Category: #{category}
       def notify_smtp(mail)
         smtp = Net::SMTP.new(arg(:server_host), arg(:server_port))
         
+        args = []
+        if arg(:server_auth)
+          args << arg(:server_domain)
+          args << arg(:server_user)
+          args << arg(:server_password)
+          args << arg(:server_auth)
+        end
+        
         if arg(:enable_starttls_auto)
           if smtp.respond_to?(:enable_starttls_auto) 
             unless arg(:openssl_verify_mode)
@@ -127,7 +135,7 @@ Category: #{category}
           end
         end
         
-        smtp.start(arg(:server_domain), arg(:server_user), arg(:server_password), arg(:server_auth)) do |smtp|
+        smtp.start(*args) do |smtp|
           smtp.send_message(mail, arg(:from_email), [arg(:to_email)] )
         end
       end
