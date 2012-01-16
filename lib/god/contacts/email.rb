@@ -75,6 +75,7 @@ Category: #{category}
 
       attr_accessor :to_email, :to_name, :from_email, :from_name,
                     :delivery_method, :server_host, :server_port,
+                    :enable_starttls_auto, :openssl_verify_mode,
                     :server_auth, :server_domain, :server_user,
                     :server_password, :sendmail_path, :sendmail_args
 
