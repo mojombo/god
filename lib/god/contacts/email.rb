@@ -91,6 +91,9 @@ Category: #{category}
             valid &= complain("Attribute 'server_user' must be specified", self) unless arg(:server_user)
             valid &= complain("Attribute 'server_password' must be specified", self) unless arg(:server_password)
           end
+          if arg(:enable_starttls_auto)
+            valid &= complain("Attribute 'openssl_verify_mode' must be one of [ nil, OpenSSL::SSL::VERIFY_NONE, OpenSSL::SSL::VERIFY_PEER, OpenSSL::SSL::VERIFY_CLIENT_ONCE, OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT ]", self) unless [ nil, OpenSSL::SSL::VERIFY_NONE, OpenSSL::SSL::VERIFY_PEER, OpenSSL::SSL::VERIFY_CLIENT_ONCE, OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT ].include?(arg(:openssl_verify_mode))
+          end
         end
         valid
       end
