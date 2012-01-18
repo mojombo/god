@@ -82,6 +82,7 @@ Gem::Specification.new do |s|
     lib/god/contacts/jabber.rb
     lib/god/contacts/prowl.rb
     lib/god/contacts/scout.rb
+    lib/god/contacts/twilio.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
     lib/god/dependency_graph.rb
@@ -163,6 +164,7 @@ Gem::Specification.new do |s|
     test/test_task.rb
     test/test_timeline.rb
     test/test_trigger.rb
+    test/test_twilio.rb
     test/test_watch.rb
     test/test_webhook.rb
   ]
