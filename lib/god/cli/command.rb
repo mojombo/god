@@ -60,7 +60,7 @@ module God
         # output response
         unless affected.empty?
           puts 'The following tasks were affected:'
-          names.each do |w|
+          affected.each do |w|
             puts '  ' + w
           end
         end
