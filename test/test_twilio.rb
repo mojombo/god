@@ -16,8 +16,8 @@ class TestTwilio < Test::Unit::TestCase
     @twilio.to_number   = '9876543210'
 
     # law of demeter much?
-    resource = mock.expects(:create).with :from => @twilio.from_number, :to => @twilio.to_number, :body => 'msg'
-    client   = mock(:account => mock(:sms => mock(:messages => resource)))
+    resource = mock('resource').tap { |m| m.expects(:create).with :from => @twilio.from_number, :to => @twilio.to_number, :body => 'msg' }
+    client   = mock('client', :account => mock(:sms => mock(:messages => resource)))
 
     ::Twilio::REST::Client.expects(:new).with(@twilio.account_sid, @twilio.auth_token).returns client
 
