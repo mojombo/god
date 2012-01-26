@@ -1056,7 +1056,7 @@ subject  - The String subject of the message (default: "God Notification").
 Prowl
 ~~~~~
 
-Send a notice to Prowl (<a href="http://prowl.weks.net/">http://prowl.weks.net/</a>).
+Send a notice to Prowl (http://prowl.weks.net/).
 
 ```ruby
 God::Contacts::Prowl.defaults do |d|
