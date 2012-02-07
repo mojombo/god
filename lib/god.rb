@@ -47,6 +47,7 @@ require 'god/conditions/http_response_code'
 require 'god/conditions/disk_usage'
 require 'god/conditions/complex'
 require 'god/conditions/file_mtime'
+require 'god/conditions/file_touched'
 require 'god/conditions/socket_responding'
 
 require 'god/socket'
