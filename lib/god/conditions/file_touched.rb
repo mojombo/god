@@ -14,8 +14,8 @@ module God
     #
     # Trigger if the process is using more than 25 percent of the cpu (from a Watch):
     #
-    #   on.condition(:cpu_usage) do |c|
-    #     c.above = 25.percent
+    #   on.condition(:file_touched) do |c|
+    #     c.path = 'tmp/restart.txt'
     #   end
     #
     class FileTouched < PollCondition
