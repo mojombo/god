@@ -12,7 +12,7 @@ module God
     #
     # Examples
     #
-    # Trigger if the process is using more than 25 percent of the cpu (from a Watch):
+    # Trigger if 'tmp/restart.txt' file is touched (from a Watch):
     #
     #   on.condition(:file_touched) do |c|
     #     c.path = 'tmp/restart.txt'
