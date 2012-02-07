@@ -1,12 +1,29 @@
 module God
   module Conditions
+  
+    # Condition Symbol :file_touched
+    # Type: Poll
+    #
+    # Trigger when a specified file is touched.
+    #
+    # Paramaters
+    #   Required
+    #     +path+ is the path to the file to watch.
+    #
+    # Examples
+    #
+    # Trigger if the process is using more than 25 percent of the cpu (from a Watch):
+    #
+    #   on.condition(:cpu_usage) do |c|
+    #     c.above = 25.percent
+    #   end
+    #
     class FileTouched < PollCondition
       attr_accessor :path
 
       def initialize
         super
         self.path = nil
-        self.max_age = nil
       end
 
       def valid?
@@ -16,7 +33,11 @@ module God
       end
 
       def test
-        (Time.now - File.mtime(self.path)) <= self.interval
+        if File.exists?(self.path)
+          (Time.now - File.mtime(self.path)) <= self.interval
+        else
+          false
+        end
       end
     end
   end
