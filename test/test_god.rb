@@ -7,6 +7,7 @@ class TestGod < Test::Unit::TestCase
     God.stubs(:validater).returns(true)
     God.reset
     God.pid_file_directory = '/var/run/god'
+    God.socket_file_directory = '/var/run/god'
   end
 
   def teardown
@@ -41,6 +42,14 @@ class TestGod < Test::Unit::TestCase
       God.pid_file_directory = 'foo'
     end
   end
+  
+  def test_socket_file_directory_should_abort_if_called_after_watch
+    God.watch { |w| w.name = 'ayo'; w.start = 'yayo' }
+  
+    assert_abort do
+      God.socket_file_directory = 'yayo'
+    end
+  end
 
   # pid_file_directory
 
@@ -53,6 +62,19 @@ class TestGod < Test::Unit::TestCase
     God.pid_file_directory = '/foo'
     God.internal_init
     assert_equal '/foo', God.pid_file_directory
+  end
+  
+  # socket_file_directory
+
+  def test_socket_file_directory_should_return_default_if_not_set_explicitly
+    God.internal_init
+    assert_equal '/var/run/god', God.socket_file_directory
+  end
+  
+  def test_socket_file_directory_equals_should_set
+    God.socket_file_directory = '/foo'
+    God.internal_init
+    assert_equal '/foo', God.socket_file_directory
   end
 
   # watch

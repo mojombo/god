@@ -81,6 +81,7 @@ module God
     self.host = nil
     self.port = nil
     self.pid_file_directory = nil
+    self.socket_file_directory = nil
     self.registry.reset
   end
 end
