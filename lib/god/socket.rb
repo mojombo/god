@@ -11,7 +11,7 @@ module God
     #
     # Returns String (file location)
     def self.socket_file(port)
-      "/tmp/god.#{port}.sock"
+      "#{God.socket_file_directory}/god.#{port}.sock"
     end
 
     # The address of the socket for a given port

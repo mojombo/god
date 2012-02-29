@@ -161,6 +161,11 @@ module God
   # permissions will be used.
   PID_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/pids']
 
+  # Array of directory paths to be used for the socket file. 
+  # This list will be searched in order and the first one that has write 
+  # permission will be used.
+  SOCKET_FILE_DIRECTORY_DEFAULTS = ['/var/run/god', '~/.god/sockets']
+  
   # The default Integer port number for the DRb communcations channel.
   DRB_PORT_DEFAULT = 17165
 
@@ -188,6 +193,7 @@ module God
                        :allow,
                        :log_buffer_size,
                        :pid_file_directory,
+                       :socket_file_directory,
                        :log_file,
                        :log_level,
                        :use_events,
@@ -216,6 +222,7 @@ module God
   self.allow = nil
   self.log_buffer_size = nil
   self.pid_file_directory = nil
+  self.socket_file_directory = nil
   self.log_level = nil
   self.terminate_timeout = nil
   self.socket_user = nil
@@ -629,51 +636,64 @@ module God
       Kernel.load f
     end
   end
+  
+  # Setup pid and socket file directories, and log system.
+  #
+  # Returns nothing
+  def self.setup
+    self.setup_special_file_directory(PID_FILE_DIRECTORY_DEFAULTS, :pid_file_directory)
+    self.setup_special_file_directory(SOCKET_FILE_DIRECTORY_DEFAULTS, :socket_file_directory)
+    
+    if God::Logger.syslog
+      LOG.info("Syslog enabled.") if self.log_level
+    else
+      LOG.info("Syslog disabled.") if self.log_level
+    end
+  end
 
-  # Setup pid file directory and log system.
+  # Setup special file directory (pid and socket at this point)
+  # Requires an array of directories to try, and a symbol for the 
+  # corresponding attribute on this class object.
   #
   # Returns nothing.
-  def self.setup
-    if self.pid_file_directory
-      # Pid file dir was specified, ensure it is created and writable.
-      unless File.exist?(self.pid_file_directory)
+  def self.setup_special_file_directory(default_directories, special_file_directory_attribute)
+    special_file_directory = self.send(special_file_directory_attribute)
+    nice_directory_text = special_file_directory_attribute.to_s.gsub("_"," ")
+    
+    if special_file_directory
+      # Special file dir was specified, ensure it is created and writable.
+      unless File.exist?(special_file_directory)
         begin
-          FileUtils.mkdir_p(self.pid_file_directory)
+          FileUtils.mkdir_p(special_file_directory)
         rescue Errno::EACCES => e
-          abort "Failed to create pid file directory: #{e.message}"
+          abort "Failed to create #{nice_directory_text}: #{e.message}"
         end
       end
 
-      unless File.writable?(self.pid_file_directory)
-        abort "The pid file directory (#{self.pid_file_directory}) is not writable by #{Etc.getlogin}"
+      unless File.writable?(special_file_directory)
+        abort "The pid file directory (#{special_file_directory}) is not writable by #{Etc.getlogin}"
       end
     else
-      # No pid file dir specified, try defaults.
-      PID_FILE_DIRECTORY_DEFAULTS.each do |idir|
+      # No special file dir specified, try defaults.
+      default_directories.each do |idir|
         dir = File.expand_path(idir)
         begin
           FileUtils.mkdir_p(dir)
           if File.writable?(dir)
-            self.pid_file_directory = dir
+            self.send("#{special_file_directory_attribute}=".to_sym,dir)
             break
           end
         rescue Errno::EACCES => e
         end
       end
 
-      unless self.pid_file_directory
-        dirs = PID_FILE_DIRECTORY_DEFAULTS.map { |x| File.expand_path(x) }
-        abort "No pid file directory exists, could be created, or is writable at any of #{dirs.join(', ')}"
+      unless self.send(special_file_directory_attribute)
+        dirs = default_directories.map { |x| File.expand_path(x) }
+        abort "No #{nice_directory_text} exists, could be created, or is writable at any of #{dirs.join(', ')}"
       end
     end
-
-    if God::Logger.syslog
-      LOG.info("Syslog enabled.")
-    else
-      LOG.info("Syslog disabled.")
-    end
-
-    applog(nil, :info, "Using pid file directory: #{self.pid_file_directory}")
+    
+    applog(nil, :info, "Using #{nice_directory_text}: #{self.send(special_file_directory_attribute)}") if self.log_level
   end
 
   # Initialize and startup the machinery that makes god work.
