@@ -1,4 +1,8 @@
-$:.unshift File.dirname(__FILE__)     # For use/testing when no gem is installed
+# Bail out before loading anything unless this flag is set.
+#
+# We are doing this to guard against bundler autoloading because there is
+# no value in loading god in most processes.
+if $should_really_load_god
 
 # core
 require 'stringio'
@@ -726,7 +730,7 @@ module God
   # private
 
   # Match a shortened pattern against a list of String candidates.
-  # The pattern is expanded into a regular expression by 
+  # The pattern is expanded into a regular expression by
   # inserting .* between each character.
   #
   # pattern - The String containing the abbreviation.
@@ -755,4 +759,6 @@ end
 # Returns nothing.
 at_exit do
   God.at_exit if $run
+end
+
 end

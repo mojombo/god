@@ -4,7 +4,6 @@ STDOUT.sync = true
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
-require 'rubygems'
 require 'optparse'
 require 'drb'
 require 'yaml'
@@ -104,6 +103,9 @@ begin
   if options[:log_level] && ![:debug, :info, :warn, :error, :fatal].include?(options[:log_level])
     abort("Invalid log level '#{options[:log_level]}'")
   end
+
+  # Use this flag to actually load all of the god infrastructure
+  $should_really_load_god = true
 
   # dispatch
   if !options[:config] && options[:version]
