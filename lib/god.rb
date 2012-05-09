@@ -2,7 +2,7 @@
 #
 # We are doing this to guard against bundler autoloading because there is
 # no value in loading god in most processes.
-if $should_really_load_god
+if $load_god
 
 # core
 require 'stringio'

@@ -1,7 +1,7 @@
 $:.unshift File.expand_path('../../lib', __FILE__) # For use/testing when no gem is installed
 
 # Use this flag to actually load all of the god infrastructure
-$should_really_load_god = true
+$load_god = true
 
 require File.join(File.dirname(__FILE__), *%w[.. lib god sys_logger])
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
