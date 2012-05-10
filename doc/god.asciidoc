@@ -1012,7 +1012,8 @@ delivery_method - The Symbol delivery method. [ :smtp | :sendmail ]
 === SMTP Options (when delivery_method = :smtp) ===
 server_host     - The String hostname of the SMTP server (default: localhost).
 server_port     - The Integer port of the SMTP server (default: 25).
-server_auth     - The Boolean of whether or not to use authentication
+server_auth     - A Boolean or Symbol, false if no authentication else a symbol
+                  for the type of authentication [false | :plain | :login | :cram_md5]
                   (default: false).
 
 === SMTP Auth Options (when server_auth = true) ===
