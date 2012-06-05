@@ -1093,6 +1093,28 @@ plugin_id  - The String plugin id.
 
 ```
 
+Twilio
+~~~~~~~~
+
+Send a notice via SMS to a Phone Number using Twilio (http://twilio.com/).
+
+```ruby
+God::Contacts::Twilio.defaults do |d|
+  ...
+end
+
+God.contact(:twilio) do |c|
+  ...
+end
+```
+
+```
+account_sid    - The String Account Sid used for authentication.
+auth_token     - The String Auth Token used for authentication.
+from_number    - The String 10-digit Twilio phone number that you are sending the SMS from.
+to_number      - The String 10-digit external phone number that you are sending the SMS to.
+```
+
 Twitter
 ~~~~~~~
 

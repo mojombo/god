@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('daemons', '~> 1.1')
   s.add_development_dependency('mocha', '~> 0.10')
   s.add_development_dependency('gollum', '~> 1.3.1')
+  s.add_development_dependency('twilio-ruby', '~> 3.5.0')
 
   # = MANIFEST =
   s.files = %w[
@@ -83,6 +84,7 @@ Gem::Specification.new do |s|
     lib/god/contacts/jabber.rb
     lib/god/contacts/prowl.rb
     lib/god/contacts/scout.rb
+    lib/god/contacts/twilio.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
     lib/god/driver.rb
@@ -163,6 +165,7 @@ Gem::Specification.new do |s|
     test/test_task.rb
     test/test_timeline.rb
     test/test_trigger.rb
+    test/test_twilio.rb
     test/test_watch.rb
     test/test_webhook.rb
   ]

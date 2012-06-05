@@ -84,6 +84,7 @@ load_contact(:email)
 load_contact(:jabber)
 load_contact(:prowl)
 load_contact(:scout)
+load_contact(:twilio)
 load_contact(:twitter)
 load_contact(:webhook)
 
