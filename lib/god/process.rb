@@ -301,7 +301,7 @@ module God
         File.umask self.umask if self.umask
         uid_num = Etc.getpwnam(self.uid).uid if self.uid
         gid_num = Etc.getgrnam(self.gid).gid if self.gid
-        gids_num = self.gids.map{|g| Etc.getgrnam(g).gid} if self.gids
+        gids_num = (self.gids || []).map{|g| Etc.getgrnam(g).gid}
 
         ::Dir.chroot(self.chroot) if self.chroot
         ::Process.setsid
