@@ -46,7 +46,6 @@ module God
         active = pid && System::Process.new(pid).exists?
 
         if (self.running && active)
-          self.info.concat(["process is running"])
           true
         elsif (!self.running && !active)
           self.info.concat(["process is not running"])
@@ -54,8 +53,6 @@ module God
         else
           if self.running
             self.info.concat(["process is not running"])
-          else
-            self.info.concat(["process is running"])
           end
           false
         end
