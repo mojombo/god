@@ -70,7 +70,6 @@ module God
           self.info = "cpu out of bounds #{history}"
           return true
         else
-          self.info = "cpu within bounds #{history}"
           return false
         end
       end

@@ -72,7 +72,6 @@ module God
           self.info = "memory out of bounds #{history}"
           return true
         else
-          self.info = "memory within bounds #{history}"
           return false
         end
       end

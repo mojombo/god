@@ -123,7 +123,6 @@ module God
           self.info = "socket out of bounds #{history}"
           return true
         else
-          self.info = "socket within bounds #{history}"
           return false
         end
       end
