@@ -65,6 +65,7 @@ module God
       def test
         process = System::Process.new(self.pid)
         @timeline.push(process.memory)
+        self.info = []
 
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}kb" }.join(", ") + "]"
 
@@ -72,7 +73,6 @@ module God
           self.info = "memory out of bounds #{history}"
           return true
         else
-          self.info = "memory within bounds #{history}"
           return false
         end
       end

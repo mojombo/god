@@ -102,6 +102,7 @@ module God
       end
 
       def test
+        self.info = []
         if self.family == 'tcp'
           begin
             s = TCPSocket.new(self.addr, self.port)
@@ -123,7 +124,6 @@ module God
           self.info = "socket out of bounds #{history}"
           return true
         else
-          self.info = "socket within bounds #{history}"
           return false
         end
       end
