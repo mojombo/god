@@ -102,6 +102,7 @@ module God
       end
 
       def test
+        self.info = []
         if self.family == 'tcp'
           begin
             s = TCPSocket.new(self.addr, self.port)

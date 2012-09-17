@@ -63,6 +63,7 @@ module God
       def test
         process = System::Process.new(self.pid)
         @timeline.push(process.percent_cpu)
+        self.info = []
 
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}%%" }.join(", ") + "]"
 
