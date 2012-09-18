@@ -1,3 +1,7 @@
+== 0.13.1 / 2012-09-18
+  * Minor Changes
+    * Prevent auto-loading from bundler by requiring $load_god to require (#97)
+
 == 0.13.0 / 2012-09-17
   * Minor Changes
     * Reduce verbosity of non-failing conditions (#111)
