@@ -68,6 +68,7 @@ Gem::Specification.new do |s|
     lib/god/conditions/degrading_lambda.rb
     lib/god/conditions/disk_usage.rb
     lib/god/conditions/file_mtime.rb
+    lib/god/conditions/file_touched.rb
     lib/god/conditions/flapping.rb
     lib/god/conditions/http_response_code.rb
     lib/god/conditions/lambda.rb
