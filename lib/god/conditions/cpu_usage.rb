@@ -63,6 +63,7 @@ module God
       def test
         process = System::Process.new(self.pid)
         @timeline.push(process.percent_cpu)
+        self.info = []
 
         history = "[" + @timeline.map { |x| "#{x > self.above ? '*' : ''}#{x}%%" }.join(", ") + "]"
 
@@ -70,7 +71,6 @@ module God
           self.info = "cpu out of bounds #{history}"
           return true
         else
-          self.info = "cpu within bounds #{history}"
           return false
         end
       end
