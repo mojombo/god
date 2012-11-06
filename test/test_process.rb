@@ -72,6 +72,22 @@ class TestProcessChild < Test::Unit::TestCase
     assert !@p.valid?
   end
 
+  def test_valid_should_return_true_if_gids_exists
+    @p.start = 'qux'
+    @p.log = '/tmp/foo.log'
+    @p.gids = %w{wheel root}
+
+    assert @p.valid?
+  end
+
+  def test_valid_should_return_false_if_gids_does_not_exists
+    @p.start = 'qux'
+    @p.log = '/tmp/foo.log'
+    @p.gids = %w{foobarbaz root}
+
+    assert !@p.valid?
+  end
+
   def test_valid_should_return_true_if_dir_exists
     @p.start = 'qux'
     @p.log = '/tmp/foo.log'
