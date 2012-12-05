@@ -32,7 +32,7 @@ module Marshmallow
     def find_room_id_by_name(room)
       url = URI.parse("#{base_url}/rooms.json")
 
-      http = Net::HTTP.new(url.host, url.port)
+      http = Net::HTTP::Proxy(@options[:proxy_addr],@options[:proxy_port]).new(url.host, url.port)
       http.use_ssl = true if @options[:ssl]
 
       req = Net::HTTP::Get.new(url.path)
@@ -55,7 +55,7 @@ module Marshmallow
 
       url = URI.parse("#{base_url}/room/#{room_id}/speak.json")
 
-      http = Net::HTTP.new(url.host, url.port)
+      http = Net::HTTP::Proxy(@options[:proxy_addr],@options[:proxy_port]).new(url.host, url.port)
       http.use_ssl = true if @options[:ssl]
 
       req = Net::HTTP::Post.new(url.path)
@@ -79,7 +79,7 @@ module God
 
     class Campfire < Contact
       class << self
-        attr_accessor :subdomain, :token, :room, :ssl
+        attr_accessor :subdomain, :token, :room, :ssl, :proxy_host, :proxy_port
         attr_accessor :format
       end
 
