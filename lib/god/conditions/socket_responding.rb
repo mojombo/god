@@ -1,4 +1,5 @@
 require 'socket'
+require 'timeout'
 include Socket::Constants
 
 module God
@@ -14,6 +15,9 @@ module God
     #   --one of port or path--
     #   +port+ is the port (required if +family+ is 'tcp')
     #   +path+ is the path (required if +family+ is 'unix')
+    #   +send_data+ send this string upon connecting
+    #   +expect_data+ String/Regexp to which the socket first read line should match
+    #   +expect_timeout+ Time to wait for the response
     #
     # Examples
     #
@@ -48,6 +52,8 @@ module God
 
     class SocketResponding < PollCondition
       attr_accessor :family, :addr, :port, :path, :times
+      attr_accessor :send_data
+      attr_accessor :expect_data, :expect_timeout
 
       def initialize
         super
@@ -59,6 +65,10 @@ module God
         self.path = nil
 
         self.times = [1, 1]
+
+        self.send_data = nil
+        self.expect_data = nil
+        self.expect_timeout = 5
       end
 
       def prepare
@@ -118,6 +128,24 @@ module God
         else
           status = false
         end
+
+        begin
+          timeout(expect_timeout) do
+            s.write(send_data) if send_data
+            if expect_data
+              line = s.readline.chop
+              if expect_data.is_a?(Regexp) && !expect_data.match(line) ||
+                 line != expect_data
+                self.info = "socket expected response does not match"
+                status = true
+              end
+            end
+          end
+        rescue Timeout::Error
+          self.info = "socket expect timeout"
+          status = true
+        end
+
         @timeline.push(status)
         history = "[" + @timeline.map {|t| t ? '*' : ''}.join(',') + "]"
         if @timeline.select { |x| x }.size >= self.times.first
