@@ -292,7 +292,7 @@ module God
 
         ::Dir.chroot(self.chroot) if self.chroot
         ::Process.setsid
-        ::Process.groups = [gid_num] if self.gid
+        ::Process.initgroups(self.uid, gid_num) if self.uid
         ::Process::Sys.setgid(gid_num) if self.gid
         ::Process::Sys.setuid(uid_num) if self.uid
         self.dir ||= '/'
