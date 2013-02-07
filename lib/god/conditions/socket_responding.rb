@@ -126,24 +126,24 @@ module God
           end
           status = s.nil?
         else
-          status = false
-        end
-
-        begin
-          timeout(expect_timeout) do
-            s.write(send_data) if send_data
-            if expect_data
-              line = s.readline.chop
-              if expect_data.is_a?(Regexp) && !expect_data.match(line) ||
-                 line != expect_data
-                self.info = "socket expected response does not match"
-                status = true
+          begin
+            timeout(expect_timeout) do
+              s.write(send_data) if send_data
+              if expect_data
+                line = s.readline.chop
+                if expect_data.is_a?(Regexp) && !expect_data.match(line) ||
+                   line != expect_data
+                  self.info = "socket expected response does not match"
+                  status = true
+                end
               end
             end
+          rescue Timeout::Error
+            self.info = "socket expect timeout"
+            status = true
+          else
+            status = false
           end
-        rescue Timeout::Error
-          self.info = "socket expect timeout"
-          status = true
         end
 
         @timeline.push(status)
