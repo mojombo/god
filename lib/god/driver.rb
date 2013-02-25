@@ -1,7 +1,7 @@
 require 'monitor'
 
-# Ruby 1.9 specific fixes.
-unless RUBY_VERSION < '1.9'
+# Ruby 1.9.1 specific fixes.
+if RUBY_VERSION.between?('1.9', '1.9.1')
   require 'god/compat19'
 end
 
