@@ -1,3 +1,10 @@
+== 0.13.2 / 2013-02-26
+  * Minor Enhancements
+    * Added file_touched condition (#86)
+  * Bug fixes
+    * Ensure Ruby 1.9 fixes only apply to 1.9.0 and 1.9.1 (#125)
+    * Documentation fixes (#109, #84, #92)
+
 == 0.13.1 / 2012-09-18
   * Minor Changes
     * Prevent auto-loading from bundler by requiring $load_god to require (#97)
