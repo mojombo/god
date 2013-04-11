@@ -86,6 +86,7 @@ Gem::Specification.new do |s|
     lib/god/contacts/scout.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
+    lib/god/contacts/irc.rb
     lib/god/driver.rb
     lib/god/errors.rb
     lib/god/event_handler.rb
