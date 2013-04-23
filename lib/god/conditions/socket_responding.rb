@@ -15,6 +15,10 @@ module God
     #   +port+ is the port (required if +family+ is 'tcp')
     #   +path+ is the path (required if +family+ is 'unix')
     #
+    # Optional
+    #   +responding+ is the boolean specifying whether you want to trigger if the socket is responding (true)
+    #                or if it is not responding (false) (default false)
+    #
     # Examples
     #
     # Trigger if the TCP socket on port 80 is not responding or the connection is refused
@@ -28,6 +32,13 @@ module God
     #
     # on.condition(:socket_responding) do |c|
     #   c.socket = 'tcp:80'
+    # end
+    #
+    # Trigger if the socket is responding
+    #
+    # on.condition(:socket_responding) do |c|
+    #   c.socket = 'tcp:80'
+    #   c.responding = true
     # end
     #
     # Trigger if the socket is not responding or the connection is refused 5 times in a row
@@ -44,10 +55,8 @@ module God
     #   c.port = '/tmp/sock'
     # end
     #
-
-
     class SocketResponding < PollCondition
-      attr_accessor :family, :addr, :port, :path, :times
+      attr_accessor :family, :addr, :port, :path, :times, :responding
 
       def initialize
         super
@@ -57,6 +66,7 @@ module God
         # Set these to nil/0 values
         self.port = 0
         self.path = nil
+        self.responding = false
 
         self.times = [1, 1]
       end
@@ -108,13 +118,13 @@ module God
             s = TCPSocket.new(self.addr, self.port)
           rescue SystemCallError
           end
-          status = s.nil?
+          status = self.responding == !s.nil?
         elsif self.family == 'unix'
           begin
             s = UNIXSocket.new(self.path)
           rescue SystemCallError
           end
-          status = s.nil?
+          status = self.responding == !s.nil?
         else
           status = false
         end
