@@ -73,7 +73,7 @@ class TestConditionsSocketResponding < Test::Unit::TestCase
     assert_equal c.port, 0
   end
 
-  # test : listening = false
+  # test : responding = false
 
   def test_test_tcp_should_return_false_if_socket_is_listening
     c = Conditions::SocketResponding.new
@@ -122,7 +122,7 @@ class TestConditionsSocketResponding < Test::Unit::TestCase
     assert_equal true, c.test
   end
 
-  # test listening : true
+  # test : responding = true
 
   def test_test_tcp_should_return_true_if_socket_is_listening_with_responding_true
     c = Conditions::SocketResponding.new
