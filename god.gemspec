@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('daemons', '~> 1.1')
   s.add_development_dependency('mocha', '~> 0.10')
   s.add_development_dependency('gollum', '~> 1.3.1')
+  s.add_development_dependency('airbrake', '~> 3.1.7')
 
   # = MANIFEST =
   s.files = %w[
@@ -137,6 +138,7 @@ Gem::Specification.new do |s|
     test/configs/test.rb
     test/helper.rb
     test/suite.rb
+    test/test_airbrake.rb
     test/test_behavior.rb
     test/test_campfire.rb
     test/test_condition.rb
