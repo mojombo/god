@@ -439,7 +439,7 @@ module God
 
   # Control the lifecycle of the given task(s).
   #
-  # name    - The String name of a task/group.
+  # name    - The String name of a task/group. If empty, invokes command for all tasks.
   # command - The String command to run. Valid commands are:
   #           "start", "monitor", "restart", "stop", "unmonitor", "remove".
   #
