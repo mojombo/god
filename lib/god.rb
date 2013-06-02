@@ -446,7 +446,10 @@ module God
   # Returns an Array of String task names affected by the command.
   def self.control(name, command)
     # Get the list of items.
-    items = Array(self.watches[name] || self.groups[name]).dup
+    items = case name 
+      when "", nil then self.watches.values
+      else Array(self.watches[name] || self.groups[name]).dup
+    end
 
     jobs = []
 
