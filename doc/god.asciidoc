@@ -1188,6 +1188,25 @@ format - The Symbol format [ :form | :json ] (default: :form).
 
 ```
 
+Airbrake
+~~~~~~~
+
+Send a notice to airbrake (http://airbrake.io/).
+
+```ruby
+God::Contacts::Airbrake.defaults do |d|
+  ...
+end
+
+God.contact(:airbrake) do |c|
+  ...
+end
+```
+
+```
+apikey - The String API key.
+```
+
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
