@@ -331,8 +331,15 @@ class TestGod < Test::Unit::TestCase
       w.group = 'bar'
     end
 
+    God.watch do |w|
+      w.name = 'bar1'
+      w.start = 'go'
+      w.group = 'foo'
+    end
+
     God.watches['foo1'].expects(:monitor)
     God.watches['foo2'].expects(:monitor)
+    God.watches['bar1'].expects(:monitor).never
 
     God.control('bar', 'start')
   end
