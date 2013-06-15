@@ -30,7 +30,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency('prowly', '~> 0.3')
   s.add_development_dependency('xmpp4r', '~> 0.5')
   s.add_development_dependency('dike', '~> 0.0.3')
-  s.add_development_dependency('snapshot', '~> 1.0')
   s.add_development_dependency('rcov', '~> 0.9')
   s.add_development_dependency('daemons', '~> 1.1')
   s.add_development_dependency('mocha', '~> 0.10')
