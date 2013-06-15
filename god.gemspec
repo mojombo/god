@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = %w[README.md]
 
   s.add_development_dependency('json', '~> 1.6')
-  s.add_development_dependency('rake', '~> 0.9')
+  s.add_development_dependency('rake')
   s.add_development_dependency('rdoc', '~> 3.10')
   s.add_development_dependency('twitter', '~> 4.0')
   s.add_development_dependency('prowly', '~> 0.3')

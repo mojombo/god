@@ -25,7 +25,7 @@ EOF
 end
 
 begin
-  require 'mocha'
+  require 'mocha/setup'
 rescue LoadError
   unless gems ||= false
     require 'rubygems'
