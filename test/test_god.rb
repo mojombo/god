@@ -331,11 +331,71 @@ class TestGod < Test::Unit::TestCase
       w.group = 'bar'
     end
 
+    God.watch do |w|
+      w.name = 'bar1'
+      w.start = 'go'
+      w.group = 'foo'
+    end
+
     God.watches['foo1'].expects(:monitor)
     God.watches['foo2'].expects(:monitor)
+    God.watches['bar1'].expects(:monitor).never
 
     God.control('bar', 'start')
   end
+
+  def test_control_should_operate_on_all_watches_on_nil
+    God.watch do |w|
+      w.name = 'foo1'
+      w.start = 'go'
+      w.group = 'foo'
+    end
+
+    God.watch do |w|
+      w.name = 'foo2'
+      w.start = 'go'
+      w.group = 'foo'
+    end
+
+    God.watch do |w|
+      w.name = 'bar1'
+      w.start = 'go'
+      w.group = 'bar'
+    end
+
+    God.watches['foo1'].expects(:monitor)
+    God.watches['foo2'].expects(:monitor)
+    God.watches['bar1'].expects(:monitor)
+
+    God.control(nil, 'start')
+  end
+
+  def test_control_should_operate_on_all_watches_on_empty_string
+    God.watch do |w|
+      w.name = 'foo1'
+      w.start = 'go'
+      w.group = 'foo'
+    end
+
+    God.watch do |w|
+      w.name = 'foo2'
+      w.start = 'go'
+      w.group = 'foo'
+    end
+
+    God.watch do |w|
+      w.name = 'bar1'
+      w.start = 'go'
+      w.group = 'bar'
+    end
+
+    God.watches['foo1'].expects(:monitor)
+    God.watches['foo2'].expects(:monitor)
+    God.watches['bar1'].expects(:monitor)
+
+    God.control('', 'start')
+  end
+
 
   # stop_all
 
