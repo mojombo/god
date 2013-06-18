@@ -100,10 +100,10 @@ LOG.instance_variable_set(:@io, StringIO.new('/dev/null'))
 
 module Kernel
   def abort(text)
-    raise SystemExit
+    raise SystemExit, text
   end
   def exit(code)
-    raise SystemExit
+    raise SystemExit, "Exit code: #{code}"
   end
 end
 
