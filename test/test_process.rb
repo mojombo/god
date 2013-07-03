@@ -59,7 +59,7 @@ class TestProcessChild < Test::Unit::TestCase
   def test_valid_should_return_true_if_gid_exists
     @p.start = 'qux'
     @p.log = '/tmp/foo.log'
-    @p.gid = 'wheel'
+    @p.gid = 'mail'
 
     assert @p.valid?
   end
