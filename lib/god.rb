@@ -438,16 +438,23 @@ module God
     end
   end
 
+  def self.watches_by_name(name)
+    case name 
+      when "", nil then self.watches.values.dup
+      else Array(self.watches[name] || self.groups[name]).dup
+    end
+  end
+
   # Control the lifecycle of the given task(s).
   #
-  # name    - The String name of a task/group.
+  # name    - The String name of a task/group. If empty, invokes command for all tasks.
   # command - The String command to run. Valid commands are:
   #           "start", "monitor", "restart", "stop", "unmonitor", "remove".
   #
   # Returns an Array of String task names affected by the command.
   def self.control(name, command)
     # Get the list of items.
-    items = Array(self.watches[name] || self.groups[name]).dup
+    items = self.watches_by_name(name)
 
     jobs = []
 
@@ -528,7 +535,7 @@ module God
   #
   # Returns an Array of String names of the tasks affected.
   def self.signal(name, signal)
-    items = Array(self.watches[name] || self.groups[name]).dup
+    items = watches_by_name(name)
     jobs = []
     items.each { |w| jobs << Thread.new { w.signal(signal) } }
     jobs.each { |j| j.join }
