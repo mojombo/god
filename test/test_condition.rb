@@ -23,6 +23,8 @@ class TestCondition < Test::Unit::TestCase
       God::EventHandler.start
       Condition.generate(:process_exits, nil).class
     end
+  ensure
+    God::EventHandler.stop
   end
 
   def test_generate_should_return_a_good_error_message_for_invalid_types

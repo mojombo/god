@@ -56,7 +56,7 @@ module God
     end
 
     def self.start
-      Thread.new do
+      @@thread = Thread.new do
         loop do
           begin
             @@handler.handle_events
@@ -70,6 +70,10 @@ module God
 
       # do a real test to make sure events are working properly
       @@loaded = self.operational?
+    end
+
+    def self.stop
+      @@thread.kill if @@thread
     end
 
     def self.operational?

@@ -59,7 +59,9 @@ class TestProcessChild < Test::Unit::TestCase
   def test_valid_should_return_true_if_gid_exists
     @p.start = 'qux'
     @p.log = '/tmp/foo.log'
-    @p.gid = 'mail'
+    @p.gid = Etc.getgrgid(::Process.gid).name
+
+    ::Process.stubs(:groups=)
 
     assert @p.valid?
   end
@@ -104,12 +106,16 @@ class TestProcessChild < Test::Unit::TestCase
 
   def test_valid_should_return_true_with_chroot_and_valid_log
     @p.start = 'qux'
-    @p.chroot = '/tmp'
-    @p.log = '/tmp/foo.log'
+    @p.chroot = Dir.pwd
+    @p.log = "#{@p.chroot}/foo.log"
 
-    File.expects(:exist?).with('/tmp').returns(true)
-    File.expects(:exist?).with('/tmp/foo.log').returns(true)
-    File.expects(:exist?).with('/tmp/dev/null').returns(true)
+    File.expects(:exist?).with(@p.chroot).returns(true)
+    File.expects(:exist?).with(@p.log).returns(true)
+    File.expects(:exist?).with("#{@p.chroot}/dev/null").returns(true)
+
+    File.stubs(:writable?).with('/foo.log').returns(true)
+
+    ::Dir.stubs(:chroot)
 
     assert @p.valid?
   end

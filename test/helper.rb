@@ -96,16 +96,24 @@ ensure
   $VERBOSE = old_verbose
 end
 
-LOG.instance_variable_set(:@io, StringIO.new('/dev/null'))
+LOG.instance_variable_set(:@io, StringIO.new())
 
-module Kernel
-  def abort(text)
-    raise SystemExit, text
-  end
-  def exit(code)
-    raise SystemExit, "Exit code: #{code}"
-  end
+def output_logs
+  io = LOG.instance_variable_get(:@io)
+  LOG.instance_variable_set(:@io, $stderr)
+  yield
+ensure
+  LOG.instance_variable_set(:@io, io)
 end
+
+# module Kernel
+#   def abort(text)
+#     raise SystemExit, text
+#   end
+#   def exit(code)
+#     raise SystemExit, "Exit code: #{code}"
+#   end
+# end
 
 module Test::Unit::Assertions
   def assert_abort
