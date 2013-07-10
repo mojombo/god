@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('airbrake', '~> 3.1.7')
   s.add_development_dependency('nokogiri', '~> 1.5.0')
   s.add_development_dependency('activesupport', [ '>= 2.3.10', '< 4.0.0' ])
+  s.add_development_dependency('statsd-ruby')
   # = MANIFEST =
   s.files = %w[
     Announce.txt
@@ -85,6 +86,7 @@ Gem::Specification.new do |s|
     lib/god/contacts/jabber.rb
     lib/god/contacts/prowl.rb
     lib/god/contacts/scout.rb
+    lib/god/contacts/statsd.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
     lib/god/driver.rb
