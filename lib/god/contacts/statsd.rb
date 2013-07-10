@@ -30,6 +30,8 @@ module God
           statsd.increment "god.#{app}.cpu_out_of_bounds.#{hostname}.#{thin}"
         elsif message.include? 'memory out of bounds'
           statsd.increment "god.#{app}.memory_out_of_bounds.#{hostname}.#{thin}"
+        elsif message.include? 'process is flapping'
+          statsd.increment "god.#{app}.flapping.#{hostname}.#{thin}"
         end
 
         self.info = 'sent statsd alert'
