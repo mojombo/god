@@ -22,9 +22,11 @@ module God
       end
 
       def notify(message, time, priority, category, hostname)
-        statsd = ::Statsd.new statsd_host, (statsd_port.try(:to_i) || 8125) # 8125 is the default statsd port
+        statsd = ::Statsd.new host, (port ? port.to_i : 8125) # 8125 is the default statsd port
         app = message.gsub  /\[god\] ([^-]*).*/, '\1'
         thin = message.gsub /.*thin-([^\s]*).*/, '\1'
+
+        hostname.gsub! /\..*/, ''
 
         if message.include? 'cpu out of bounds'
           statsd.increment "god.#{app}.cpu_out_of_bounds.#{hostname}.#{thin}"
