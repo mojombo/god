@@ -23,7 +23,7 @@ module God
 
       def notify(message, time, priority, category, hostname)
         statsd = ::Statsd.new host, (port ? port.to_i : 8125) # 8125 is the default statsd port
-        app = message.gsub  /\[god\] ([^-]*).*/, '\1'
+        app = message.gsub  /([^-]*).*/, '\1'
         thin = message.gsub /.*thin-([^\s]*).*/, '\1'
 
         hostname.gsub! /\..*/, ''
