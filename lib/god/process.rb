@@ -240,6 +240,7 @@ module God
               r.close
               pid = self.spawn(command)
               puts pid.to_s # send pid back to forker
+              exit!(true)
             end
 
             ::Process.waitpid(opid, 0)
