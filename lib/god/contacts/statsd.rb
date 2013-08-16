@@ -23,17 +23,16 @@ module God
 
       def notify(message, time, priority, category, hostname)
         statsd = ::Statsd.new host, (port ? port.to_i : 8125) # 8125 is the default statsd port
-        app = message.gsub  /([^-]*).*/, '\1'
-        thin = message.gsub /.*thin-([^\s]*).*/, '\1'
 
-        hostname.gsub! /\..*/, ''
+        hostname.gsub! /\./, '_'
+        app = message.gsub /([^\s]*).*/, '\1'
 
-        if message.include? 'cpu out of bounds'
-          statsd.increment "god.#{app}.cpu_out_of_bounds.#{hostname}.#{thin}"
-        elsif message.include? 'memory out of bounds'
-          statsd.increment "god.#{app}.memory_out_of_bounds.#{hostname}.#{thin}"
-        elsif message.include? 'process is flapping'
-          statsd.increment "god.#{app}.flapping.#{hostname}.#{thin}"
+        [
+            'cpu out of bounds',
+            'memory out of bounds',
+            'process is flapping'
+        ].each do |event_type|
+          statsd.increment "god.#{event_type.gsub(/\s/, '_')}.#{hostname}.#{app}" if message.include? event_type
         end
 
         self.info = 'sent statsd alert'
