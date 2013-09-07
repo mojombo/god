@@ -28,7 +28,8 @@ module God
       end
 
       def pid
-        self.pid_file ? File.read(self.pid_file).strip.to_i : self.watch.pid
+        # only read pid once since lazy evaluation can cause bugs due to changing external state
+        @pid ||= self.pid_file ? File.read(self.pid_file).strip.to_i : self.watch.pid
       end
 
       def register
@@ -50,6 +51,8 @@ module God
 
       def deregister
         pid = self.pid
+        @pid = nil # reset so that @pid will bootstrap itself again as needed
+
         if pid
           EventHandler.deregister(pid, :proc_exit)
 
