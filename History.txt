@@ -1,3 +1,9 @@
+== 0.13.3 / 2013-09-25
+  * Minor Enhancements
+    * Invoke commands for all watchers
+    * Airbrake reporter
+    * Improvements to socket responding condition
+
 == 0.13.2 / 2013-02-26
   * Minor Enhancements
     * Added file_touched condition (#86)
