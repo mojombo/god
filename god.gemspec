@@ -78,6 +78,7 @@ Gem::Specification.new do |s|
     lib/god/conditions/process_running.rb
     lib/god/conditions/socket_responding.rb
     lib/god/conditions/tries.rb
+    lib/god/conditions/uptime.rb
     lib/god/configurable.rb
     lib/god/contact.rb
     lib/god/contacts/airbrake.rb
