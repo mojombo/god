@@ -55,6 +55,10 @@ module God
         0
       end
 
+      def uptime_seconds
+        Time.now.to_i - stats[:starttime].to_i
+      end
+
       private
 
       # Some systems (CentOS?) have a /proc, but they can hang when trying to
