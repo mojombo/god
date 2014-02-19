@@ -53,6 +53,7 @@ require 'god/conditions/complex'
 require 'god/conditions/file_mtime'
 require 'god/conditions/file_touched'
 require 'god/conditions/socket_responding'
+require 'god/conditions/uptime'
 
 require 'god/socket'
 require 'god/driver'
@@ -439,7 +440,7 @@ module God
   end
 
   def self.watches_by_name(name)
-    case name 
+    case name
       when "", nil then self.watches.values.dup
       else Array(self.watches[name] || self.groups[name]).dup
     end

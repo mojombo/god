@@ -35,6 +35,10 @@ module God
         @poller.percent_cpu
       end
 
+      def uptime_seconds
+        @poller.uptime_seconds
+      end
+
       private
 
       def fetch_system_poller
