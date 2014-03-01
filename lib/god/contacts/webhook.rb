@@ -47,10 +47,10 @@ module God
 
         case arg(:format)
           when :form
-            req = Net::HTTP::Post.new(uri.path)
+            req = Net::HTTP::Post.new(uri.request_uri)
             req.set_form_data(data)
           when :json
-            req = Net::HTTP::Post.new(uri.path)
+            req = Net::HTTP::Post.new(uri.request_uri)
             req.body = data.to_json
         end
 
