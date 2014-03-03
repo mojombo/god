@@ -11,12 +11,12 @@ class TestHipchat < Test::Unit::TestCase
 
   def test_notify
     @hipchat.token = '808da95553dfe06f413b12ff1d5772'
-    @hipchat.room = 'philtest'
     @hipchat.ssl = 'true'
+    @hipchat.room = 'philtest'
 
     time = Time.now
     body = "[#{time.strftime('%H:%M:%S')}] host - msg"
-    Marshmallow::Connection.any_instance.expects(:speak).with('danger', body)
+    Marshmallow::Connection.any_instance.expects(:speak).with('philtest', body)
     @hipchat.notify('msg', time, 'prio', 'cat', 'host')
   end
 end
