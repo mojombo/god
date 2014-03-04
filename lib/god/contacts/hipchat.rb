@@ -4,6 +4,7 @@
 #  room      - The String room name to which the message should be sent.
 #  ssl       - A Boolean determining whether or not to use SSL
 #              (default: false).
+#  from      - The String representing who the message should be sent as.
 
 require 'net/http'
 require 'net/https'
@@ -25,21 +26,20 @@ module Marshmallow
       "#{scheme}://api.hipchat.com/v1/rooms"
     end
 
-    def find_room_id_by_name(room)
-      url = URI.parse("#{base_url}/list")
-
+    def find_room_id_by_name(room_name)
+      url = URI.parse("#{base_url}/list?format=json&auth_token=#{@options[:token]}")
       http = Net::HTTP.new(url.host, url.port)
       http.use_ssl = true if @options[:ssl]
 
-      req = Net::HTTP::Get.new(url.path)
-      req.basic_auth(@options[:token], 'X')
+      req = Net::HTTP::Get.new(url.request_uri)
+      req.set_content_type('application/json')
 
       res = http.request(req)
       case res
         when Net::HTTPSuccess
           rooms = JSON.parse(res.body)
-          room = rooms['rooms'].select { |x| x['name'] == room }
-          rooms.empty? ? nil : room.first['id']
+          room = rooms['rooms'].select { |x| x['name'] == room_name }
+          rooms.empty? ? nil : room.first['room_id'].to_i
         else
           raise res.error!
       end
@@ -47,22 +47,19 @@ module Marshmallow
 
     def speak(room, message)
       room_id = find_room_id_by_name(room)
+      puts "in spark: room_id = #{room_id}"
       raise "No such room: #{room}." unless room_id
 
-      url = URI.parse("#{base_url}/message")
+      enc_message = Iconv.conv('iso-8859-1', 'utf-8', message)
+      escaped_message = URI.escape(enc_message)
 
+      url = URI.parse("#{base_url}/message?message_format=text&format=json&auth_token=#{@options[:token]}&from=#{@options[:from]}&room_id=#{room}&message=#{escaped_message}")
+      
       http = Net::HTTP.new(url.host, url.port)
       http.use_ssl = true if @options[:ssl]
 
-      req = Net::HTTP::Post.new(url.path)
-      req.basic_auth(@options[:token], 'X')
+      req = Net::HTTP::Post.new(url.request_uri)
       req.set_content_type('application/json')
-      req.body = { 'message' => message,
-                   'from'    => 'Hubot',
-                   'room_id' => room,
-                   'color'   => 'yellow'
-                 }.to_json
-
       res = http.request(req)
       case res
         when Net::HTTPSuccess
@@ -79,7 +76,7 @@ module God
 
     class Hipchat < Contact
       class << self
-        attr_accessor :token, :room, :ssl
+        attr_accessor :token, :room, :ssl, :from
         attr_accessor :format
       end
 
@@ -89,12 +86,13 @@ module God
         "[#{time.strftime('%H:%M:%S')}] #{host} - #{message}"
       end
 
-      attr_accessor :token, :room, :ssl
+      attr_accessor :token, :room, :ssl, :from
 
       def valid?
         valid = true
         valid &= complain("Attribute 'token' must be specified", self) unless arg(:token)
         valid &= complain("Attribute 'room' must be specified", self) unless arg(:room)
+        valid &= complain("Attribute 'from' must be specified", self) unless arg(:from)
         valid
       end
 
@@ -103,7 +101,8 @@ module God
 
         conn = Marshmallow::Connection.new(
           :token => arg(:token),
-          :ssl => arg(:ssl)
+          :ssl   => arg(:ssl),
+          :from  => arg(:from)
         )
 
         conn.speak(arg(:room), body)
