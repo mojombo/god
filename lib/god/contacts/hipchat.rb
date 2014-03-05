@@ -50,8 +50,7 @@ module Marshmallow
       puts "in spark: room_id = #{room_id}"
       raise "No such room: #{room}." unless room_id
 
-      enc_message = Iconv.conv('iso-8859-1', 'utf-8', message)
-      escaped_message = URI.escape(enc_message)
+      escaped_message = URI.escape(message)
 
       url = URI.parse("#{base_url}/message?message_format=text&format=json&auth_token=#{@options[:token]}&from=#{@options[:from]}&room_id=#{room}&message=#{escaped_message}")
       
