@@ -1,3 +1,11 @@
+== 0.13.4 / 2014-03-05
+  * Minor Enhancements
+    * Hipchat reporter (#162)
+    * Re-open log files on SIGUSR1 (#103)
+  * Bug fixes
+    * Send query params on webhook reporter (#160)
+    * Don't thow an exception when there are problems reading pid file (#164)
+
 == 0.13.3 / 2013-09-25
   * Minor Enhancements
     * Invoke commands for all watchers
