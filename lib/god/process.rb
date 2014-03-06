@@ -210,13 +210,19 @@ module God
           applog(self, :info, "#{self.name} sent SIG#{@stop_signal}")
 
           # Poll to see if it's dead
+          pid_not_found = false
           @stop_timeout.times do
-            begin
-              ::Process.kill(0, pid)
-            rescue Errno::ESRCH
-              # It died. Good.
-              applog(self, :info, "#{self.name} process stopped")
-              return
+            if pid
+              begin
+                ::Process.kill(0, pid)
+              rescue Errno::ESRCH
+                # It died. Good.
+                applog(self, :info, "#{self.name} process stopped")
+                return
+              end
+            else
+              applog(self, :warn, "#{self.name} pid not found in #{self.pid_file}") unless pid_not_found
+              pid_not_found = true
             end
 
             sleep 1
