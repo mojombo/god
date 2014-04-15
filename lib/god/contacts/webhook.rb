@@ -41,6 +41,7 @@ module God
 
         uri = URI.parse(arg(:url))
         http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true if uri.scheme == "https"
 
         req = nil
         res = nil
