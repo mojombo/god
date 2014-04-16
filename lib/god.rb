@@ -93,6 +93,7 @@ load_contact(:scout)
 load_contact(:twitter)
 load_contact(:webhook)
 load_contact(:airbrake)
+load_contact(:http_post)
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
@@ -440,7 +441,7 @@ module God
   end
 
   def self.watches_by_name(name)
-    case name 
+    case name
       when "", nil then self.watches.values.dup
       else Array(self.watches[name] || self.groups[name]).dup
     end

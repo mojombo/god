@@ -27,12 +27,12 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rake')
   s.add_development_dependency('rdoc', '~> 3.10')
   s.add_development_dependency('twitter', '~> 4.0')
-  s.add_development_dependency('prowly', '~> 0.3')
+  # s.add_development_dependency('prowly', '~> 0.3')
   s.add_development_dependency('xmpp4r', '~> 0.5')
   s.add_development_dependency('dike', '~> 0.0.3')
-  s.add_development_dependency('rcov', '~> 0.9')
+  # s.add_development_dependency('rcov', '~> 0.9')
   s.add_development_dependency('daemons', '~> 1.1')
-  s.add_development_dependency('mocha', '~> 0.10')
+  # s.add_development_dependency('mocha', '~> 0.10')
   s.add_development_dependency('gollum', '~> 1.3.1')
   s.add_development_dependency('airbrake', '~> 3.1.7')
   s.add_development_dependency('nokogiri', '~> 1.5.0')
@@ -89,6 +89,7 @@ Gem::Specification.new do |s|
     lib/god/contacts/scout.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
+    lib/god/contacts/http_post.rb
     lib/god/driver.rb
     lib/god/errors.rb
     lib/god/event_handler.rb
@@ -141,6 +142,7 @@ Gem::Specification.new do |s|
     test/helper.rb
     test/suite.rb
     test/test_airbrake.rb
+    test/test_http_post.rb
     test/test_behavior.rb
     test/test_campfire.rb
     test/test_condition.rb
