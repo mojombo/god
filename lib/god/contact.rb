@@ -21,6 +21,7 @@ module God
     def self.valid?(contact)
       valid = true
       valid &= Configurable.complain("Attribute 'name' must be specified", contact) if contact.name.nil?
+      valid
     end
 
     def self.defaults
