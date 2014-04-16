@@ -2,12 +2,15 @@
 #
 # url - The String URL
 
-require 'net/http'
-require 'net/https'
+CONTACT_DEPS[:http_post] = ['net/http', 'net/https']
+CONTACT_DEPS[:http_post].each do |d|
+  require d
+end
 
 module God
   module Contacts
     class HttpPost < Contact
+
       class << self
         attr_accessor :url
       end
