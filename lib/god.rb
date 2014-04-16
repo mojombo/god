@@ -18,6 +18,7 @@ end
 # stdlib
 
 # internal requires
+require 'god/spec_normalizer'
 require 'god/errors'
 require 'god/simple_logger'
 require 'god/logger'
@@ -440,7 +441,7 @@ module God
   end
 
   def self.watches_by_name(name)
-    case name 
+    case name
       when "", nil then self.watches.values.dup
       else Array(self.watches[name] || self.groups[name]).dup
     end
