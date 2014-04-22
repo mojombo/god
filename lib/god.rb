@@ -85,6 +85,7 @@ end
 
 require 'god/contact'
 load_contact(:campfire)
+load_contact(:hipchat)
 load_contact(:email)
 load_contact(:jabber)
 load_contact(:prowl)
@@ -157,7 +158,7 @@ end
 
 module God
   # The String version number for this package.
-  VERSION = '0.13.2'
+  VERSION = '0.13.4'
 
   # The Integer number of lines of backlog to keep for the logger.
   LOG_BUFFER_SIZE_DEFAULT = 100

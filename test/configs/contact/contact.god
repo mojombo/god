@@ -9,6 +9,16 @@
 #   c.name = 'tom4'
 # end
 
+# God::Contacts::Hipchat.defaults do |d|
+#   d.token = '9fb768e421975cc1c6ff3f4f8306f890cb46e24f'
+#   d.room = 'Notices'
+#   d.ssl = true
+# end
+#
+# God.contact(:hipchat) do |c|
+#   c.name = 'hip1'
+# end
+
 # God.contact(:email) do |c|
 #   c.name = 'tom'
 #   c.group = 'developers'

@@ -83,6 +83,8 @@ module God
       def run_daemonized
         # trap and ignore SIGHUP
         Signal.trap('HUP') {}
+        # trap and log-reopen SIGUSR1
+        Signal.trap('USR1') { setup_logging }
 
         pid = fork do
           begin

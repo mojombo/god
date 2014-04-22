@@ -41,16 +41,17 @@ module God
 
         uri = URI.parse(arg(:url))
         http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true if uri.scheme == "https"
 
         req = nil
         res = nil
 
         case arg(:format)
           when :form
-            req = Net::HTTP::Post.new(uri.path)
+            req = Net::HTTP::Post.new(uri.request_uri)
             req.set_form_data(data)
           when :json
-            req = Net::HTTP::Post.new(uri.path)
+            req = Net::HTTP::Post.new(uri.request_uri)
             req.body = data.to_json
         end
 
@@ -63,7 +64,7 @@ module God
             self.info = "failed to send webhook to #{arg(:url)}: #{res.error!}"
         end
       rescue Object => e
-        applog(nil, :info, "failed to send email to #{arg(:url)}: #{e.message}")
+        applog(nil, :info, "failed to send webhook to #{arg(:url)}: #{e.message}")
         applog(nil, :debug, e.backtrace.join("\n"))
       end
 

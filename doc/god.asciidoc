@@ -999,6 +999,29 @@ ssl       - A Boolean determining whether or not to use SSL
             (default: false).
 ```
 
+Hipchat
+~~~~~~~~
+
+Send a notice to a Hipchat room (http://hipchat.com).
+
+```ruby
+God::Contacts::Hipchat.defaults do |d|
+  ...
+end
+
+God.contact(:hipchat) do |c|
+  ...
+end
+```
+
+```
+token     - The String token used for authentication.
+room      - The String room name to which the message should be sent.
+ssl       - A Boolean determining whether or not to use SSL
+            (default: false).
+from      - The String representing who the message should be sent as.
+```
+
 Email
 ~~~~~
 
