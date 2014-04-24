@@ -62,7 +62,7 @@ module God
         http.use_ssl = true
 
         req = Net::HTTP::Post.new(api_url.request_uri)
-        req.body = { text: text }.to_json
+        req.body = { :text => text }.to_json
 
         res = http.request(req)
 
