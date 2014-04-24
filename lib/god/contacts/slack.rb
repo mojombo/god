@@ -38,7 +38,16 @@ module God
       def text(data)
         text = ""
         text << "<!channel> " if arg(:notify_channel)
-        text << arg(:format) % data
+
+        if RUBY_VERSION =~ /^1\.8/
+          text << arg(:format).gsub(/%{(\w+)}/) do |match|
+            data[$1.to_sym]
+          end
+        else
+          text << arg(:format) % data
+        end
+
+        text
       end
 
       def notify(message, time, priority, category, host)
@@ -62,7 +71,7 @@ module God
         http.use_ssl = true
 
         req = Net::HTTP::Post.new(api_url.request_uri)
-        req.body = { text: text }.to_json
+        req.body = { :text => text }.to_json
 
         res = http.request(req)
 
