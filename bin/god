@@ -52,12 +52,17 @@ begin
       options[:port] = x
     end
 
+
     opts.on("-b", "--auto-bind", "Auto-bind to an unused port number") do
       options[:port] = "0"
     end
 
     opts.on("-PFILE", "--pid FILE", "Where to write the PID file") do |x|
       options[:pid] = x
+    end
+
+    opts.on("-MDIR", "--managed_pid_dir DIR", "Where to write the PIDs for the workers") do |x|
+      options[:managed_pid_dir] = x
     end
 
     opts.on("-lFILE", "--log FILE", "Where to write the log file") do |x|

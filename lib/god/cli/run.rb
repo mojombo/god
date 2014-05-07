@@ -50,6 +50,10 @@ module God
           God.port = @options[:port]
         end
 
+        if @options[:managed_pid_dir]
+          God.pid_file_directory = @options[:managed_pid_dir]
+        end
+
         if @options[:events]
           God::EventHandler.load
         end
