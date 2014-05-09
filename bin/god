@@ -61,7 +61,7 @@ begin
       options[:pid] = x
     end
 
-    opts.on("-MDIR", "--managed_pid_dir DIR", "Where to write the PIDs for the workers") do |x|
+    opts.on("--managed-pid-dir DIR", "Where to write the PIDs for the workers") do |x|
       options[:managed_pid_dir] = x
     end
 
