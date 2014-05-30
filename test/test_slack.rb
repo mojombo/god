@@ -16,7 +16,7 @@ class TestSlack < Test::Unit::TestCase
   end
 
   def test_api_url
-    assert_equal "https://foo.slack.com/services/hooks/incoming-webhook?token=foo&channel=#general", @slack.api_url.to_s
+    assert_equal "https://foo.slack.com/services/hooks/incoming-webhook?token=foo", @slack.api_url.to_s
   end
 
   def test_notify
