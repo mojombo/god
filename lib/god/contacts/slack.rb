@@ -19,7 +19,7 @@ module God
 
     class Slack < Contact
       class << self
-        attr_accessor :account, :token, :channel, :notify_channel, :format, :username
+        attr_accessor :account, :token, :channel, :notify_channel, :format, :username, :emoji
       end
 
       self.channel        = "#general"
@@ -33,7 +33,7 @@ module God
         valid
       end
 
-      attr_accessor :account, :token, :channel, :notify_channel, :format, :username
+      attr_accessor :account, :token, :channel, :notify_channel, :format, :username, :emoji
 
       def text(data)
         text = ""
@@ -77,6 +77,7 @@ module God
           :channel => arg(:channel)
         }.tap { |payload|
           payload[:username] = arg(:username) if arg(:username)
+          payload[:icon_emoji] = arg(:emoji) if arg(:emoji)
         }.to_json
 
         res = http.request(req)
