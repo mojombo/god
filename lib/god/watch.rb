@@ -23,6 +23,9 @@ module God
     # Public: The restart grace period (seconds).
     attr_accessor :restart_grace
 
+    # How long should the cli wait for start/stop/restart to complete
+    attr_accessor :patience
+
     # Public: God::Process delegators. See lib/god/process.rb for docs.
     extend Forwardable
     def_delegators :@process, :name, :uid, :gid, :start, :stop, :restart, :dir,
@@ -47,6 +50,9 @@ module God
 
       # No grace period by default.
       self.grace = self.start_grace = self.stop_grace = self.restart_grace = 0
+
+      # Wait 30 seconds by default.
+      self.patience = 30
     end
 
     # Is this Watch valid?
@@ -253,7 +259,7 @@ module God
     def action(a, c = nil)
       if !self.driver.in_driver_context?
         # Called from outside Driver. Send an async message to Driver.
-        self.driver.message(:action, [a, c])
+        self.driver.message(:action, [a, c]).wait(patience)
       else
         # Called from within Driver.
         case a

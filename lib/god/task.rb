@@ -24,6 +24,8 @@ module God
     # to true (enabled).
     attr_writer :autostart
 
+    attr_accessor :patience
+
     # Returns true if autostart is enabled, false if not.
     def autostart?
       @autostart
@@ -284,7 +286,7 @@ module God
     def action(a, c = nil)
       if !self.driver.in_driver_context?
         # Called from outside Driver. Send an async message to Driver.
-        self.driver.message(:action, [a, c])
+        self.driver.message(:action, [a, c]).wait(patience)
       else
         # Called from within Driver.
         if self.respond_to?(a)

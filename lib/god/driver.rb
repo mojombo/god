@@ -6,6 +6,8 @@ if RUBY_VERSION.between?('1.9', '1.9.1')
 end
 
 module God
+
+  class WaitTimeout < StandardError; end
   # The TimedEvent class represents an event in the future. This class is used
   # by the drivers to schedule upcoming conditional tests and other scheduled
   # events.
@@ -21,7 +23,10 @@ module God
     # delay - The optional Numeric number of seconds from now at which to
     #         trigger (default: 0).
     def initialize(delay = 0)
-      self.at = Time.now + delay
+      self.at         = Time.now + delay
+      @monitor        = Monitor.new
+      @done_condition = @monitor.new_cond
+      @done           = false
     end
 
     # Is the current event due (current time >= event time)?
@@ -40,6 +45,29 @@ module God
     def <=>(other)
       self.at <=> other.at
     end
+
+    def execute
+      handle_event
+      done
+    end
+
+    def done
+      @monitor.synchronize do
+        @done = true
+        @done_condition.broadcast
+      end
+    end
+
+    def wait(timeout=nil)
+      @monitor.synchronize do
+        unless @done
+          if !@done_condition.wait(timeout)
+            raise WaitTimeout
+          end
+        end
+      end
+    end
+
   end
 
   # A DriverEvent is a TimedEvent with an associated Task and Condition. This
@@ -178,7 +206,7 @@ module God
       @thread = Thread.new do
         loop do
           begin
-            @events.pop.handle_event
+            @events.pop.execute
           rescue ThreadError => e
             # queue is empty
             break
@@ -219,7 +247,9 @@ module God
     #
     # Returns nothing.
     def message(name, args = [])
-      @events.push(DriverOperation.new(@task, name, args))
+      operation = DriverOperation.new(@task, name, args)
+      @events.push(operation)
+      operation
     end
 
     # Create and schedule a new DriverEvent.

@@ -22,4 +22,25 @@ class TestDriver < Test::Unit::TestCase
 
     t.join
   end
+
+  def test_timed_event_signals
+    event = God::TimedEvent.new(0)
+
+    queue = []
+
+    Thread.new do
+      sleep(0.1)
+      event.done
+    end
+
+    event.wait(0.1)
+  end
+
+  def test_timeouts
+    event = God::TimedEvent.new(0)
+    event.wait(0.1)
+    flunk
+  rescue WaitTimeout
+    # Pass
+  end
 end
