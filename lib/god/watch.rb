@@ -275,6 +275,7 @@ module God
           end
           sleep(self.restart_grace + self.grace)
         when :stop
+          unmonitor
           call_action(c, :stop)
           sleep(self.stop_grace + self.grace)
         end

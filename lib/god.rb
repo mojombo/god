@@ -464,11 +464,11 @@ module God
     # Do the command.
     case command
       when "start", "monitor"
-        items.each { |w| jobs << Thread.new { w.monitor if w.state != :up } }
+        items.each { |w| jobs << Thread.new { w.monitor } }
       when "restart"
         items.each { |w| jobs << Thread.new { w.move(:restart) } }
       when "stop"
-        items.each { |w| jobs << Thread.new { w.unmonitor; w.action(:stop) } }
+        items.each { |w| jobs << Thread.new { w.action(:stop)  } }
       when "unmonitor"
         items.each { |w| jobs << Thread.new { w.unmonitor } }
       when "remove"

@@ -55,7 +55,7 @@ module God
     end
 
     def execute
-      applog(self, :info, "Executing #{self.inspect}")
+      applog(self, :info, "Executing #{self.description}")
       handle_event
       done
     end
@@ -197,6 +197,7 @@ module God
     #
     # Returns nothing.
     def clear
+      @events.each { @event.done }
       @events.clear
     end
 

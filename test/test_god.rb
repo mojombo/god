@@ -287,7 +287,6 @@ class TestGod < Test::Unit::TestCase
 
     w = God.watches['foo']
     w.state = :up
-    w.expects(:unmonitor).returns(w)
     w.expects(:action).with(:stop)
     God.control('foo', 'stop')
   end
