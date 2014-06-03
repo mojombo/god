@@ -185,7 +185,7 @@ module God
     #
     # Returns nothing.
     def unmonitor
-      self.move(:unmonitored) if state != :unmonitored
+      self.move(:unmonitored)
     end
 
     # Move to the given state.

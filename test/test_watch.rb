@@ -131,11 +131,6 @@ class TestWatch < Test::Unit::TestCase
     @watch.unmonitor
   end
 
-  def test_unmonitor_should_not_move_if_unmonitored
-    @watch.expects(:move).never
-    @watch.unmonitor
-  end
-
   # move
 
   def test_move_should_not_clean_up_if_from_state_is_nil

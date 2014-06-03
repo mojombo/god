@@ -46,7 +46,16 @@ module God
       self.at <=> other.at
     end
 
+    def name
+      self.class.name
+    end
+
+    def description
+      "no description"
+    end
+
     def execute
+      applog(self, :info, "Executing #{self.inspect}")
       handle_event
       done
     end
@@ -84,10 +93,14 @@ module God
       @condition = condition
     end
 
+    def description
+      "#{@task} - #{@condition}"
+    end
+
     # Handle this event by invoking the underlying condition on the associated
     # task.
     #
-    # Returns nothing.
+    # Returns no
     def handle_event
       @task.handle_poll(@condition)
     end
@@ -114,6 +127,11 @@ module God
     def handle_event
       @task.send(@name, *@args)
     end
+
+    def description
+      "#{@task} - #{@name} - #{@args}"
+    end
+
   end
 
   # The DriverEventQueue is a simple queue that holds TimedEvent instances in
