@@ -126,7 +126,13 @@ class TestWatch < Test::Unit::TestCase
   # unmonitor
 
   def test_unmonitor_should_move_to_nil
+    @watch.state = :monitored
     @watch.expects(:move).with(:unmonitored)
+    @watch.unmonitor
+  end
+
+  def test_unmonitor_should_not_move_if_unmonitored
+    @watch.expects(:move).never
     @watch.unmonitor
   end
 

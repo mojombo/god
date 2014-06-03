@@ -185,7 +185,7 @@ module God
     #
     # Returns nothing.
     def unmonitor
-      self.move(:unmonitored)
+      self.move(:unmonitored) if state != :unmonitored
     end
 
     # Move to the given state.
@@ -225,7 +225,7 @@ module God
         self.metrics[to_state].each { |m| m.enable }
 
         # If no from state, enable lifecycle metric.
-        if from_state == :unmonitored
+        if from_state == :unmonitored && to_state != :unmonitored
           self.metrics[nil].each { |m| m.enable }
         end
 

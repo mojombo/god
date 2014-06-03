@@ -3,6 +3,7 @@ module God
     @@actions = {}
     @@handler = nil
     @@loaded = false
+    @@log_loading_exceptions = true
 
     def self.loaded?
       @@loaded
@@ -25,7 +26,13 @@ module God
           raise NotImplementedError, "Platform not supported for EventHandler"
         end
         @@loaded = true
-      rescue Exception
+      rescue Exception => ex
+        if @@log_loading_exceptions
+          puts "Exception loading kqueue handler"
+          puts ex.inspect
+          puts caller.join("\n")
+        end
+
         require 'god/event_handlers/dummy_handler'
         @@handler = DummyHandler
         @@loaded = false
@@ -74,6 +81,10 @@ module God
 
     def self.stop
       @@thread.kill if @@thread
+    end
+
+    def self.silence_loading_exceptions
+      @@log_loading_exceptions = false
     end
 
     def self.operational?
