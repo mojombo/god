@@ -197,7 +197,7 @@ module God
     #
     # Returns nothing.
     def clear
-      @events.each { @event.done }
+      @events.each { |event| event.done }
       @events.clear
     end
 

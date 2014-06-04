@@ -51,8 +51,8 @@ module God
       # No grace period by default.
       self.grace = self.start_grace = self.stop_grace = self.restart_grace = 0
 
-      # Wait 30 seconds by default.
-      self.patience = 30
+      # How long to wait for processes to react to commands
+      self.patience = 120
     end
 
     # Is this Watch valid?
