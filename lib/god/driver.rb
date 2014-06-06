@@ -55,7 +55,6 @@ module God
     end
 
     def execute
-      applog(self, :info, "Executing #{self.description}")
       handle_event
       done
     end
