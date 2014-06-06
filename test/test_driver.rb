@@ -43,4 +43,9 @@ class TestDriver < Test::Unit::TestCase
   rescue WaitTimeout
     # Pass
   end
+
+  def test_nil_wait_value
+    event = God::TimedEvent.new(0)
+    event.wait(nil)
+  end
 end

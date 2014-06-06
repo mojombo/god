@@ -30,6 +30,7 @@ class TestWatch < Test::Unit::TestCase
       @watch.restart = 'restart'
       @watch.interval = 30
       @watch.grace = 5
+      @watch.cli_wait_seconds = 100
     end
   end
 

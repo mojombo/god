@@ -8,6 +8,7 @@ end
 module God
 
   class WaitTimeout < StandardError; end
+
   # The TimedEvent class represents an event in the future. This class is used
   # by the drivers to schedule upcoming conditional tests and other scheduled
   # events.
@@ -69,7 +70,7 @@ module God
     def wait(timeout=nil)
       @monitor.synchronize do
         unless @done
-          if !@done_condition.wait(timeout)
+          if timeout && !@done_condition.wait(timeout)
             raise WaitTimeout
           end
         end
