@@ -28,9 +28,9 @@ module God
         @@loaded = true
       rescue Exception => ex
         if @@log_loading_exceptions
-          puts "Exception loading kqueue handler"
-          puts ex.inspect
-          puts caller.join("\n")
+          $stderr.puts "Exception loading kqueue handler"
+          $stderr.puts ex.inspect
+          $stderr.puts caller.join("\n")
         end
 
         require 'god/event_handlers/dummy_handler'
