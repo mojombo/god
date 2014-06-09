@@ -5,6 +5,7 @@ $load_god = true
 
 require File.join(File.dirname(__FILE__), *%w[.. lib god sys_logger])
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
+God::EventHandler.silence_loading_exceptions
 God::EventHandler.load
 
 require 'test/unit'

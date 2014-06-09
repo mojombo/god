@@ -346,7 +346,7 @@ module God
   # Returns nothing.
   def self.unwatch(watch)
     # Unmonitor.
-    watch.unmonitor unless watch.state == :unmonitored
+    watch.unmonitor
 
     # Unregister.
     watch.unregister!
@@ -464,13 +464,13 @@ module God
     # Do the command.
     case command
       when "start", "monitor"
-        items.each { |w| jobs << Thread.new { w.monitor if w.state != :up } }
+        items.each { |w| jobs << Thread.new { w.monitor } }
       when "restart"
         items.each { |w| jobs << Thread.new { w.move(:restart) } }
       when "stop"
-        items.each { |w| jobs << Thread.new { w.action(:stop); w.unmonitor if w.state != :unmonitored } }
+        items.each { |w| jobs << Thread.new { w.action(:stop)  } }
       when "unmonitor"
-        items.each { |w| jobs << Thread.new { w.unmonitor if w.state != :unmonitored } }
+        items.each { |w| jobs << Thread.new { w.unmonitor } }
       when "remove"
         items.each { |w| self.unwatch(w) }
       else
@@ -489,7 +489,7 @@ module God
   def self.stop_all
     self.watches.sort.each do |name, w|
       Thread.new do
-        w.unmonitor if w.state != :unmonitored
+        w.unmonitor
         w.action(:stop) if w.alive?
       end
     end

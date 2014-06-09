@@ -24,6 +24,8 @@ module God
     # to true (enabled).
     attr_writer :autostart
 
+    attr_accessor :cli_wait_seconds
+
     # Returns true if autostart is enabled, false if not.
     def autostart?
       @autostart
@@ -223,7 +225,7 @@ module God
         self.metrics[to_state].each { |m| m.enable }
 
         # If no from state, enable lifecycle metric.
-        if from_state == :unmonitored
+        if from_state == :unmonitored && to_state != :unmonitored
           self.metrics[nil].each { |m| m.enable }
         end
 
@@ -284,7 +286,7 @@ module God
     def action(a, c = nil)
       if !self.driver.in_driver_context?
         # Called from outside Driver. Send an async message to Driver.
-        self.driver.message(:action, [a, c])
+        self.driver.message(:action, [a, c]).wait(cli_wait_seconds)
       else
         # Called from within Driver.
         if self.respond_to?(a)

@@ -30,6 +30,7 @@ class TestWatch < Test::Unit::TestCase
       @watch.restart = 'restart'
       @watch.interval = 30
       @watch.grace = 5
+      @watch.cli_wait_seconds = 100
     end
   end
 
@@ -126,6 +127,7 @@ class TestWatch < Test::Unit::TestCase
   # unmonitor
 
   def test_unmonitor_should_move_to_nil
+    @watch.state = :monitored
     @watch.expects(:move).with(:unmonitored)
     @watch.unmonitor
   end
