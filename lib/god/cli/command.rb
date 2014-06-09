@@ -264,7 +264,7 @@ module God
             puts 'No matching task or group'
           end
         rescue God::WaitTimeout
-          puts "Timed out waiting for response.  Please check the state of services before continuing."
+          $stderr.puts "Timed out waiting for response.  Please check the state of services before continuing."
           exit(1)
         end
       end

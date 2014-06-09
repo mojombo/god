@@ -100,7 +100,7 @@ module God
     # Handle this event by invoking the underlying condition on the associated
     # task.
     #
-    # Returns no
+    # Returns nothing.
     def handle_event
       @task.handle_poll(@condition)
     end
