@@ -32,10 +32,12 @@ module God
         begin
           uid_num = Etc.getpwnam(self.uid).uid if self.uid
           gid_num = Etc.getgrnam(self.gid).gid if self.gid
+          gid_num = Etc.getpwnam(self.uid).gid if self.gid.nil? && self.uid
 
           ::Dir.chroot(self.chroot) if self.chroot
-          ::Process.groups = [gid_num] if self.gid
-          ::Process::Sys.setgid(gid_num) if self.gid
+          ::Process.groups = [gid_num] if gid_num
+          ::Process.initgroups(self.uid, gid_num) if self.uid && gid_num
+          ::Process::Sys.setgid(gid_num) if gid_num
           ::Process::Sys.setuid(uid_num) if self.uid
         rescue ArgumentError, Errno::EPERM, Errno::ENOENT
           exit(1)
@@ -296,11 +298,13 @@ module God
         File.umask self.umask if self.umask
         uid_num = Etc.getpwnam(self.uid).uid if self.uid
         gid_num = Etc.getgrnam(self.gid).gid if self.gid
+        gid_num = Etc.getpwnam(self.uid).gid if self.gid.nil? && self.uid
 
         ::Dir.chroot(self.chroot) if self.chroot
         ::Process.setsid
-        ::Process.groups = [gid_num] if self.gid
-        ::Process::Sys.setgid(gid_num) if self.gid
+        ::Process.groups = [gid_num] if gid_num
+        ::Process.initgroups(self.uid, gid_num) if self.uid && gid_num
+        ::Process::Sys.setgid(gid_num) if gid_num
         ::Process::Sys.setuid(uid_num) if self.uid
         self.dir ||= '/'
         Dir.chdir self.dir

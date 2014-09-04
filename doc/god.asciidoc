@@ -1243,6 +1243,46 @@ end
 apikey - The String API key.
 ```
 
+Slack
+~~~~~
+
+Send a message to a channel in Slack (https://slack.com/).
+
+First, set up an Incoming Webhook in your Slack account.
+
+Then, in your God configuration, set the defaults:
+
+```ruby
+God::Contacts::Slack.defaults do |d|
+  d.account = "foo"
+  d.token = "abc123abc123abc123"
+  c.notify_channel = true
+  c.format = '%{host} alert: %{message}'
+end
+```
+
+`account` is the name of your Slack account; if you view slack at
+"foo.slack.com", then your account is "foo". `token` is from your
+newly-created webhook, and will be a string of unintelligible
+characters.
+
+The `notify_channel` and `format` settings are optional. The first
+controls whether the message includes `@channel` (sending notifications
+to everyone in the channel); the second controls how the message is
+formatted. Acceptable values within the format are `priority`, `host`,
+`message`, `category`, and `time`.
+
+Once you've set the defaults, create contacts for the channels that you
+want to notify. You can create as many as you like, and they'll look
+something like this:
+
+```ruby
+God.contact(:slack) do |c|
+  c.name = '#ops'
+  c.channel = '#ops'
+end
+```
+
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
