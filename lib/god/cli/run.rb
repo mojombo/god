@@ -122,7 +122,12 @@ module God
         if @options[:pid]
           File.open(@options[:pid], 'w') { |f| f.write pid }
         end
-
+				#sleep a few second to make sure that the godfile has a chance to be read
+				sleep 3
+				#returns nil if the process hasn't ended yet
+				if Process.waitpid(pid, Process::WNOHANG)
+					puts "There is likely an error with the .god file.  In any event, the god process has already exited."
+				end
         ::Process.detach pid
 
         exit
