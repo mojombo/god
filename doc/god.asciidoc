@@ -436,8 +436,8 @@ A `watch` represents a single process that has concrete start, stop, and/or
 restart operations. You can define as many watches as you like. In the example
 above, I've got some Rails instances running in Mongrels that I need to keep
 alive. Every watch must have a unique `name` so that it can be identified
-later on. The `start` and `stop` attributes specify the commands to start 
-and stop the process. If no `restart` attribute is set, restart will be 
+later on. The `start` and `stop` attributes specify the commands to start
+and stop the process. If no `restart` attribute is set, restart will be
 represented by a call to stop followed by a call to start. The
 optional `grace` attribute sets the amount of time following a
 start/stop/restart command to wait before resuming normal monitoring
@@ -575,7 +575,7 @@ Watching Non-Daemon Processes
 Need to watch a script that doesn't have built in daemonization? No problem!
 God will daemonize and keep track of your process for you. If you don't
 specify a `pid_file` attribute for a watch, it will be auto-daemonized and a
-PID file will be stored for it in `/var/run/god`. 
+PID file will be stored for it in `/var/run/god`.
 
 
 ```ruby
@@ -585,9 +585,9 @@ God.pid_file_directory = '/home/tom/pids'
 God.watch do |w|
   w.name = 'mongrel'
   w.pid_file = w.pid_file = File.join(RAILS_ROOT, "log/mongrel.pid")
-  
+
   w.start = "mongrel_rails start -P #{RAILS_ROOT}/log/mongrel.pid  -d"
-  
+
   # ...
 end
 
@@ -595,15 +595,15 @@ end
 God.watch do |w|
   w.name = 'worker'
   # w.pid_file = is not set
-  
+
   w.start = "rake resque:worker"
-  
+
   # ...
 end
 ```
 
 
-If you'd rather have the PID file stored in a different location, you can 
+If you'd rather have the PID file stored in a different location, you can
 set it at the top of your config:
 
 ```ruby
@@ -1021,6 +1021,8 @@ ssl       - A Boolean determining whether or not to use SSL
             (default: false).
 from      - The String representing who the message should be sent as.
 ```
+
+NOTE: in Hipchat you must have a token with 'admin' privileges.  'Notification' privileges will not be enough.
 
 Email
 ~~~~~
