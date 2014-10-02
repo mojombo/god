@@ -20,6 +20,7 @@ end
 class TestEventHandler < Test::Unit::TestCase
   def setup
     @h = God::EventHandler
+    @h.silence_loading_exceptions
   end
 
   def test_register_one_event

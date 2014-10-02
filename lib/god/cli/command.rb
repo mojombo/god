@@ -242,25 +242,30 @@ module God
       end
 
       def lifecycle_command
-        # get the name of the watch/group
-        name = @args[1]
+        begin
+          # get the name of the watch/group
+          name = @args[1]
 
-        puts "Sending '#{@command}' command"
+          puts "Sending '#{@command}' command"
 
-        t = Thread.new { loop { sleep(1); STDOUT.print('.'); STDOUT.flush; sleep(1) } }
+          t = Thread.new { loop { sleep(1); STDOUT.print('.'); STDOUT.flush; sleep(1) } }
 
-        # send @command
-        watches = @server.control(name, @command)
+          # send @command
+          watches = @server.control(name, @command)
 
-        # output response
-        t.kill; STDOUT.puts
-        unless watches.empty?
-          puts 'The following watches were affected:'
-          watches.each do |w|
-            puts '  ' + w
+          # output response
+          t.kill; STDOUT.puts
+          unless watches.empty?
+            puts 'The following watches were affected:'
+            watches.each do |w|
+              puts '  ' + w
+            end
+          else
+            puts 'No matching task or group'
           end
-        else
-          puts 'No matching task or group'
+        rescue God::WaitTimeout
+          $stderr.puts "Timed out waiting for response.  Please check the state of services before continuing."
+          exit(1)
         end
       end
     end # Command

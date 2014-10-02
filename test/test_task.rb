@@ -81,10 +81,22 @@ class TestTask < Test::Unit::TestCase
     end
   end
 
+  class StubDriverTask
+    attr_accessor :wait_args
+    def wait(arg)
+      @wait_args ||= []
+      @wait_args << arg
+    end
+  end
+
   def test_action_from_outside_driver_should_send_message_to_driver
+    @sdt = StubDriverTask.new
+
     @task.foo = 'foo'
-    @task.driver.expects(:message).with(:action, [:foo, nil])
+    @task.driver.expects(:message).with(:action, [:foo, nil]).returns(@sdt)
     @task.action(:foo, nil)
+
+    assert_equal [nil], @sdt.wait_args
   end
 
   # attach
