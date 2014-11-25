@@ -8,6 +8,7 @@
 # status_code   - status codes used are 0 for OK, 1 for WARNING, 2 for CRITICAL, and 3 or greater to indicate UNKNOWN or CUSTOM.
 # handler       - default handler
 #
+
 CONTACT_DEPS[:sensu] = ['json']
 CONTACT_DEPS[:sensu].each do |d|
   require d
