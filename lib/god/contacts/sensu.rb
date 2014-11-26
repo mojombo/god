@@ -19,11 +19,13 @@ module God
 
     class Sensu < Contact
       class << self
-        attr_accessor :check_name, :status_code, :handler
+        attr_accessor :check_name, :status_code, :handler, :host, :port
       end
 
       self.status_code = 2
       self.handler = 'default'
+      self.host = 'localhost'
+      self.port = 3030
 
       def valid?
         valid = true
@@ -31,11 +33,11 @@ module God
         valid
       end
 
-      attr_accessor :check_name, :status_code, :handler
+      attr_accessor :check_name, :status_code, :handler, :host, :port
 
       def sensu_client_socket(msg)
         u = UDPSocket.new
-        u.send(msg + "\n", 0, '127.0.0.1', 3030)
+        u.send(msg + "\n", 0, arg(:host).nil? ? self.host : arg(:host), arg(:port).nil? ? self.port : arg(:port))
       end
 
       def notify(message, time, priority, category, host)
