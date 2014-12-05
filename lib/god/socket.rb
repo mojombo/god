@@ -95,8 +95,10 @@ module God
       end
 
       if File.exists?(self.socket_file)
-        uid = Etc.getpwnam(@user).uid if @user
-        gid = Etc.getgrnam(@group).gid if @group
+        user_method = @user.is_a? Integer ? :getpwuid : :getpwnam if @user
+        group_method = @group.is_a? Integer ? :getgrgid : :getgrnam if @group
+        uid = Etc.send(user_method, @user).uid if @user
+        gid = Etc.send(group_method, @group).gid if @group
 
         File.chmod(Integer(@perm), socket_file) if @perm
         File.chown(uid, gid, socket_file) if uid or gid
