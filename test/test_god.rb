@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/helper'
-require 'byebug'
 class TestGod < MiniTest::Test
   def setup
     God::Socket.stubs(:new).returns(true)
