@@ -7,7 +7,8 @@ require File.join(File.dirname(__FILE__), *%w[.. lib god sys_logger])
 require File.join(File.dirname(__FILE__), *%w[.. lib god])
 God::EventHandler.load
 
-require 'test/unit'
+require 'minitest/autorun'
+require 'minitest/unit'
 require 'set'
 
 include God
@@ -115,11 +116,15 @@ end
 #   end
 # end
 
-module Test::Unit::Assertions
+module Minitest::Assertions
   def assert_abort
-    assert_raise SystemExit do
+    assert_raises SystemExit do
       yield
     end
+  end
+
+  def assert_nothing_raised
+    yield
   end
 end
 

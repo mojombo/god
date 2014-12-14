@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/helper'
 
 if God::EventHandler.event_system == "kqueue"
 
-  class TestHandlersKqueueHandler < Test::Unit::TestCase
+  class TestHandlersKqueueHandler < Minitest::Test
     def test_register_process
       KQueueHandler.expects(:monitor_process).with(1234, 2147483648)
       KQueueHandler.register_process(1234, [:proc_exit])

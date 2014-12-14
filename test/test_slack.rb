@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestSlack < Test::Unit::TestCase
+class TestSlack < Minitest::Test
   def setup
     @slack = God::Contacts::Slack.new
     @slack.account = "foo"

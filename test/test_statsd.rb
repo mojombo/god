@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestStatsd < Test::Unit::TestCase
+class TestStatsd < Minitest::Test
   def setup
     @statsd = God::Contacts::Statsd.new
   end

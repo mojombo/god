@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestDriver < Test::Unit::TestCase
+class TestDriver < Minitest::Test
   def setup
 
   end

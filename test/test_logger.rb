@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestLogger < Test::Unit::TestCase
+class TestLogger < Minitest::Test
   def setup
     @log = God::Logger.new(StringIO.new('/dev/null'))
   end
@@ -41,8 +41,8 @@ class TestLogger < Test::Unit::TestCase
 
     out = @log.watch_log_since('foo', t2)
 
-    assert_no_match(/one/, out)
-    assert_no_match(/two/, out)
+    assert(/one/ !~ out)
+    assert(/two/ !~ out)
     assert_match(/three/, out)
   end
 

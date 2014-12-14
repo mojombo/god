@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestCampfire < Test::Unit::TestCase
+class TestCampfire < Minitest::Test
   def setup
     @campfire = God::Contacts::Campfire.new
   end

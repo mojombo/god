@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestTrigger < Test::Unit::TestCase
+class TestTrigger < Minitest::Test
   def setup
     Trigger.reset
   end
