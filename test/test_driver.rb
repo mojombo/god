@@ -6,9 +6,10 @@ class TestDriver < Minitest::Test
   end
 
   def test_push_pop_wait
-    eq = God::DriverEventQueue.new
 
-    MonitorMixin::ConditionVariable.any_instance.expects(:wait).times(1)
+    eq = God::DriverEventQueue.new
+    cond = eq.instance_variable_get(:@resource)
+    cond.expects(:wait).times(1)
 
     eq.push(God::TimedEvent.new(0))
     eq.push(God::TimedEvent.new(0.1))
