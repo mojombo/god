@@ -5,6 +5,10 @@ class TestTrigger < Minitest::Test
     Trigger.reset
   end
 
+  def teardown
+    Trigger.reset
+  end
+
   # base case
 
   def test_should_have_empty_triggers
