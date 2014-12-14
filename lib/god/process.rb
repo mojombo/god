@@ -43,7 +43,7 @@ module God
           exit(1)
         end
 
-        File.writable?(file_in_chroot(file)) ? exit(0) : exit(1)
+        File.writable?(file_in_chroot(file)) ? exit!(0) : exit!(1)
       end
 
       wpid, status = ::Process.waitpid2(pid)

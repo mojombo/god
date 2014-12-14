@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require File.dirname(__FILE__) + '/helper'
 
-class TestAirbrake < Test::Unit::TestCase
+class TestAirbrake < Minitest::Test
   def test_notify
     airbrake = God::Contacts::Airbrake.new
     airbrake.apikey = "put_your_apikey_here"

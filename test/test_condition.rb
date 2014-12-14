@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/helper'
 class BadlyImplementedCondition < PollCondition
 end
 
-class TestCondition < Test::Unit::TestCase
+class TestCondition < Minitest::Test
 
   # generate
 
@@ -12,7 +12,7 @@ class TestCondition < Test::Unit::TestCase
   end
 
   def test_generate_should_raise_on_invalid_type
-    assert_raise NoSuchConditionError do
+    assert_raises NoSuchConditionError do
       Condition.generate(:foo, nil)
     end
   end
@@ -45,7 +45,7 @@ class TestCondition < Test::Unit::TestCase
   def test_test_should_raise_if_not_defined_in_subclass
     c = BadlyImplementedCondition.new
 
-    assert_raise AbstractMethodNotOverriddenError do
+    assert_raises AbstractMethodNotOverriddenError do
       c.test
     end
   end

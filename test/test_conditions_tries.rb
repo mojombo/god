@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestConditionsTries < Test::Unit::TestCase
+class TestConditionsTries < Minitest::Test
   # valid?
 
   def test_valid_should_return_false_if_times_not_set
@@ -11,7 +11,7 @@ class TestConditionsTries < Test::Unit::TestCase
 end
 
 
-class TestConditionsTries < Test::Unit::TestCase
+class TestConditionsTries < Minitest::Test
   def setup
     @c = Conditions::Tries.new
     @c.times = 3
@@ -42,7 +42,7 @@ class TestConditionsTries < Test::Unit::TestCase
 end
 
 
-class TestConditionsTriesWithin < Test::Unit::TestCase
+class TestConditionsTriesWithin < Minitest::Test
   def setup
     @c = Conditions::Tries.new
     @c.times = 3

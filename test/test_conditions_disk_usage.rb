@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestConditionsDiskUsage < Test::Unit::TestCase
+class TestConditionsDiskUsage < Minitest::Test
   # valid?
 
   def test_valid_should_return_false_if_no_above_given
