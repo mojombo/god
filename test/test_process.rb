@@ -152,6 +152,7 @@ class TestProcessDaemon < Minitest::Test
     @p.name = 'foo'
     @p.pid_file = 'blah.pid'
     @p.stubs(:test).returns true # so we don't try to mkdir_p
+    God::System.stubs(:fetch_system_poller).returns(God::System::PortablePoller)
     Process.stubs(:detach) # because we stub fork
   end
 
