@@ -35,6 +35,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency('daemons', '~> 1.1')
   s.add_development_dependency('mocha', '~> 0.10')
   s.add_development_dependency('gollum', '~> 1.3.1')
+  #the last version to support 1.8.7 is 0.99.6
+  s.add_development_dependency('mustache', ['~> 0.99.0', '< 0.99.7'])
   s.add_development_dependency('airbrake', '~> 3.1.7')
   s.add_development_dependency('nokogiri', '~> 1.5.0')
   s.add_development_dependency('activesupport', [ '>= 2.3.10', '< 4.0.0' ])
