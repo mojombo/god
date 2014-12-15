@@ -15,6 +15,10 @@ class TestGod < MiniTest::Test
         w.driver.thread.kill
       end
     end
+    God.reset
+    #Some of the tests in this file intentionally set pid_file_directory to an invalid value
+    #This can cause a later test failure since God will call abort if pid_file_directory is not writable    
+    God.pid_file_directory = '~/.god/pids'
   end
 
   # applog
