@@ -5,6 +5,10 @@
 #include <sys/time.h>
 #include <errno.h>
 
+#ifdef HAVE_RB_WAIT_FOR_SINGLE_FD
+  #include <ruby/io.h>
+#endif
+
 static VALUE mGod;
 static VALUE cKQueueHandler;
 static VALUE cEventHandler;
@@ -63,6 +67,10 @@ kqh_handle_events()
 {
   int nevents, i, num_to_fetch;
   struct kevent *events;
+
+#ifdef HAVE_RB_WAIT_FOR_SINGLE_FD
+  rb_wait_for_single_fd(kq, RB_WAITFD_IN, NULL);
+#else
   fd_set read_set;
 
   FD_ZERO(&read_set);
@@ -70,7 +78,7 @@ kqh_handle_events()
 
   // Don't actually run this method until we've got an event
   rb_thread_select(kq + 1, &read_set, NULL, NULL, NULL);
-
+#endif
   // Grabbing num_events once for thread safety
   num_to_fetch = num_events;
   events = (struct kevent*)malloc(num_to_fetch * sizeof(struct kevent));
