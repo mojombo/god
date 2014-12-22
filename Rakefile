@@ -48,8 +48,17 @@ task :default => :test
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
+  file_list = FileList['test/**/test_*.rb']
+  file_list = file_list.exclude("test/test_god_system.rb")
+  test.test_files = file_list
   test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
+  test.verbose = true
+end
+
+require 'rake/testtask'
+Rake::TestTask.new(:system_test) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/test_god_system.rb'
   test.verbose = true
 end
 
