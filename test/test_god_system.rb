@@ -6,12 +6,19 @@ class TestGodSystem < MiniTest::Test
   end
 
   def with_god_cleanup
+    old_terminate = God.method(:terminate)
+    # necessary cuz actual god terminate will do exit(0) will stops tests
+    God.class_eval do
+      def self.terminate
+        FileUtils.rm_f(self.pid) if self.pid
+        self.server.stop if self.server
+      end
+    end
     begin
       yield
     ensure
       God.stop_all
-      FileUtils.rm_f(God.pid) if God.pid
-      God.server.stop
+      God.terminate # use our monkeypatched terminate
       God.watches.each do |name, w|
         w.stop_signal = 'KILL'
         w.action(:stop)
@@ -19,6 +26,8 @@ class TestGodSystem < MiniTest::Test
       God.inited = false
       God.terminate_timeout = ::God::TERMINATE_TIMEOUT_DEFAULT
       God.internal_init # reset config, set running to false, etc.
+      # set termiante back to old method, for other tests
+      God.define_singleton_method(:terminate, old_terminate)
     end
   end
 
@@ -160,6 +169,33 @@ class TestGodSystem < MiniTest::Test
       end
       God.stop_all
       assert_equal false, God.watches.any? { |name, w| w.alive? }
+    end
+  end
+
+  def test_god_terminate_with_many_watches_short_timeout
+    with_god_cleanup do
+      God.start
+      God.terminate_timeout = 1
+      100.times do |i|
+        God.watch do |w|
+          w.name = "tons_of_watches_#{i}"
+          w.start = File.join(GOD_ROOT, *%w[test configs complex simple_server.rb])
+          w.keepalive
+        end
+        God.watches["tons_of_watches_#{i}"].action(:start)
+      end
+      while true do
+        all_running = God.watches.select{ |name, w| name =~ /tons_of_watches_/ }.all?{ |name, w| w.alive? }
+        size = God.watches.size
+        break if all_running && size >= 100
+        sleep 2
+      end
+      begin
+        God::CLI::Command.new('terminate', {port: 17165}, [])
+      rescue SystemExit
+      ensure
+        assert_equal false, God.watches.any? { |name, w| w.alive? }
+      end
     end
   end
 end
