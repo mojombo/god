@@ -41,6 +41,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('nokogiri', '~> 1.5.0')
   s.add_development_dependency('activesupport', [ '>= 2.3.10', '< 4.0.0' ])
   s.add_development_dependency('statsd-ruby')
+  s.add_development_dependency('i18n', '< 0.7.0')
   # = MANIFEST =
   s.files = %w[
     Announce.txt
