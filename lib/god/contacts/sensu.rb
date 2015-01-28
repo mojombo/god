@@ -38,6 +38,7 @@ module God
       def sensu_client_socket(msg)
         u = UDPSocket.new
         u.send(msg + "\n", 0, arg(:host).nil? ? self.host : arg(:host), arg(:port).nil? ? self.port : arg(:port))
+        u.close
       end
 
       def notify(message, time, priority, category, host)
@@ -50,6 +51,7 @@ module God
         }
         parcel = { 'name' => eval("\"" + arg(:check_name) + "\""), 'status' => arg(:status_code).nil? ? self.status_code : arg(:status_code), 'output' => data.to_json, 'handler' => arg(:handler).empty? ? self.handler : arg(:handler) }
         sensu_client_socket parcel.to_json
+        self.info = "notified sensu: #{arg(:check_name)}"
       end
     end
   end
