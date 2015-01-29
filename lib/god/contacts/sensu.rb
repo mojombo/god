@@ -49,7 +49,7 @@ module God
           :host => host,
           :time => time,
         }
-        parcel = { 'name' => eval("\"" + arg(:check_name) + "\""), 'status' => arg(:status_code).nil? ? self.status_code : arg(:status_code), 'output' => data.to_json, 'handler' => arg(:handler).empty? ? self.handler : arg(:handler) }
+        parcel = { 'name' => arg(:check_name), 'status' => arg(:status_code).nil? ? self.status_code : arg(:status_code), 'output' => data.to_json, 'handler' => arg(:handler).empty? ? self.handler : arg(:handler), 'executed' => Time.now.to_i }
         sensu_client_socket parcel.to_json
         self.info = "notified sensu: #{arg(:check_name)}"
       end
