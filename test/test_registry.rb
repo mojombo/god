@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestRegistry < Test::Unit::TestCase
+class TestRegistry < Minitest::Test
   def setup
     God.registry.reset
   end

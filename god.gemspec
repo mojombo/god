@@ -3,8 +3,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
   s.name = 'god'
-  s.version = '0.13.4.3'
-  s.date = '2014-03-05'
+  s.version = '0.13.5'
+  s.date = '2015-01-09'
 
   s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
@@ -25,19 +25,23 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('json', '~> 1.6')
   s.add_development_dependency('rake')
+  s.add_development_dependency('minitest')
   s.add_development_dependency('rdoc', '~> 3.10')
   s.add_development_dependency('twitter', '~> 4.0')
   s.add_development_dependency('prowly', '~> 0.3')
   s.add_development_dependency('xmpp4r', '~> 0.5')
   s.add_development_dependency('dike', '~> 0.0.3')
-  s.add_development_dependency('rcov', '~> 0.9')
+ # s.add_development_dependency('rcov', '~> 0.9')
   s.add_development_dependency('daemons', '~> 1.1')
   s.add_development_dependency('mocha', '~> 0.10')
   s.add_development_dependency('gollum', '~> 1.3.1')
+  #the last version to support 1.8.7 is 0.99.6
+  s.add_development_dependency('mustache', ['~> 0.99.0', '< 0.99.7'])
   s.add_development_dependency('airbrake', '~> 3.1.7')
   s.add_development_dependency('nokogiri', '~> 1.5.0')
   s.add_development_dependency('activesupport', [ '>= 2.3.10', '< 4.0.0' ])
   s.add_development_dependency('statsd-ruby')
+  s.add_development_dependency('i18n', '< 0.7.0')
   # = MANIFEST =
   s.files = %w[
     Announce.txt
@@ -88,6 +92,7 @@ Gem::Specification.new do |s|
     lib/god/contacts/jabber.rb
     lib/god/contacts/prowl.rb
     lib/god/contacts/scout.rb
+    lib/god/contacts/slack.rb
     lib/god/contacts/statsd.rb
     lib/god/contacts/twitter.rb
     lib/god/contacts/webhook.rb
@@ -164,7 +169,9 @@ Gem::Specification.new do |s|
     test/test_process.rb
     test/test_prowl.rb
     test/test_registry.rb
+    test/test_slack.rb
     test/test_socket.rb
+    test/test_statsd.rb
     test/test_sugar.rb
     test/test_system_portable_poller.rb
     test/test_system_process.rb

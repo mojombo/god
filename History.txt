@@ -1,3 +1,16 @@
+== 0.13.5 / 2015-01-09
+  * Minor Enhancements
+    * statsd notifier (#144)
+    * Slack notifier (#172)
+  * Bug fixes
+    * Add support for Ruby 2.2.0 (#206)
+    * Fix tests for Ruby 2.0 (#205)
+    * Make group assignment more like login (#159)
+    * Flush file descriptors to prevent too many processes from being started (#141)
+    * Allow SSL URLs (#168)
+  * Documentation fixes
+    * Clarify Hipchat privilege requirements (#176)
+
 == 0.13.4 / 2014-03-05
   * Minor Enhancements
     * Hipchat reporter (#162)

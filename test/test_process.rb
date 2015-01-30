@@ -12,7 +12,7 @@ module God
   end
 end
 
-class TestProcessChild < Test::Unit::TestCase
+class TestProcessChild < Minitest::Test
   def setup
     God.internal_init
     @p = God::Process.new
@@ -145,13 +145,14 @@ end
 #
 ###############################################################################
 
-class TestProcessDaemon < Test::Unit::TestCase
+class TestProcessDaemon < Minitest::Test
   def setup
     God.internal_init
     @p = God::Process.new
     @p.name = 'foo'
     @p.pid_file = 'blah.pid'
     @p.stubs(:test).returns true # so we don't try to mkdir_p
+    God::System::Process.stubs(:fetch_system_poller).returns(God::System::PortablePoller)
     Process.stubs(:detach) # because we stub fork
   end
 
@@ -246,7 +247,7 @@ class TestProcessDaemon < Test::Unit::TestCase
 
     assert @p.valid?
 
-    assert_raise NotImplementedError do
+    assert_raises NotImplementedError do
       @p.call_action(:start)
     end
   end

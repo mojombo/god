@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestSlack < Test::Unit::TestCase
+class TestSlack < Minitest::Test
   def setup
     @slack = God::Contacts::Slack.new
     @slack.account = "foo"
@@ -16,7 +16,7 @@ class TestSlack < Test::Unit::TestCase
   end
 
   def test_api_url
-    assert_equal "https://foo.slack.com/services/hooks/incoming-webhook?token=foo&channel=#general", @slack.api_url.to_s
+    assert_equal "https://foo.slack.com/services/hooks/incoming-webhook?token=foo", @slack.api_url.to_s
   end
 
   def test_notify

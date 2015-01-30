@@ -1,6 +1,12 @@
 #ifdef __linux__ /* only build on linux */
 
 #include <ruby.h>
+
+#ifdef HAVE_RB_WAIT_FOR_SINGLE_FD
+  #include <ruby/io.h>
+#endif
+
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -31,6 +37,16 @@ nlh_handle_events()
 
   VALUE extra_data;
 
+#ifdef HAVE_RB_WAIT_FOR_SINGLE_FD
+  int ret;
+  if((ret = rb_wait_for_single_fd(nl_sock, RB_WAITFD_IN, NULL)) < 0){
+    rb_raise(rb_eStandardError, "%s", strerror(errno));
+  }
+  /* If there were no events detected, return */
+  if(!(ret & RB_WAITFD_IN)){
+    return INT2FIX(0);
+  }
+#else
   fd_set fds;
 
   FD_ZERO(&fds);
@@ -44,6 +60,7 @@ nlh_handle_events()
   if (! FD_ISSET(nl_sock, &fds)) {
     return INT2FIX(0);
   }
+#endif
 
   /* if there are events, make calls */
   if (-1 == recv(nl_sock, buff, sizeof(buff), 0)) {

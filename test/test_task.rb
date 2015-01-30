@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestTask < Test::Unit::TestCase
+class TestTask < Minitest::Test
   def setup
     God.internal_init
     @task = Task.new
@@ -46,13 +46,13 @@ class TestTask < Test::Unit::TestCase
   end
 
   def test_method_missing_should_raise_for_non_states
-    assert_raise NoMethodError do
+    assert_raises NoMethodError do
       @task.baz = 5
     end
   end
 
   def test_method_missing_should_raise_for_non_setters
-    assert_raise NoMethodError do
+    assert_raises NoMethodError do
       @task.baz
     end
   end
@@ -75,7 +75,7 @@ class TestTask < Test::Unit::TestCase
 
   def test_action_should_raise_not_implemented_on_non_string_or_lambda_action
     @task.driver.stubs(:in_driver_context?).returns(true)
-    assert_raise NotImplementedError do
+    assert_raises NotImplementedError do
       @task.foo = 7
       @task.action(:foo, nil)
     end
