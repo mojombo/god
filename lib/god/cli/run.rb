@@ -122,7 +122,6 @@ module God
         if @options[:pid]
           File.open(@options[:pid], 'w') { |f| f.write pid }
         end
-
         ::Process.detach pid
 
         exit
