@@ -19,6 +19,11 @@ module God
         ps_float('%cpu')
       end
 
+      # Wall time a process has been running for
+      def elapsed_time
+        ps_seconds('etime')
+      end
+
       private
 
       def ps_int(keyword)
@@ -33,10 +38,16 @@ module God
         `ps -o #{keyword}= -p #{@pid}`.strip
       end
 
-      def time_string_to_seconds(text)
-        _, minutes, seconds, useconds = *text.match(/(\d+):(\d{2}).(\d{2})/)
-        (minutes.to_i * 60) + seconds.to_i
+      def ps_seconds(keyword)
+        time_string_to_seconds(ps_string(keyword))
       end
+
+      def time_string_to_seconds(text)
+        units = [1.second, 1.minute, 1.hour, 1.day]
+        times = text.scan(/[0-9]+/)
+        times.reverse.map{|s| s.to_i}.zip(units).map{|p| p.reduce(:*)}.reduce(:+)
+      end
+
     end
   end
 end

@@ -35,6 +35,10 @@ module God
         @poller.percent_cpu
       end
 
+      def elapsed_time
+        @poller.elapsed_time
+      end
+
       private
 
       def fetch_system_poller

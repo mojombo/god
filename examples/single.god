@@ -49,6 +49,11 @@ God.watch do |w|
       c.above = 10.percent
       c.times = [3, 5]
     end
+
+    # restart if the process is alive longer than an hour
+    on.condition(:process_time) do |c|
+      c.alive_longer_than = 1.hour
+    end
   end
 
   # lifecycle
