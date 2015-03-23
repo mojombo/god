@@ -161,7 +161,7 @@ end
 
 module God
   # The String version number for this package.
-  VERSION = '0.13.5'
+  VERSION = '0.13.6'
 
   # The Integer number of lines of backlog to keep for the logger.
   LOG_BUFFER_SIZE_DEFAULT = 100

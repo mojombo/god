@@ -1,3 +1,7 @@
+== 0.13.6 / 2015-02-21
+  * Minor Enhancements
+    * sensu notifier (#199)
+
 == 0.13.5 / 2015-01-09
   * Minor Enhancements
     * statsd notifier (#144)
