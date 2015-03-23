@@ -23,4 +23,12 @@ class TestDriver < Minitest::Test
 
     t.join
   end
+
+  def test_handle_empty_queue
+    task = God::Task.new
+    driver = God::Driver.new(task)
+
+    events = driver.instance_variable_get(:@events)
+    assert events.shutdown
+  end
 end

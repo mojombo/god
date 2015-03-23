@@ -179,7 +179,7 @@ module God
         loop do
           begin
             @events.pop.handle_event
-          rescue ThreadError => e
+          rescue ThreadError, NoMethodError => e
             # queue is empty
             break
           rescue Object => e
@@ -189,6 +189,7 @@ module God
           end
         end
       end
+      @thread.abort_on_exception = true
     end
 
     # Check if we're in the driver context.
