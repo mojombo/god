@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rake')
   s.add_development_dependency('minitest')
   s.add_development_dependency('rdoc', '~> 3.10')
-  s.add_development_dependency('twitter', '~> 4.0')
+  s.add_development_dependency('twitter', '~> 5.0')
   s.add_development_dependency('prowly', '~> 0.3')
   s.add_development_dependency('xmpp4r', '~> 0.5')
   s.add_development_dependency('dike', '~> 0.0.3')
