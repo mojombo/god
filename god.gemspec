@@ -3,8 +3,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
   s.name = 'god'
-  s.version = '0.13.6'
-  s.date = '2015-03-21'
+  s.version = '0.13.7'
+  s.date = '2015-10-19'
 
   s.summary = "Process monitoring framework."
   s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
@@ -146,6 +146,7 @@ Gem::Specification.new do |s|
     test/configs/task/logs/.placeholder
     test/configs/task/task.god
     test/configs/test.rb
+    test/configs/usr1_trapper.rb
     test/helper.rb
     test/suite.rb
     test/test_airbrake.rb
@@ -162,6 +163,7 @@ Gem::Specification.new do |s|
     test/test_email.rb
     test/test_event_handler.rb
     test/test_god.rb
+    test/test_god_system.rb
     test/test_handlers_kqueue_handler.rb
     test/test_hipchat.rb
     test/test_jabber.rb

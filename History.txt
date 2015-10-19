@@ -1,3 +1,12 @@
+== 0.13.7 / 2015-08-19
+  * Bug fixes
+    * Fixed slack integration (#217)
+    * Update twitter gem to support newer rubies (#219)
+    * Make stop_all work with newer rubies (#209)
+    * Don't start more DRb servers than necessary
+  * Minor Enhancements
+    * Allow uid and gid to be specified as an integer (#202)
+
 == 0.13.6 / 2015-02-21
   * Minor Enhancements
     * sensu notifier (#199)
