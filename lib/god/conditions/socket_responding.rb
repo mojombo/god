@@ -52,7 +52,7 @@ module God
     #
     # on.condition(:socket_responding) do |c|
     #   c.family = 'unix'
-    #   c.port = '/tmp/sock'
+    #   c.path = '/tmp/sock'
     # end
     #
     class SocketResponding < PollCondition
