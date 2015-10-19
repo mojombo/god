@@ -78,7 +78,6 @@ module God
         applog(nil, :info, "Started on #{DRb.uri}")
       rescue Errno::EADDRINUSE
         applog(nil, :info, "Socket already in use")
-        DRb.start_service
         server = DRbObject.new(nil, self.socket)
 
         begin
