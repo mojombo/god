@@ -50,9 +50,10 @@ module Marshmallow
       puts "in spark: room_id = #{room_id}"
       raise "No such room: #{room}." unless room_id
 
+      escaped_room = URI.escape(room)
       escaped_message = URI.escape(message)
 
-      url = URI.parse("#{base_url}/message?message_format=text&format=json&auth_token=#{@options[:token]}&from=#{@options[:from]}&room_id=#{room}&message=#{escaped_message}")
+      url = URI.parse("#{base_url}/message?message_format=text&format=json&auth_token=#{@options[:token]}&from=#{@options[:from]}&room_id=#{escaped_room}&message=#{escaped_message}")
       
       http = Net::HTTP.new(url.host, url.port)
       http.use_ssl = true if @options[:ssl]
