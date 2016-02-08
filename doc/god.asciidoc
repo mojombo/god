@@ -532,7 +532,7 @@ process to start. In that case, god will try to start my process over and over
 to no avail. The `:flapping` condition provides two levels of giving up on
 flapping processes. If I were to translate the options of the code above, it
 would be something like: If this watch is started or restarted five times
-withing 5 minutes, then unmonitor it...then after ten minutes, monitor it
+within 5 minutes, then unmonitor it...then after ten minutes, monitor it
 again to see if it was just a temporary problem; if the process is seen to be
 flapping five times within two hours, then give up completely.
 
