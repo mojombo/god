@@ -13,7 +13,7 @@ class TestSocket < Minitest::Test
   end
 
   def test_should_use_supplied_port_and_host
-    DRb.expects(:start_service).with { |uri, object| uri == "drbunix:///tmp/god.9999.sock" && object.is_a?(God::Socket) }
+    DRb.expects(:start_service).with { |uri, object| uri == God::Socket.socket(9999) && object.is_a?(God::Socket) }
     server = God::Socket.new(9999)
   end
 
