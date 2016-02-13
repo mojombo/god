@@ -44,52 +44,7 @@ module God
     # Returns normalized notify spec
     # Raises ArgumentError on invalid spec (message contains details)
     def self.normalize(spec)
-      case spec
-        when String
-          {:contacts => Array(spec)}
-        when Array
-          unless spec.select { |x| !x.instance_of?(String) }.empty?
-            raise ArgumentError.new("contains non-String elements")
-          end
-          {:contacts => spec}
-        when Hash
-          copy = spec.dup
-
-          # check :contacts
-          if contacts = copy.delete(:contacts)
-            case contacts
-              when String
-                # valid
-              when Array
-                unless contacts.select { |x| !x.instance_of?(String) }.empty?
-                  raise ArgumentError.new("has a :contacts key containing non-String elements")
-                end
-                # valid
-              else
-                raise ArgumentError.new("must have a :contacts key pointing to a String or Array of Strings")
-            end
-          else
-            raise ArgumentError.new("must have a :contacts key")
-          end
-
-          # remove priority and category
-          copy.delete(:priority)
-          copy.delete(:category)
-
-          # check for invalid keys
-          unless copy.empty?
-            raise ArgumentError.new("contains extra elements: #{copy.inspect}")
-          end
-
-          # normalize
-          spec[:contacts] &&= Array(spec[:contacts])
-          spec[:priority] &&= spec[:priority].to_s
-          spec[:category] &&= spec[:category].to_s
-
-          spec
-        else
-          raise ArgumentError.new("must be a String (contact name), Array (of contact names), or Hash (contact specification)")
-      end
+      SpecNormalizer.normalize(spec)
     end
 
     # Abstract
