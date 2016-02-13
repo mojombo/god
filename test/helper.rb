@@ -1,3 +1,8 @@
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.start
+end
+
 $:.unshift File.expand_path('../../lib', __FILE__) # For use/testing when no gem is installed
 
 # Use this flag to actually load all of the god infrastructure
