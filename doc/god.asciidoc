@@ -156,7 +156,7 @@ While keeping a process up is useful, it would be even better if we could make
 sure our process was behaving well and restart it when resource utilization
 exceeds our specifications. With a few additions, we can easily have our
 process restarted when memory usage or CPU goes above certain limits. Edit
-your `sample.god` config file to look like this:
+your `simple.god` config file to look like this:
 
 ```ruby
 God.watch do |w|
