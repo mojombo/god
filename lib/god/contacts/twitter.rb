@@ -36,10 +36,15 @@ module God
                     :access_token, :access_secret
 
       def notify(message, time, priority, category, host)
-        oauth = ::Twitter::OAuth.new(arg(:consumer_token), arg(:consumer_secret))
-        oauth.authorize_from_access(arg(:access_token), arg(:access_secret))
 
-        ::Twitter::Base.new(oauth).update(message)
+        client = ::Twitter::REST::Client.new do |config|
+          config.consumer_key        = arg(:consumer_token)
+          config.consumer_secret     = arg(:consumer_secret)
+          config.access_token        = arg(:access_token)
+          config.access_token_secret = arg(:access_secret)
+        end
+
+        client.update(message)
 
         self.info = "sent twitter update"
       rescue => e
