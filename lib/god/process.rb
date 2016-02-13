@@ -1,3 +1,5 @@
+require 'shellwords'
+
 module God
   class Process
     WRITES_PID = [:start, :restart]
@@ -338,7 +340,10 @@ module God
           end
         end
 
-        exec command unless command.empty?
+        unless command.empty?
+          args = Shellwords.split command
+          exec *args
+        end
       end
     end
 
