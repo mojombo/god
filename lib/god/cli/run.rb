@@ -60,6 +60,10 @@ module God
         else
           God.log_level = @options[:daemonize] ? :warn : :info
         end
+        
+        if @options[:pid]
+          File.open(@options[:pid], 'w') { |f| f.write pid }
+        end
 
         if @options[:config]
           if !@options[:config].include?('*') && !File.exist?(@options[:config])
@@ -113,10 +117,6 @@ module God
             puts e.backtrace.join("\n")
             abort "There was a fatal system error while starting god (see above)"
           end
-        end
-
-        if @options[:pid]
-          File.open(@options[:pid], 'w') { |f| f.write pid }
         end
 
         ::Process.detach pid
