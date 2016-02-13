@@ -1,7 +1,7 @@
 module God
   module System
     class SlashProcPoller < PortablePoller
-      @@kb_per_page = 4 # TODO: Need to make this portable
+      @@kb_per_page = %x{ getconf PAGESIZE }.chomp.to_i / 1024 rescue 4
       @@hertz = 100
       @@total_mem = nil
 
