@@ -23,7 +23,8 @@ module Marshmallow
 
     def base_url
       scheme = @options[:ssl] ? 'https' : 'http'
-      "#{scheme}://api.hipchat.com/v1/rooms"
+      host = @options[:host] || 'api.hipchat.com'
+      "#{scheme}://#{host}/v1/rooms"
     end
 
     def find_room_id_by_name(room_name)
@@ -75,7 +76,7 @@ module God
 
     class Hipchat < Contact
       class << self
-        attr_accessor :token, :room, :ssl, :from
+        attr_accessor :token, :room, :ssl, :from, :host
         attr_accessor :format
       end
 
@@ -101,7 +102,8 @@ module God
         conn = Marshmallow::Connection.new(
           :token => arg(:token),
           :ssl   => arg(:ssl),
-          :from  => arg(:from)
+          :from  => arg(:from),
+          :host  => arg(:host)
         )
 
         conn.speak(arg(:room), body)
