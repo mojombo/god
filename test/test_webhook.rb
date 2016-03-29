@@ -19,4 +19,18 @@ class TestWebhook < Minitest::Test
 
     @webhook.notify('msg', Time.now, 'prio', 'cat', 'host')
   end
+
+  def test_notify_with_process_data_callback
+    data_to_send = {:processed => true}
+    data_callback = proc do |message, time, priority, category, host|
+      data_to_send
+    end
+
+    @webhook.url = 'http://example.com/switch'
+    @webhook.format = :json
+    @webhook.process_data = data_callback
+    Net::HTTP.any_instance.expects(:request).with {|req| req.body == data_to_send.to_json }.returns(Net::HTTPSuccess.new('a', 'b', 'c'))
+
+    @webhook.notify('msg', Time.now, 'prio', 'cat', 'host')
+  end
 end

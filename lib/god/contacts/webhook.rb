@@ -1,7 +1,8 @@
 # Send a notice to a webhook.
 #
-# url    - The String webhook URL.
-# format - The Symbol format [ :form | :json ] (default: :form).
+# url          - The String webhook URL.
+# format       - The Symbol format [ :form | :json ] (default: :form).
+# process_data - The optional Proc that returns a custom data object to send to the webhook.
 
 require 'net/http'
 require 'uri'
@@ -16,28 +17,34 @@ module God
 
     class Webhook < Contact
       class << self
-        attr_accessor :url, :format
+        attr_accessor :url, :format, :process_data
       end
 
       self.format = :form
+      self.process_data = nil
 
       def valid?
         valid = true
         valid &= complain("Attribute 'url' must be specified", self) unless arg(:url)
         valid &= complain("Attribute 'format' must be one of [ :form | :json ]", self) unless [:form, :json].include?(arg(:format))
+        valid &= complain("Attribute 'process_data' must be a proc object if defined ", self) unless arg(:process_data).nil? || arg(:process_data).is_a?(Proc)
         valid
       end
 
-      attr_accessor :url, :format
+      attr_accessor :url, :format, :process_data
 
       def notify(message, time, priority, category, host)
-        data = {
-          :message => message,
-          :time => time,
-          :priority => priority,
-          :category => category,
-          :host => host
-        }
+        if arg(:process_data)
+          data = arg(:process_data).call(message, time, priority, category, host)
+        else
+          data = {
+            :message => message,
+            :time => time,
+            :priority => priority,
+            :category => category,
+            :host => host
+          }
+        end
 
         uri = URI.parse(arg(:url))
         http = Net::HTTP.new(uri.host, uri.port)
