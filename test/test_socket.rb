@@ -13,7 +13,7 @@ class TestSocket < Minitest::Test
   end
 
   def test_should_use_supplied_port_and_host
-    DRb.expects(:start_service).with { |uri, object| uri == "drbunix:///tmp/god.9999.sock" && object.is_a?(God::Socket) }
+    DRb.expects(:start_service).with { |uri, object| uri == "drbunix://#{God::Socket.socket_file(9999)}" && object.is_a?(God::Socket) }
     server = God::Socket.new(9999)
   end
 
@@ -30,5 +30,11 @@ class TestSocket < Minitest::Test
     server = nil
     server = God::Socket.new
     assert server.ping
+  end
+
+  def test_should_use_socket_dir_param
+    God.socket_dir = File.absolute_path(".")
+    socket_file = God::Socket.socket_file(9999)
+    assert_equal "#{File.absolute_path(".")}/god.9999.sock", socket_file
   end
 end

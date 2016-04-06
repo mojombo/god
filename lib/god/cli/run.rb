@@ -50,6 +50,10 @@ module God
           God.port = @options[:port]
         end
 
+        if @options[:socket_dir]
+          God.socket_dir = @options[:socket_dir]
+        end
+
         if @options[:events]
           God::EventHandler.load
         end

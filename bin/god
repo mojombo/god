@@ -60,6 +60,10 @@ begin
       options[:pid] = x
     end
 
+    opts.on("-SFILE", "--socket_path FILE", "Where to write the socket file") do |x|
+      options[:socket_dir] = x
+    end
+
     opts.on("-lFILE", "--log FILE", "Where to write the log file") do |x|
       options[:log] = x
     end
