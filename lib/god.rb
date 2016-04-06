@@ -204,7 +204,8 @@ module God
                        :terminate_timeout,
                        :socket_user,
                        :socket_group,
-                       :socket_perms
+                       :socket_perms,
+                       :socket_dir
 
     # internal
     attr_accessor :inited,
@@ -443,7 +444,7 @@ module God
   end
 
   def self.watches_by_name(name)
-    case name 
+    case name
       when "", nil then self.watches.values.dup
       else Array(self.watches[name] || self.groups[name]).dup
     end

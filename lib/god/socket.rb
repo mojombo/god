@@ -11,7 +11,8 @@ module God
     #
     # Returns String (file location)
     def self.socket_file(port)
-      "/tmp/god.#{port}.sock"
+      dir = File.absolute_path(God.socket_dir || "/tmp")
+      "#{dir}/god.#{port}.sock"
     end
 
     # The address of the socket for a given port
@@ -93,7 +94,7 @@ module God
         end
       end
 
-      if File.exists?(self.socket_file)
+      if File.exist?(self.socket_file)
         if @user
           user_method = @user.is_a?(Integer) ? :getpwuid : :getpwnam
           uid = Etc.send(user_method, @user).uid
