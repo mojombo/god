@@ -24,7 +24,8 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = %w[README.md]
 
   s.add_development_dependency('json', '~> 1.6')
-  s.add_development_dependency('rake')
+  #the last version to support 1.8.7 is 10.5.0
+  s.add_development_dependency('rake', '~> 10.5.0')
   s.add_development_dependency('minitest')
   s.add_development_dependency('rdoc', '~> 3.10')
   s.add_development_dependency('twitter', '~> 5.0')
@@ -42,6 +43,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency('activesupport', [ '>= 2.3.10', '< 4.0.0' ])
   s.add_development_dependency('statsd-ruby')
   s.add_development_dependency('i18n', '< 0.7.0')
+  #the last version to support 1.8.7 is 2.3.8
+  s.add_development_dependency('addressable', '~> 2.3.8')
   # = MANIFEST =
   s.files = %w[
     Announce.txt
