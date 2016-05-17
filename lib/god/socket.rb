@@ -93,7 +93,7 @@ module God
         end
       end
 
-      if File.exists?(self.socket_file)
+      if File.exist?(self.socket_file)
         if @user
           user_method = @user.is_a?(Integer) ? :getpwuid : :getpwnam
           uid = Etc.send(user_method, @user).uid
