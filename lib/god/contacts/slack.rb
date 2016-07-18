@@ -1,10 +1,11 @@
 # Send a message to a Slack channel
 #
-# account        - The name of your Slack account (visible in URL, e.g. foo.slack.com)
-# token          - The token of the webhook created in Slack
-# channel        - The name of the channel to send the message to, prefixed with #
+# url            - Your webhook's url
+# channel        - The name of the channel to send the message to (prefixed with # for public channels)
 # notify_channel - Whether to send an "@channel" in the message, to alert everyone in the channel
 # format         - An optional format string to change how the alert is displayed
+# username       - Name to display in the message (i.e. 'God')
+# emoji          - Send a custom emoji to attach the name (i.e. ':godmode:')
 
 require 'net/http'
 require 'uri'
