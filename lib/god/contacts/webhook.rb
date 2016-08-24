@@ -46,12 +46,12 @@ module God
         req = nil
         res = nil
 
+        req = Net::HTTP::Post.new(uri.request_uri)
+        req.basic_auth(uri.user, uri.password) unless uri.user.nil? || uri.password.nil?
         case arg(:format)
           when :form
-            req = Net::HTTP::Post.new(uri.request_uri)
             req.set_form_data(data)
           when :json
-            req = Net::HTTP::Post.new(uri.request_uri)
             req.body = data.to_json
         end
 
