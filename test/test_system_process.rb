@@ -26,5 +26,10 @@ class TestSystemProcess < Minitest::Test
   def test_percent_cpu
     assert_kind_of Float, @process.percent_cpu
   end
+
+  def test_uptime_seconds
+    assert_kind_of Integer, @process.uptime_seconds
+    assert @process.uptime_seconds > 0
+  end
 end
 

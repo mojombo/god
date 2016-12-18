@@ -1,3 +1,5 @@
+require 'time'
+
 module God
   module System
     class PortablePoller
@@ -19,7 +21,16 @@ module God
         ps_float('%cpu')
       end
 
+      # Uptime in seconds
+      def uptime_seconds
+        (Time.now - ps_time('lstart')).to_i
+      end
+
       private
+
+      def ps_time(keyword)
+        Time.parse(`ps -o #{keyword}= -p #{@pid}`)
+      end
 
       def ps_int(keyword)
         `ps -o #{keyword}= -p #{@pid}`.to_i
