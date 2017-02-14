@@ -67,6 +67,8 @@ require 'god/process'
 
 require 'god/cli/version'
 require 'god/cli/command'
+require 'god/contact'
+require 'god/contacts'
 
 # ruby 1.8 specific configuration
 if RUBY_VERSION < '1.9'
@@ -75,27 +77,6 @@ end
 
 CONTACT_DEPS = { }
 CONTACT_LOAD_SUCCESS = { }
-
-def load_contact(name)
-  require "god/contacts/#{name}"
-  CONTACT_LOAD_SUCCESS[name] = true
-rescue LoadError
-  CONTACT_LOAD_SUCCESS[name] = false
-end
-
-require 'god/contact'
-load_contact(:campfire)
-load_contact(:hipchat)
-load_contact(:email)
-load_contact(:jabber)
-load_contact(:prowl)
-load_contact(:scout)
-load_contact(:statsd)
-load_contact(:twitter)
-load_contact(:webhook)
-load_contact(:airbrake)
-load_contact(:slack)
-load_contact(:sensu)
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext god])
 
