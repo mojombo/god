@@ -276,7 +276,10 @@ module God
             applog(self, :warn, "#{self.name} #{action} command exited with non-zero code = #{exit_code}")
           end
 
-          ensure_stop if action == :stop
+          if action == :stop
+            ensure_stop
+            return
+          end
         end
 
         if @tracking_pid or (@pid_file.nil? and WRITES_PID.include?(action))
