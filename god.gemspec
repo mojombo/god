@@ -1,20 +1,20 @@
 Gem::Specification.new do |s|
-  s.specification_version = 2 if s.respond_to? :specification_version=
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
+  # s.specification_version = 2 if s.respond_to? :specification_version=
+  # s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
 
   s.name = 'god'
-  s.version = '0.13.7'
+  s.version = '0.13.8.1'
   s.date = '2015-10-19'
 
   s.summary = "Process monitoring framework."
-  s.description = "An easy to configure, easy to extend monitoring framework written in Ruby."
+  s.description = "An easy to configure, easy to extend monitoring framework written in Ruby.(with add on timeout fix)"
 
-  s.authors = ["Tom Preston-Werner", "Kevin Clark", "Eric Lindvall"]
+  s.authors = ["Tom Preston-Werner", "Kevin Clark", "Eric Lindvall", "Praveen Kumar Sinha"]
   s.email = 'god-rb@googlegroups.com'
   s.homepage = 'http://god.rubyforge.org/'
 
   s.rubyforge_project = 'god'
-  s.rubygems_version = '1.3.5'
+  # s.rubygems_version = '1.3.5'
   s.require_paths = %w[lib ext]
 
   s.executables = ["god"]
@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('prowly', '~> 0.3')
   s.add_development_dependency('xmpp4r', '~> 0.5')
   s.add_development_dependency('dike', '~> 0.0.3')
- # s.add_development_dependency('rcov', '~> 0.9')
+  # s.add_development_dependency('rcov', '~> 0.9')
   s.add_development_dependency('daemons', '~> 1.1')
   s.add_development_dependency('mocha', '~> 0.10')
   s.add_development_dependency('gollum', '~> 1.3.1')
